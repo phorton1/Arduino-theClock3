@@ -1,0 +1,130 @@
+# clopck4.3.pyJoints
+
+addInput(inputs, 'period',  'int', 1, 100,  15)
+addInput(inputs, 'degrees', 'int', 12,  24,  24)
+
+setGifFolder('.\\gifs')
+
+# EXPERIMENT to try to use global variables
+# to emulate actual wheel movement (worked 'so so')
+#
+#	globals()['user_var1'] = 0.5
+#		# accumulated wheel motion
+#	globals()['user_var2'] = 0.0
+#		# motion this time through
+#	globals()['user_var3'] = 0
+#		# ccw for change detection
+
+step:
+
+design_min = -5
+design_max = 5
+
+period = getValueByName('period')
+degrees = getValueByName('degrees')
+
+setGifLength((360/120) * 2 * period)
+
+# cam
+
+# sinusoidal function compatible with my previous calculatePeriod() method
+# uses negative cosine to start at extreme right moving cw
+# with different UI, would now be:
+#
+#      degrees_per_step = degrees/period
+#      (deg, cycle, ccw) = calculatePeriod(step,degrees_per_step,-degrees/2,degrees/2)
+
+half = degrees/2
+deg = -math.cos((step * math.pi)/period) * half
+cycle = int(step/period)
+ccw = int(cycle % 2)
+
+
+
+setJointRotation('cam',deg)
+
+
+arm1_min = -2.1
+arm1_max = 3.6
+arm2_min = 1.0
+arm2_max = -1.8
+
+arm1 = mapValues(deg, design_min,design_max, arm1_min, arm1_max)
+arm2 = mapValues(deg, design_max,design_min, arm2_min, arm2_max)
+setJointRotation('arm1',arm1)
+setJointRotation('arm2',arm2)
+
+# pawls
+
+
+def movePawl(name, the_ccw, my_ccw, deg_min, deg_max, deg, a1, a2, a3, a4, a5, a6):
+	angle = 0
+	if the_ccw == my_ccw:			# continous movement while pushing
+		pct = mapValues(deg, deg_min, deg_max, 0, 1)
+		if pct < 0.33:				# push starts by sliding down next gear
+			angle = mapValues(pct, 0.00, 0.33,  a1,  a2)
+		else: 						# actual push
+			angle = mapValues(pct, 0.33, 1,  a2,  a3)
+	else:
+		pct = mapValues(deg, deg_max, deg_min, 0, 1)
+		if pct < 0.33:				# visually static before other pawl grabs
+			angle = angle = mapValues(pct, 0.00, 0.33, a3,  a4)
+		elif pct < 0.80: 				# moves outwards to the tip of the gear
+			angle = mapValues(pct, 0.33, 0.80, a4,  a5)
+		elif pct < 0.90:			# falls
+			angle = mapValues(pct, 0.80, 0.90, a5, a6)
+		else:						# rises back to starting position
+			angle = mapValues(pct, 0.90, 1.00, a6, a1)
+	setJointRotation(name,angle)
+
+
+# points are:
+#  1 = on next tooth ready to slide down and start pushing
+#  2 = pushing start
+#  3 = pushing end, start returning
+#  4 = slide up next gear
+#  5 = fall on new next ramp
+
+movePawl('pawl1',ccw,0, design_min,design_max,  deg,  -2.0,  -0.5,  5.0,   4.0,   5.0,  -1.0)
+movePawl('pawl2',ccw,1, design_max,design_min,  deg,  -0.9,  -1.5, -0.6,  -0.3,   4.0,   0.0)
+
+#movePawl('pawl1',ccw,0, design_min,design_max,  deg,   3.0,  0.5,  -3.8,  -1.0,   4.0,   2.3)
+
+
+
+# wheel
+
+inc = 0
+if ccw:
+	third = arm2_min + (arm2_max - arm2_min)/2.5
+	inc = mapValues(arm2,third,arm2_max,0,3)
+else:
+	third = arm1_min + (arm1_max - arm1_min)/2.5
+	inc = mapValues(arm1,third,arm1_max,0,3)
+
+# EXPERIMENT
+#
+#	if ccw != globals()['user_var3']:
+#		globals()['user_var3'] = ccw
+#		globals()['user_var1'] += globals()['user_var2']
+#	globals()['user_var2'] = inc
+#	setJointRotation('wheel',globals()['user_var1'] + globals()['user_var2'])
+
+wheel = -0.5 + cycle*3 + inc
+setJointRotation('wheel', wheel)
+
+# motion_links
+
+
+min1b = -wheel/8
+min2b = -min1b/7.5
+hour1b = -min2b/4
+hour2b = -hour1b/3
+
+setJointRotation('min1b',min1b)
+setJointRotation('min2b',min2b)
+setJointRotation('hour1b',hour1b)
+setJointRotation('hour2b',hour2b)
+
+
+# end of test20.pyJoints

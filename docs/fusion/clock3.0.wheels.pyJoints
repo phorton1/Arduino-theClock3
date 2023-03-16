@@ -1,0 +1,26 @@
+# test20.pyJoints
+
+addInput(inputs, 'gif_length',  'int', 1,  1000,  360)
+addInput(inputs, 'degrees',     'int', 1,  360,  60)
+
+setGifFolder('.\\gifs')
+
+step:
+
+setGifLength(getValueByName('gif_length'))
+
+degrees = getValueByName('degrees')
+wheel = step * degrees
+min1b = -wheel/8
+min2b = -min1b/7.5
+hour1b = -min2b/4
+hour2b = -hour1b/3
+
+setJointRotation('wheel',wheel)
+setJointRotation('min1b',min1b)
+setJointRotation('min2b',min2b)
+setJointRotation('hour1b',hour1b)
+setJointRotation('hour2b',hour2b)
+
+
+# end of test20.pyJoints
