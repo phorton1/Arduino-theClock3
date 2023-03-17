@@ -3,26 +3,46 @@
 #include <Arduino.h>
 #include <myIOTDevice.h>
 
+//---------------------------------
+// pin assignments
+//---------------------------------
+// L293D motor driver
 
-#define PIN_HALL1	32
-#define PIN_HALL2	35
-#define PIN_HALL3	34
 
-// Note that ENB, INB1, and INB2 are sent out for backward
-// compatability for V1 circuit board but unused on V2
+#define PIN_IN1		27
+#define PIN_IN2		25
+#define PIN_EN		26
 
-#define PIN_ENA		27
-#define PIN_INA1	25
-#define PIN_INA2	26
-#define PIN_ENB		4
-#define PIN_INB1	17
-#define PIN_INB2	5
+// Hall Sensor
 
-#define PIN_LEDS	22
-#define PIN_BUTTON  18
+#define PIN_HALL	35
+
+// Rotary Sensor(s) use Wire Defaults
+//
+// #define PIN_SDA	21
+// #define PIN_SCL	22
+//
+// SPI bus (MOSI,MISO,SCLK) is still available
+
+// Optical Mouse Sensor
+
+#define PIN_SCK		32
+#define PIN_SDIO	33
+
+// Leds and Buttons
+
+#define PIN_BUTTON1 15
+#define PIN_BUTTON2 16
+#define PIN_LEDS	17
 
 #define PIXEL_MAIN		0
-#define NUM_PIXELS		1
+
+#define NUM_PIXELS		4
+
+
+//----------------------------------
+// available LED colors
+//----------------------------------
 
 #define MY_LED_BLACK    0x000000
 #define MY_LED_RED      0x440000
@@ -31,9 +51,7 @@
 #define MY_LED_CYAN     0x003333
 #define MY_LED_YELLOW   0x333300
 #define MY_LED_MAGENTA  0x330033
-
 #define MY_LED_WHITE    0x444444
-
 #define MY_LED_ORANGE   0x402200
 #define MY_LED_REDMAG   0x400022
 #define MY_LED_BLUECYAN 0x002240

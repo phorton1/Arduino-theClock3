@@ -62,12 +62,13 @@ face_outer_diam,	mm,		200 mm,
 
 center_to_top,		mm,		140 mm,
 center_to_bottom,	mm,		245 mm,
+box_width,			mm,		200 mm,
 box_height,			mm,		40 mm
 
 frame_top,			mm,		center_to_top - 5
 house_top,			mm,		center_to_pendulum - 10
 house_bottom,		mm,		-134.8
-frame_left,			mm,		-(face_outer_diam/2) + 5
+frame_left,			mm,		-(box_width/2) + 5
 bridge_top,			mm,		12.5
 bridge_left,		mm,		69.8
 
@@ -315,6 +316,7 @@ front_front,		mm,		front_back - ply_medium
 rider_back,			mm,		front_front
 rider_front,		mm,		rider_back - ply_medium
 
+face_front,			mm,		rider_front - ply_thin
 
 hours_hand,			mm,		rider_front - ply_medium - 0.5 mm
 minutes_hand,		mm,		hours_hand - ply_thin - 2 mm

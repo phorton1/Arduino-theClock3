@@ -29,25 +29,16 @@
 
 
 //----------------------------
-// halls
+// hall sesnsor
 //----------------------------
 
-#define NUM_HALL_PINS	3
-#define NUM_SAMPLES     5
-
-const int hall_pins[NUM_HALL_PINS] =
-{
-	PIN_HALL1,
-	PIN_HALL2,
-	PIN_HALL3,
-};
-
-static int circ_ptr = 0;
-static int circ_buf[NUM_HALL_PINS][NUM_SAMPLES];
-static int hall_value[NUM_HALL_PINS];
+#define NUM_HALL_SAMPLES   5
 
 
-static int hall_zero[NUM_HALL_PINS] = {1795,1876,1836};
+static int hall_circ_ptr = 0;
+static int hall_circ_buf[NUM_HALL_SAMPLES];
+static int hall_value;
+static int hall_zero = 1795;
 
 
 //----------------------------
@@ -135,31 +126,16 @@ static uint32_t button_down = 0;
 		// assuming pendulum is hanging down
 		// set zero for sensors 0 and 1
 
-		Serial.println("calibrating hall pins - pendulum must be stopped, center");
-		delay(500);
-		for (int i=0; i<NUM_HALL_PINS; i++)
-		{
-			if (i != 1)
-				hall_zero[i] = analogRead(hall_pins[i]);
-		}
-		delay(500);
-
-		// then set the central sensor
-
-		Serial.println("move pendulum to one side and press any key");
+		Serial.println("calibrating hall pin - move pendulum to one side and press any key");
 		while (!Serial.available()) { delay(5); }
 		int c = Serial.read();
+
 		delay(100);
-		hall_zero[2] = analogRead(hall_pins[1]);
+		hall_zero = analogRead(PIN_HALL);
 		delay(500);
+
 		Serial.print("hall_calibration complete ");
-		Serial.print(hall_zero[0]);
-		Serial.print(",");
-		Serial.print(hall_zero[1]);
-		Serial.print(",");
-		Serial.println(hall_zero[2]);
-			//hall_zero[3],
-			//hall_zero[4]);
+		Serial.println(hall_zero);
 	}
 #endif
 
@@ -171,31 +147,23 @@ void theClock::setup()	// override
 {
 	LOGU("theClock::setup() started");
 
+	pixels.clear();
 	pixels.setPixelColor(0,MY_LED_RED);
 	pixels.show();
 	delay(500);
 
-	pinMode(PIN_BUTTON,INPUT_PULLUP);
+	pinMode(PIN_BUTTON1,INPUT_PULLUP);
+	pinMode(PIN_BUTTON2,INPUT_PULLUP);
 
-	for (int i=0; i<NUM_HALL_PINS; i++)
-	{
-		pinMode(hall_pins[i],INPUT);
-	}
+	pinMode(PIN_HALL,INPUT);
 
 	ledcSetup(0, PWM_FREQUENCY, PWM_RESOLUTION);
-	ledcSetup(1, PWM_FREQUENCY, PWM_RESOLUTION);
-	ledcAttachPin(PIN_ENA, 0);
-	ledcAttachPin(PIN_ENB, 1);
+	ledcAttachPin(PIN_EN, 0);
 	ledcWrite(0,0);
-	ledcWrite(1,0);
-	pinMode(PIN_INA1,OUTPUT);
-	pinMode(PIN_INA2,OUTPUT);
-	pinMode(PIN_INB1,OUTPUT);
-	pinMode(PIN_INB2,OUTPUT);
-	digitalWrite(PIN_INA1,0);
-	digitalWrite(PIN_INA2,0);
-	digitalWrite(PIN_INB1,0);
-	digitalWrite(PIN_INB2,0);
+	pinMode(PIN_IN1,OUTPUT);
+	pinMode(PIN_IN2,OUTPUT);
+	digitalWrite(PIN_IN1,0);
+	digitalWrite(PIN_IN2,0);
 
 	// one_time_calibrate_hall();
 
@@ -233,11 +201,8 @@ void motor(int state, int power)
 {
 	int use_power = state ? power : 0;
 	ledcWrite(0, use_power);
-	ledcWrite(1, use_power);
-	digitalWrite(PIN_INA1,state == 1  ? 1 : 0);
-	digitalWrite(PIN_INA2,state == -1 ? 1 : 0);
-	digitalWrite(PIN_INB1,state == 1  ? 1 : 0);
-	digitalWrite(PIN_INB2,state == -1 ? 1 : 0);
+	digitalWrite(PIN_IN1,state == 1  ? 1 : 0);
+	digitalWrite(PIN_IN2,state == -1 ? 1 : 0);
 	// LOGD("motor(%d,%d)",state,power);
 }
 
@@ -254,8 +219,8 @@ void init()
 	total_error = 0;
 	prev_p = 0;
 
-	circ_ptr = 0;
-	memset(circ_buf,0,NUM_HALL_PINS*NUM_SAMPLES*sizeof(int));
+	hall_circ_ptr = 0;
+	memset(hall_circ_buf,0,NUM_HALL_SAMPLES*sizeof(int));
 
 	num_beats = 0;
 	num_restarts = 0;
@@ -472,55 +437,30 @@ void theClock::run()
 	//-------------------------------------------------
 	// HALLS
 	//-------------------------------------------------
-	// read hall sensors through circular buffer
+	// read hall sensor through circular buffer
 	// Seems to work better if we throw the first sample out
 
-	for (int i=0; i<NUM_HALL_PINS; i++)
-	{
-		circ_buf[i][circ_ptr] = analogRead(hall_pins[i]) - hall_zero[i];
-		int value = 0;
-		for (int j=1; j<NUM_SAMPLES-1; j++)
-		{
-			value += circ_buf[i][j];
-		}
-		value = value / (NUM_SAMPLES-1);
-		hall_value[i] = value;
-	}
-
-	circ_ptr++;
-	if (circ_ptr >= NUM_SAMPLES)
-		circ_ptr = 0;
+	int value = 0;
+	hall_circ_buf[hall_circ_ptr++] = analogRead(PIN_HALL) - hall_zero;
+	if (hall_circ_ptr >= NUM_HALL_SAMPLES)
+		hall_circ_ptr = 0;
+	for (int i=1; i<NUM_HALL_SAMPLES-1; i++)
+		value += hall_circ_buf[i];
+	value = value / (NUM_HALL_SAMPLES-1);
+	hall_value = value;
 
 
 	//-------------------------------------------------
 	// POSITION
 	//-------------------------------------------------
-	// Determine incremental position  -4..-1 and 1..4
-	//
-	// Magnet to the left of a hall sensor is negative, to the right, positive.
+	// Determine position  -1 or 1
+	// Will read angular sensor here
+	// For now ignoring complete change to algorithm
 
-	if (hall_value[0] < -_hall_thresh)	// detected the magnet to the left of sensor(0)
-		position = -3;
-	else if (hall_value[0] > _hall_thresh)
-		position = -2;
-	else if (hall_value[1] < -_hall_thresh)
+	if (hall_value < -_hall_thresh)
 		position = -1;
-
-	// right side
-
-	else if (hall_value[2] > _hall_thresh)
-		position = 3;
-	else if (hall_value[2] < -_hall_thresh)
-		position = 2;
-	else if (hall_value[1] > _hall_thresh)
+	else if (hall_value > _hall_thresh)
 		position = 1;
-
-	// set the max_left and max_right
-
-	if (position < 0 && position < max_left)
-		max_left = position;
-	if (position > 0 && position > max_right)
-		max_right = position;
 
 
 	//----------------------------------------------------------
@@ -701,11 +641,8 @@ void theClock::run()
 
 	if (_plot_values == 1)
 	{
-		for (int i=0; i<NUM_HALL_PINS; i++)
-		{
-			Serial.print(hall_value[i]);
-			Serial.print(",");
-		}
+		Serial.print(hall_value);
+		Serial.print(",");
 
 		// Serial.print(cycle_duration);
 
@@ -737,7 +674,7 @@ void theClock::loop()	// override
 	{
 		button_chk = now;
 		static int last_press = 0;
-		bool val = !digitalRead(PIN_BUTTON);
+		bool val = !digitalRead(PIN_BUTTON1);
 		if (button_down)
 		{
 			uint32_t dur = now - button_down;
