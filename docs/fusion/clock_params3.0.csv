@@ -54,11 +54,11 @@ sec_tooth_height,	mm,		4 mm,		how tall are the teeth
 
 gear_distance,	  	mm,		60,
 center_to_pendulum,	mm,		100 mm,
-pendulum_length,	mm,		275 mm,		pivot to center of ball
+pendulum_length,	mm,		275 mm,		pivot to center of weight
 pendulum_min_travel,deg,	12 deg,		clock should barely run at this amount of movement
 pendulum_max_travel,deg,	24 deg,		working limit of arm and pawls
-face_inner_diam,	mm,		150 mm,
-face_outer_diam,	mm,		200 mm,
+face_inner_diam,	mm,		170 mm,
+face_outer_diam,	mm,		230 mm,
 
 center_to_top,		mm,		140 mm,
 center_to_bottom,	mm,		245 mm,
@@ -75,13 +75,13 @@ bridge_left,		mm,		69.8
 magnet_offset,		mm,		50 mm,		from center of ball to center of magnet
 sensor_face,		mm,		-88.25 mm, 	from origin to face of sensor circuit board
 
-,coil_length,		mm,		5 mm,	    windable length of coil
-,coil_id,			mm,		6 mm,		id must include hole
-,coil_hole,			mm,		3.2 mm,		hole for winding screw
 ,coil_od,			mm,		24 mm,	    19 mm should allow 500 turns 30ga == 19.6m == 6.6 ohms
-,coil_slop,			mm,		1 mm,		extra diameter for coil hole
+,coil_id,			mm,		6 mm,		id must include hole
 ,hall_high,			mm,		4.4,		in plastic
 ,hall_wide,			mm,		2.0,		in plastic
+,coil_hole,			mm,		3.2 mm,		hole for winding screw
+,coil_length,		mm,		5 mm,	    windable length of coil
+,coil_slop,			mm,		1 mm,		extra diameter for coil hole
 
 
 _____________WOOD______________,,0
@@ -179,12 +179,12 @@ bearing_394_laser,	mm,		8.9 mm,		UNTESTED - tight fit when laser cut
 bearing4114_thick,	mm,		4 mm
 bearing4114_laser,	mm,		11 mm,		UNTESTED - tight fit when laser cut
 
-,bearing 5x16x5 - my common 5mm bearing, they call this 625ZZ (two steel variant)
-,bearing5165_id,	mm,		5 mm,		accepts tube5, rod5, and M5 thr_rod5 loosely
-bearing5165_wash,	mm,		11.00 mm,	size of washer that will fit inside bearing AND THE RACE
-,bearing5165_od,	mm,		15.95 mm,	15.97 actual
-bearing5165_thick,	mm,		5 mm,
-bearing5165_laser,	mm,		16 mm,		UNTESTED - tight fit when laser cut
+,bearing 5x15x5 - my common 5mm bearing, they call this 625ZZ (two steel variant)
+,bearing5155_id,	mm,		5 mm,		accepts tube5, rod5, and M5 thr_rod5 loosely
+bearing5155_wash,	mm,		11.00 mm,	size of washer that will fit inside bearing AND THE RACE
+,bearing5155_od,	mm,		14.95 mm,	14.97 actual
+bearing5155_thick,	mm,		5 mm,
+bearing5155_laser,	mm,		15 mm,		UNTESTED - tight fit when laser cut
 
 ,bearing 6x13x5 - my smaller 6mm bearing, they call this 686ZZ (two steel variant)
 ,bearing6135_id,	mm,		6 mm,		accepts tube6, rod6, and tube59
@@ -327,11 +327,11 @@ seconds_hand,		mm,		minutes_hand - ply_thin - 2 mm
 ____________LENGTHS_____________,,0
 
 top_tube_start,		mm,		back_back + 2 * ply_medium
-top_tube_end,		mm,		-70
+top_tube_end,		mm,		-81.5
 top_tube_len,		mm,		top_tube_end - top_tube_start
 
 secs_tube_start,	mm,		main_back
-secs_tube_end,		mm,		seconds_hand - ply_thin - 1mm
+secs_tube_end,		mm,		seconds_hand - ply_thin - 2 mm
 secs_tube_len,		mm,		secs_tube_end - secs_tube_start
 
 mins_tube_start,	mm,		bridge_front
