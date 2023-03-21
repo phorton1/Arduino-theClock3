@@ -179,12 +179,12 @@ bearing_394_laser,	mm,		8.9 mm,		UNTESTED - tight fit when laser cut
 bearing4114_thick,	mm,		4 mm
 bearing4114_laser,	mm,		11 mm,		UNTESTED - tight fit when laser cut
 
-,bearing 5x15x5 - my common 5mm bearing, they call this 625ZZ (two steel variant)
-,bearing5155_id,	mm,		5 mm,		accepts tube5, rod5, and M5 thr_rod5 loosely
-bearing5155_wash,	mm,		11.00 mm,	size of washer that will fit inside bearing AND THE RACE
-,bearing5155_od,	mm,		14.95 mm,	14.97 actual
-bearing5155_thick,	mm,		5 mm,
-bearing5155_laser,	mm,		15 mm,		UNTESTED - tight fit when laser cut
+,bearing 5x16x5 - my common 5mm bearing, they call this 625ZZ (two steel variant)
+,bearing5165_id,	mm,		5 mm,		accepts tube5, rod5, and M5 thr_rod5 loosely
+bearing5165_wash,	mm,		11.00 mm,	size of washer that will fit inside bearing AND THE RACE
+,bearing5165_od,	mm,		15.95 mm,	15.97 actual
+bearing5165_thick,	mm,		5 mm,
+bearing5165_laser,	mm,		16 mm,		tight fit when laser cut
 
 ,bearing 6x13x5 - my smaller 6mm bearing, they call this 686ZZ (two steel variant)
 ,bearing6135_id,	mm,		6 mm,		accepts tube6, rod6, and tube59
