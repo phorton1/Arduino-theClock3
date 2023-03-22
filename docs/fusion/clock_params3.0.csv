@@ -167,9 +167,9 @@ _____________BEARINGS____________,,0
 ,my naming convention is INNER x OUTER x THICK
 
 ,bearing 3x9x4 - my common 3mm tiny bearing, they call this MR93ZZ or MR93 2Z (two steel variant)
-bearing_394_id,		mm,		3 mm,		accepts rod3, M3 screws
+bearing_394_id,	mm,			3 mm,		accepts rod3, M3 screws
+bearing_394_od,	mm,			9 mm,		8.9 actual
 ,bearing_394_wash,	mm,		7 mm,		size of washer that will fit inside bearing (BUT NOT THE RACE)
-bearing_394_od,		mm,		9 mm,		8.9 actual
 bearing_394_thick,	mm,		4 mm,
 bearing_394_laser,	mm,		8.9 mm,		UNTESTED - tight fit when laser cut
 
@@ -177,20 +177,20 @@ bearing_394_laser,	mm,		8.9 mm,		UNTESTED - tight fit when laser cut
 ,bearing4114_id,	mm,		4 mm
 ,bearing4114_od,	mm,		11 mm
 bearing4114_thick,	mm,		4 mm
-bearing4114_laser,	mm,		11 mm,		UNTESTED - tight fit when laser cut
+bearing4114_laser,	mm,		10.9 mm,		tight fit when laser cut
 
 ,bearing 5x16x5 - my common 5mm bearing, they call this 625ZZ (two steel variant)
 ,bearing5165_id,	mm,		5 mm,		accepts tube5, rod5, and M5 thr_rod5 loosely
-bearing5165_wash,	mm,		11.00 mm,	size of washer that will fit inside bearing AND THE RACE
 ,bearing5165_od,	mm,		15.95 mm,	15.97 actual
+bearing5165_wash,	mm,		11.00 mm,	size of washer that will fit inside bearing AND THE RACE
 bearing5165_thick,	mm,		5 mm,
 bearing5165_laser,	mm,		16 mm,		tight fit when laser cut
 
 ,bearing 6x13x5 - my smaller 6mm bearing, they call this 686ZZ (two steel variant)
 ,bearing6135_id,	mm,		6 mm,		accepts tube6, rod6, and tube59
 ,bearing6135_od,	mm,		13 mm,
-,bearing6135_thick,	mm,		5 mm,
 ,bearing6135_wash,	mm,		10 mm,		size of washer that will fit inside bearing (BUT NOT THE RACE)
+,bearing6135_thick,	mm,		5 mm,
 ,bearing6135_laser,	mm,		12.9 mm,		UNTESTED - tight fit when laser cut
 
 ,bearing 6x15x5 - my larger 6mm bearing, they call this 696ZZ (two steel variant)
@@ -210,7 +210,8 @@ bearing6155_laser,	mm,		15.0 mm,	increased from 14.9 in v1.1 - tight fit when la
 
 _____________SCREWS_AND_WASHERS___________,,0
 
-screw3_tight,		mm,		2.7 mm,		tight fit when laser cut
+screw3_tight_wood,	mm,		2.6 mm,		tight fit when laser cut
+screw3_tight_plastic,mm,	2.7 mm,		tight fit when laser cut
 screw3_loose,		mm,		3.0 mm,		loose fit when laser cut
 
 screw2_tight,		mm,		1.6 mm,
