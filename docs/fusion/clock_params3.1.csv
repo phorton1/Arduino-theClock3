@@ -1,0 +1,347 @@
+, -------------------------------------------------------
+, This is a comment line.  It starts with a comma
+, -------------------------------------------------------
+, becaue of the technique of creating spur gears, and then
+, copying their sketches, these parameters are not 'live' and
+, cannot be changed
+,
+,	min1a_teeth,		,		8,				8:1
+,	min1b_teeth,		,		64,
+,	min1_modulus,		,		1.6667,			2 * gear_distance / (min1a_teeth + min1b_teeth)
+,
+,	min2a_teeth,		,		8,				7.5:1
+,	min2b_teeth,		,		60,
+,	min2_modulus,		,		1.7647.			2 * gear_distance * (min2a_teeth + min2b_teeth)
+,
+,	hour1a_teeth,		,		10,				4:1
+,	hour1b_teeth,		,		40,
+,	hour1_modulus,		,		2.4,
+,
+,	hour2a_teeth,		,		12,				3:1
+,	hour2b_teeth,		,		36,
+,	hour2_modulus,		,		2.5,
+,
+, ALTERNATIVE (four minute gears to allow for setter)
+,
+,	min1a_teeth,		,		8,				5:1
+,	min1b_teeth,		,		40,
+,	min1_modulus,		,		2.5,
+,
+,	min2a_teeth,		,		10,				4:1
+,	min2b_teeth,		,		40,
+,	min2_modulus,		,		2.4,
+,
+,	min3a_teeth,		,		12,				3:1
+,	min3b_teeth,		,		36,
+,	min3_modulus,		,		2.5,
+,
+,	min3a_teeth,		,		24,				1:1
+,	min3b_teeth,		,		24,
+,	min3_modulus,		,		2.5,
+
+
+
+_____________DESIGN____________,,0
+
+, it is easier to make the pendulum swing faster than it is
+, to make it swing slower.  The ideal pendulum is 249mm in length,
+, but we make it larger (275) to allow for this fact, although
+, it should be adjustable to below the ideal length
+
+sec_wheel_deg,		deg,	6 deg,		degrees per second
+sec_wheel_radius,	mm,		50 mm,		to base of teeth
+sec_tooth_height,	mm,		4 mm,		how tall are the teeth
+
+gear_distance,	  	mm,		60,
+center_to_pendulum,	mm,		100 mm,
+pendulum_length,	mm,		275 mm,		pivot to center of weight
+pendulum_min_travel,deg,	12 deg,		clock should barely run at this amount of movement
+pendulum_max_travel,deg,	24 deg,		working limit of arm and pawls
+face_inner_diam,	mm,		170 mm,
+face_outer_diam,	mm,		230 mm,
+
+center_to_top,		mm,		140 mm,
+center_to_bottom,	mm,		245 mm,
+box_width,			mm,		200 mm,
+box_height,			mm,		40 mm
+
+frame_top,			mm,		center_to_top - 5
+house_top,			mm,		center_to_pendulum - 10
+house_bottom,		mm,		-134.8
+frame_left,			mm,		-(box_width/2) + 5
+
+magnet_offset,		mm,		50 mm,		from center of ball to center of magnet
+
+,coil_od,			mm,		24 mm,	    19 mm should allow 500 turns 30ga == 19.6m == 6.6 ohms
+,coil_id,			mm,		6 mm,		id must include hole
+,hall_high,			mm,		4.4,		in plastic
+,hall_wide,			mm,		2.0,		in plastic
+,coil_hole,			mm,		3.2 mm,		hole for winding screw
+,coil_length,		mm,		5 mm,	    windable length of coil
+,coil_slop,			mm,		1 mm,		extra diameter for coil hole
+
+
+_____________WOOD______________,,0
+
+ply_medium,			mm,		4.8 mm,
+ply_thin,			mm,		3.175 mm,
+ply_thick,			mm,		11.5 mm,
+
+_______RODS_AND_DOWLS__________,,0
+
+,rod25,				mm,		2.35 mm,	bundle of rods
+,rod25_tight,		mm,		2.2 mm,		laser cut - tight fit
+,rod25_loose,		mm,		2.4 mm,		laser cut - loose fit
+,rod3,				mm,		2.96 mm,	have 2 x 4in, 3in + 1 peg
+rod3_tight,			mm,		2.8 mm,		laser cut - tight fit
+rod3_loose,			mm,		3.0 mm,		laser cut - loose fit
+,rod5,				mm,		4.95 mm,	have 1 x 5in + 20 pegs
+,rod5_tight,		mm,		4.8 mm,		laser cut - tight fit
+,rod5_loose,		mm,		5.0 mm,		laser cut - loose fit
+,rod6,				mm,		5.95 mm,	have 3 x 4in
+,rod6_tight,		mm,		5.8 mm,		laser cut - tight fit
+,rod6_loose,		mm,		6.1 mm,		laser cut - loose fit
+
+thr_rod3_tight,		mm,		2.7 mm,		laser cut - tight fit
+thr_rod3_loose,		mm,		3.0 mm,		laser cut - loose fit
+,thr_rod5_tight,		mm,		4.6 mm,		tight fit when laser cut
+,thr_rod5_loose,		mm,		5.0 mm,		loose when laser cut
+
+,dowl11,			mm,		10.8,		teak dowl, general tight fit in laer cut
+
+,half_inch_dowl,		mm,		12.8
+
+_____________TUBES____________,,0
+
+, washers are a little tighter than bearings since they are typically thinner
+, tubes come in the stainless steel varieties 59, 66, and 77 and brass 4,5, and 6
+
+tube_thickness,		mm,		0.3 mm,
+
+,BRASS TUBES
+
+,tube4,				mm,		4.0 mm,		brass
+tube4_tight,		mm,		3.85 mm,	tight fit when laser cut
+tube4_wash,			mm,		4.1 mm,		washer when laser cut
+,tube4_bearing,		mm,		4.0 mm,		smooth bearing when laser cut
+
+,tube5,				mm,		5.0 mm,		brass - fits 5mm id bearings
+tube5_tight,		mm,		4.85 mm,	tight fit when laser cut
+tube5_wash,			mm,		5.1 mm,		washer when laser cut
+,tube5_bearing,		mm,		5.0 mm,		smooth bearing when laser cut
+
+,tube6,				mm,		6.0 mm,		brass - fits 6mm id bearings
+tube6_tight,		mm,		5.79 mm,	tight fit when laser cut
+tube6_wash,			mm,		6.0 mm,		washer when laser cut
+,tube6_bearing,		mm,		5.9 mm,		smooth bearing when laser cut
+
+,SS TUBES - old
+
+,tube59,			mm,		5.87 mm,	6mm - fits bearing_big and bearing_small, accepts thr_rod_5
+,tube59_tight,		mm,		5.7 mm,		tight fit when laser cut
+,tube59_wash,		mm,		6.0 mm,		washer when laser cut
+,tube59_bearing,	mm,		6.0 mm,		smooth bearing when laser cut
+
+,tube69,			mm,		6.82 mm,	7 mm
+,tube69_tight,		mm,		6.7 mm,		tight fit when laser cut
+,tube69_wash,		mm,		7.1 mm,		washer when laser cut
+,tube69_bearing,	mm,		7.1 mm,		smooth bearing when laser cut
+
+,tube77,			mm,		7.68 mm,	8 mm - fits 608 bearings
+,tube77_tight,		mm,		7.6 mm,		tight fit when laser cut
+,tube77_wash,		mm,		7.8 mm,		washer when laser cut
+,tube77_bearing,	mm,		8.0 mm,		smooth bearing when laser cut
+
+,SS_TUBES - new
+
+,ss_tube7_tight,		mm,		6.9,		untested
+,ss_tube7_bearing,	mm,		7.1,		untested
+
+
+_____________BEARINGS____________,,0
+
+
+,my naming convention is INNER x OUTER x THICK
+
+,bearing 3x9x4 - my common 3mm tiny bearing, they call this MR93ZZ or MR93 2Z (two steel variant)
+bearing_394_id,	mm,			3 mm,		accepts rod3, M3 screws
+bearing_394_od,	mm,			9 mm,		8.9 actual
+,bearing_394_wash,	mm,		7 mm,		size of washer that will fit inside bearing (BUT NOT THE RACE)
+bearing_394_thick,	mm,		4 mm,
+bearing_394_laser,	mm,		8.9 mm,		UNTESTED - tight fit when laser cut
+
+,bearing 4x11x4 - my common 4mm bearing
+,bearing4114_id,	mm,		4 mm
+,bearing4114_od,	mm,		11 mm
+bearing4114_thick,	mm,		4 mm
+bearing4114_laser,	mm,		10.9 mm,		tight fit when laser cut
+
+,bearing 5x16x5 - my common 5mm bearing, they call this 625ZZ (two steel variant)
+,bearing5165_id,	mm,		5 mm,		accepts tube5, rod5, and M5 thr_rod5 loosely
+,bearing5165_od,	mm,		15.95 mm,	15.97 actual
+bearing5165_wash,	mm,		11.00 mm,	size of washer that will fit inside bearing AND THE RACE
+bearing5165_thick,	mm,		5 mm,
+bearing5165_laser,	mm,		16 mm,		tight fit when laser cut
+
+,bearing 6x13x5 - my smaller 6mm bearing, they call this 686ZZ (two steel variant)
+,bearing6135_id,	mm,		6 mm,		accepts tube6, rod6, and tube59
+,bearing6135_od,	mm,		13 mm,
+,bearing6135_wash,	mm,		10 mm,		size of washer that will fit inside bearing (BUT NOT THE RACE)
+,bearing6135_thick,	mm,		5 mm,
+,bearing6135_laser,	mm,		12.9 mm,		UNTESTED - tight fit when laser cut
+
+,bearing 6x15x5 - my larger 6mm bearing, they call this 696ZZ (two steel variant)
+,bearing6155_id,	mm,		6 mm,		accepts tube6, rod6, and tube59
+,bearing6155_od,	mm,		15 mm,
+bearing6155_wash,	mm,		10 mm,		size of washer that will fit inside bearing AND THE RACE
+bearing6155_thick,	mm,		5 mm,
+bearing6155_laser,	mm,		15.0 mm,	increased from 14.9 in v1.1 - tight fit when laser cut
+
+,bearing8x22x8 - my common 8 mm bearing, they call this a 608, where i have the -2RS (two rubber seals) and -ZZ (two steel seals) variants
+,bearing8228_id,	mm,		8 mm,		accepts tube77, rod8, M8 bolts
+,bearing8228_od,	mm,		22 mm,		lasert cut tight
+,bearing8228_thick,	mm,		7 mm,
+,bearing8228_wash,	mm,		16,			size of washer that will fit inside bearing AND THE RACE
+,bearing8228_laser,	mm,		21.8 mm,	UNTESTED - tight fit when laser cut
+
+
+_____________SCREWS_AND_WASHERS___________,,0
+
+screw3_tight_wood,	mm,		2.6 mm,		tight fit when laser cut
+screw3_tight_plastic,mm,	2.7 mm,		tight fit when laser cut
+screw3_loose,		mm,		3.0 mm,		loose fit when laser cut
+
+screw2_tight,		mm,		1.6 mm,
+screw2_loose,		mm,		2.0 mm,
+
+,washer25_od,		mm,		4 mm
+,washer25_thick,	mm,		0.66 mm
+washer3_od,			mm,		6.8 mm
+washer3_thick,		mm,     0.5 mm
+washer4_od,			mm,		8 mm,
+washer4_thick,		mm,		0.75 mm
+washer5_od,			mm,		10 mm
+washer5_thick,		mm,		1 mm
+
+, hex nuts
+
+nut3_thick,			mm,		2.5 mm,		2.35 actual
+nut3_face_diam,		mm,		5.7 mm,		5.5 mm actual
+,nut3_clear_diam,	mm,		7 mm
+
+,nut4_thick,		mm,		3.2 mm,		3.11 actual
+,nut4_face_diam,	mm,		7 mm,		6.9 mm actual
+,nut4_clear_diam,	mm,		8 mm
+
+nut5_thick,			mm,		4 mm,		3.81 actual
+nut5_face_diam,		mm,		8 mm,		7.87 actual
+,nut5_clear_diam,	mm,		9 mm,
+
+,nut6_thick,		mm,		5 mm,		4.86 actual
+,nut6_face_diam,	mm,		10 mm,		9.85 actual
+,nut6_clear_diam,	mm,		11.5 mm,	unchecked
+
+,thrust_plate_thick,mm,		1.3 mm,		the bearing plate from 8mm thrust bearings
+,thrust_plate_od,	mm,		16 mm,
+,thrust_plate_id,	mm,		8.2 mm
+
+, square nuts
+
+nut3_square_edge,	mm,		5.5 mm
+nut3_square_thick,	mm,		2.4 mm
+
+
+____________PLANES____________,,0
+back_back,			mm,		0,
+back_front,			mm,		back_back - ply_medium
+
+mag_back_back,		mm,		back_front - ply_thin
+mag_back_front,		mm,		mag_back_back - ply_medium
+
+pendulum_back,		mm,		mag_back_front - ply_thin
+pendulum_front,		mm,		pendulum_back - ply_medium
+
+mag_front_back,		mm, 	pendulum_front - ply_thin
+mag_front_front,	mm,		mag_front_back - ply_medium
+
+
+main_back,			mm,		mag_front_front - ply_medium
+main_front,			mm,		main_back - ply_medium
+
+
+arm_back,			mm,		main_front - ply_medium - washer3_thick
+arm_front,			mm,		arm_back - ply_medium
+
+wheel_back,			mm,		arm_front - washer3_thick
+wheel_front,		mm,		wheel_back - ply_medium
+
+min1a_back,			mm,		wheel_front
+min1a_front,		mm,		min1a_back - 2 * ply_medium
+
+min1b_back,			mm,		min1a_back - ply_thin
+min1b_front,		mm,		min1b_back - ply_medium
+
+min2a_back, 		mm,		min1b_front
+min2a_front,		mm,		min2a_back - 2 * ply_medium
+
+min2b_back,			mm,		min2a_back - ply_thin
+min2b_front,		mm,		min2b_back - ply_medium
+
+hour1a_back,		mm,		min2b_front
+hour1a_front,		mm,		hour1a_back - 2 * ply_medium
+
+hour1b_back,		mm,		hour1a_back - ply_thin
+hour1b_front,		mm,		hour1b_back - ply_medium
+
+hour2a_back,		mm,		hour1b_front
+hour2a_front,		mm,		hour2a_back - 2 * ply_medium
+
+hour2b_back,		mm,		hour2a_back - ply_thin
+hour2b_front,		mm,		hour2b_back - ply_medium
+
+hour_spacer_back,	mm,		hour2b_front
+hour_spacer_front,	mm,		hour_spacer_back - ply_medium
+
+rider_back,			mm,		hour_spacer_front - ply_thin
+rider_front,		mm,		rider_back - ply_medium
+
+front_back,			mm,		rider_back + ply_medium
+front_front,		mm,		front_back - ply_medium
+
+face_front,			mm,		rider_front - ply_thin
+
+hours_hand,			mm,		rider_front - ply_medium - 0.5 mm
+minutes_hand,		mm,		hours_hand - ply_thin - 2 mm
+seconds_hand,		mm,		minutes_hand - ply_thin - 2 mm
+
+
+
+____________LENGTHS_____________,,0
+
+top_tube_start,		mm,		back_back + 2 * ply_medium
+top_tube_end,		mm,		-68.8
+top_tube_len,		mm,		top_tube_end - top_tube_start
+
+secs_tube_start,	mm,		main_back
+secs_tube_end,		mm,		seconds_hand - ply_thin - 2 mm
+secs_tube_len,		mm,		secs_tube_end - secs_tube_start
+
+mins_tube_start,	mm,		min1a_front - washer4_thick
+mins_tube_end,		mm,		minutes_hand - ply_thin - 1mm
+mins_tube_len,		mm,		mins_tube_end - mins_tube_start
+
+hours_tube_start,	mm,		hour1a_front - washer5_thick
+hours_tube_end,		mm,		hours_hand - ply_thin - 1mm
+hours_tube_len,		mm,		hours_tube_end - hours_tube_start
+
+thr_rod_start,		mm,		main_back
+thr_rod_end,		mm,		rider_front
+thr_rod_len,		mm,		thr_rod_end - thr_rod_start
+
+idler1_start,		mm,		main_front - 2 * washer3_thick - nut3_thick
+idler1_end,			mm,		min2a_front
+idler1_len,			mm,		idler1_end - idler1_start
+
+idler2_start,		mm,		hour1b_back + 1 mm
+idler2_end,			mm,		rider_back + washer3_thick
+idler2_len,			mm,		idler2_end - idler2_start
