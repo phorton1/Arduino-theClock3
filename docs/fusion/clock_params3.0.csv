@@ -69,11 +69,8 @@ frame_top,			mm,		center_to_top - 5
 house_top,			mm,		center_to_pendulum - 10
 house_bottom,		mm,		-134.8
 frame_left,			mm,		-(box_width/2) + 5
-bridge_top,			mm,		12.5
-bridge_left,		mm,		69.8
 
 magnet_offset,		mm,		50 mm,		from center of ball to center of magnet
-sensor_face,		mm,		-88.25 mm, 	from origin to face of sensor circuit board
 
 ,coil_od,			mm,		24 mm,	    19 mm should allow 500 turns 30ga == 19.6m == 6.6 ohms
 ,coil_id,			mm,		6 mm,		id must include hole
@@ -284,12 +281,7 @@ min1a_front,		mm,		min1a_back - 2 * ply_medium
 min1b_back,			mm,		min1a_back - ply_thin
 min1b_front,		mm,		min1b_back - ply_medium
 
-
-bridge_back,		mm,		min1a_back - ply_medium - 2 * ply_thin
-bridge_front,		mm,		bridge_back - ply_medium
-
-
-min2a_back, 		mm,		bridge_front - ply_medium
+min2a_back, 		mm,		min1b_front
 min2a_front,		mm,		min2a_back - 2 * ply_medium
 
 min2b_back,			mm,		min2a_back - ply_thin
@@ -310,12 +302,11 @@ hour2b_front,		mm,		hour2b_back - ply_medium
 hour_spacer_back,	mm,		hour2b_front
 hour_spacer_front,	mm,		hour_spacer_back - ply_medium
 
-
-front_back,			mm,		hour_spacer_front + ply_medium - ply_thin
-front_front,		mm,		front_back - ply_medium
-
-rider_back,			mm,		front_front
+rider_back,			mm,		hour_spacer_front - ply_thin
 rider_front,		mm,		rider_back - ply_medium
+
+front_back,			mm,		rider_back + ply_medium
+front_front,		mm,		front_back - ply_medium
 
 face_front,			mm,		rider_front - ply_thin
 
@@ -328,14 +319,14 @@ seconds_hand,		mm,		minutes_hand - ply_thin - 2 mm
 ____________LENGTHS_____________,,0
 
 top_tube_start,		mm,		back_back + 2 * ply_medium
-top_tube_end,		mm,		-81.5
+top_tube_end,		mm,		-68.8
 top_tube_len,		mm,		top_tube_end - top_tube_start
 
 secs_tube_start,	mm,		main_back
 secs_tube_end,		mm,		seconds_hand - ply_thin - 2 mm
 secs_tube_len,		mm,		secs_tube_end - secs_tube_start
 
-mins_tube_start,	mm,		bridge_front
+mins_tube_start,	mm,		min1a_front - washer4_thick
 mins_tube_end,		mm,		minutes_hand - ply_thin - 1mm
 mins_tube_len,		mm,		mins_tube_end - mins_tube_start
 
@@ -347,10 +338,10 @@ thr_rod_start,		mm,		main_back
 thr_rod_end,		mm,		rider_front
 thr_rod_len,		mm,		thr_rod_end - thr_rod_start
 
-idler1_start,		mm,		main_front - washer3_thick - 2 * nut3_thick
+idler1_start,		mm,		main_front - 2 * washer3_thick - nut3_thick
 idler1_end,			mm,		min2a_front
 idler1_len,			mm,		idler1_end - idler1_start
 
 idler2_start,		mm,		hour1b_back + 1 mm
-idler2_end,			mm,		rider_back + 2 * washer3_thick + 2 * nut3_thick
+idler2_end,			mm,		rider_back + washer3_thick
 idler2_len,			mm,		idler2_end - idler2_start

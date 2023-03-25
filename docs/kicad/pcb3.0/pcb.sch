@@ -79,8 +79,6 @@ F 3 "" H 7300 2150 50  0001 C CNN
 	1    7300 2150
 	-1   0    0    1   
 $EndComp
-Text GLabel 5200 5000 3    50   Input ~ 0
-LEDS
 Text GLabel 7200 2150 3    50   Input ~ 0
 LEDS
 $Comp
@@ -294,7 +292,7 @@ F 3 "" H 2800 4400 50  0001 C CNN
 $EndComp
 Text GLabel 3200 4400 2    50   Input ~ 0
 SW1
-Text GLabel 4800 5000 3    50   Input ~ 0
+Text GLabel 5100 5000 3    50   Input ~ 0
 SW1
 $Comp
 L power:GND #PWR03
@@ -380,7 +378,7 @@ F 3 "~" H 5050 1950 50  0001 C CNN
 	1    5050 1950
 	0    -1   -1   0   
 $EndComp
-Text GLabel 5100 5000 3    50   Input ~ 0
+Text GLabel 5200 5000 3    50   Input ~ 0
 SW2
 $Comp
 L Switch:SW_SPST SW2
@@ -557,10 +555,6 @@ F 3 "" H 3250 3450 50  0001 C CNN
 	1    3250 3450
 	-1   0    0    1   
 $EndComp
-Text GLabel 5900 5000 3    50   Input ~ 0
-SCL
-Text GLabel 5600 5000 3    50   Input ~ 0
-SDA
 Text GLabel 6700 2150 3    50   Input ~ 0
 SCK
 Text GLabel 6800 2450 3    50   Input ~ 0
@@ -617,4 +611,10 @@ Wire Wire Line
 	6000 3900 6000 4000
 Wire Wire Line
 	6300 3900 6300 3750
+Text GLabel 5600 5000 3    50   Input ~ 0
+SDA
+Text GLabel 5900 5000 3    50   Input ~ 0
+SCL
+Text GLabel 6000 5000 3    50   Input ~ 0
+LEDS
 $EndSCHEMATC
