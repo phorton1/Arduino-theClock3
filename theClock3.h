@@ -31,9 +31,15 @@
 
 // Leds and Buttons
 
-#define PIN_BUTTON1 15
-#define PIN_BUTTON2 16
-#define PIN_LEDS	17
+#if 1
+	#define PIN_BUTTON1 16	// RX2
+	#define PIN_BUTTON2 17	// TX2
+	#define PIN_LEDS	23	// overuse MOSI
+#else	// previous version (built obsolete board)
+	#define PIN_BUTTON1 15
+	#define PIN_BUTTON2 16	// RX2
+	#define PIN_LEDS	17	// TX2
+#endif
 
 #define PIXEL_MAIN		0
 
@@ -55,6 +61,13 @@
 #define MY_LED_ORANGE   0x402200
 #define MY_LED_REDMAG   0x400022
 #define MY_LED_BLUECYAN 0x002240
+
+
+//--------------------------------
+// from nptTime.cpp
+//--------------------------------
+
+extern uint32_t getNtpTime();
 
 
 //------------------------
@@ -162,3 +175,6 @@ private:
 
 
 extern theClock *the_clock;
+
+
+

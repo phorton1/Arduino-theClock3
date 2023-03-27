@@ -2,6 +2,9 @@
 #include "theClock3.h"
 #include <myIOTLog.h>
 #include <Adafruit_NeoPixel.h>
+#include <AS5600.h>
+#include <Wire.h>
+
 
 // USES A TASK FOR RUNNING THE CLOCK
 //
@@ -27,13 +30,18 @@
 // 4. Tune springs a bit
 // 5. With PID mode, fine adjust the springs and values
 
+//----------------------------
+// AS5600 Sensor
+//----------------------------
+
+AS5600 as5600;   //  use default Wire
+
 
 //----------------------------
 // hall sesnsor
 //----------------------------
 
 #define NUM_HALL_SAMPLES   5
-
 
 static int hall_circ_ptr = 0;
 static int hall_circ_buf[NUM_HALL_SAMPLES];
@@ -148,12 +156,30 @@ void theClock::setup()	// override
 	LOGU("theClock::setup() started");
 
 	pixels.clear();
+	for (int i=0; i<NUM_PIXELS; i++)
+	{
+		pixels.setPixelColor(0,MY_LED_CYAN);
+		pixels.show();
+		delay(500);
+	}
+	pixels.clear();
 	pixels.setPixelColor(0,MY_LED_RED);
 	pixels.show();
 	delay(500);
 
 	pinMode(PIN_BUTTON1,INPUT_PULLUP);
 	pinMode(PIN_BUTTON2,INPUT_PULLUP);
+
+	bool connected = false;
+	while (!connected)
+	{
+		as5600.begin();  //  set direction pin.
+		as5600.setDirection(AS5600_CLOCK_WISE);  // default, just be explicit.
+		connected = as5600.isConnected();
+		LOGD("AS5600 connected=%d",connected);
+		if (!connected)
+			delay(5000);
+	}
 
 	pinMode(PIN_HALL,INPUT);
 
@@ -260,120 +286,6 @@ void theClock::clearStats()
 		the_clock->setTime(ID_TIME_LAST_START,time(NULL));
 
 }
-
-
-
-// from chatGPT
-
-#include <WiFi.h>
-#include <WiFiUdp.h>
-
-static unsigned int localPort = 2390;      // local port to listen for UDP packets
-static const char* ntpServer = "pool.ntp.org";
-
-// modified, theirs was 3600,3600
-// so with DST turned on, this gave 7200.
-// NOTE that this IS NOT what is displayed in the log time,
-// because THAT goes through the time zone settings in myIOTHttp.cpp NTP code ...
-// AND I *think* that passing a GMT time to the web browser shows it in the machine's timezone,
-// AND NOTE that display of times with the command line is NOT working.
-
-
-static const long  gmtOffset_sec = 0;		// time(NULL) returns GMT?
-static const int   daylightOffset_sec = 0;		// was 3600;
-
-// my additions
-
-static const int NTP_PACKET_SIZE = 48;
-static byte packetBuffer[ NTP_PACKET_SIZE];
-
-static WiFiUDP  udp;
-IPAddress timeServer;
-static bool udp_started = 0;
-
-
-
-static void sendNTPpacket(IPAddress &address)
-	// send an NTP request to the time server at the given address
-{
-	// set all bytes in the buffer to 0
-	memset(packetBuffer, 0, NTP_PACKET_SIZE);
-	// Initialize values needed to form NTP request
-	// (see URL above for details on the packets)
-	packetBuffer[0] = 0b11100011;   // LI, Version, Mode
-	packetBuffer[1] = 0;     // Stratum, or type of clock
-	packetBuffer[2] = 6;     // Polling Interval
-	packetBuffer[3] = 0xEC;  // Peer Clock Precision
-	// 8 bytes of zero for Root Delay & Root Dispersion
-	packetBuffer[12]  = 49;
-	packetBuffer[13]  = 0x4E;
-	packetBuffer[14]  = 49;
-	packetBuffer[15]  = 52;
-
-	// all NTP fields have been given values, now
-	// you can send a packet requesting a timestamp:
-
-	udp.beginPacket(address, 123); //NTP requests are to port 123
-	udp.write(packetBuffer, NTP_PACKET_SIZE);
-	udp.endPacket();
-}
-
-
-
-time_t getNtpTime()
-{
-	if (WiFi.status() != WL_CONNECTED)
-		return 0;
-	if (udp_started == -1)
-		return 0;
-
-	if (!udp_started)
-	{
-		udp_started = -1;
-		LOGD("starting UDP");
-		WiFi.hostByName(ntpServer, timeServer);
-		LOGD("%s = %s",ntpServer,timeServer.toString().c_str());
-		if (!udp.begin(localPort))
-		{
-			LOGE("Could not start UDP on localPort(%d)",localPort);
-			return 0;
-		}
-		LOGD("UDP started on localPort(%d)",localPort);
-		udp_started = 1;
-	}
-
-	while (udp.parsePacket() > 0) ; // discard any previously received packets
-
-	LOGD("Transmit NTP Request");
-	sendNTPpacket(timeServer);
-
-	uint32_t beginWait = millis();
-	while (millis() - beginWait < 1500)
-	{
-		int size = udp.parsePacket();
-		if (size >= NTP_PACKET_SIZE)
-		{
-			LOGD("Receive NTP Response");
-			udp.read(packetBuffer, NTP_PACKET_SIZE);  // read packet into the buffer
-			unsigned long secsSince1900;
-
-			// convert four bytes starting at location 40 to a long integer
-			secsSince1900 =  (unsigned long)packetBuffer[40] << 24;
-			secsSince1900 |= (unsigned long)packetBuffer[41] << 16;
-			secsSince1900 |= (unsigned long)packetBuffer[42] << 8;
-			secsSince1900 |= (unsigned long)packetBuffer[43];
-			secsSince1900 -= 2208988800UL + gmtOffset_sec + daylightOffset_sec;
-
-			LOGD("secsSince1900=%d",secsSince1900);
-			return secsSince1900;
-
-		}
-	}
-
-	LOGE("No NTP Response :-(");
-	return 0; // return 0 if unable to get the time
-}
-
 
 
 
@@ -660,16 +572,67 @@ void theClock::run()
 // loop
 //===================================================================
 
+
+#define AS5600_SAMPLE_MILLIS   300
+#define AS5600_CIRC_BUF  	3
+
+static int as5600_circ_buf[AS5600_CIRC_BUF];
+static int as5600_circ_ptr = 0;
+static float as5600_zero;
+static float as5600_last_angle = 0;
+static uint32_t as5600_last_check = 0;
+
+
+
 // virtual
 void theClock::loop()	// override
 {
 	myIOTDevice::loop();
 
+	uint32_t now = millis();
+
+	//-----------------------------
+	// AS5600 test
+	//-----------------------------
+
+	if (now - as5600_last_check > AS5600_SAMPLE_MILLIS)
+	{
+		as5600_last_check = now;
+		int units = as5600.readAngle();
+
+		#if CIRC_BUF
+			as5600_circ_buf[as5600_circ_ptr++] = units;
+			if (as5600_circ_ptr >= AS5600_CIRC_BUF) as5600_circ_ptr = 0;
+			uint32_t total = 0;
+			for (int i=0; i<AS5600_CIRC_BUF; i++)
+				total += as5600_circ_buf[i];
+			total /= AS5600_CIRC_BUF;
+			units = total;
+		#endif
+
+		float angle = units;
+		angle = angle * (360.0 / 4096.0);
+
+		if (!as5600_zero)
+		{
+			as5600_zero = angle;
+			as5600_last_angle = 0;
+			LOGD("ZERO = %03f", as5600_zero);
+		}
+		angle -= as5600_zero;
+
+		if (as5600_last_angle != angle)
+		{
+			as5600_last_angle = angle;
+			LOGD("angle:%0.3f",angle);
+		}
+	}
+
 	//-----------------------------
 	// handle button
 	//-----------------------------
 
-	uint32_t now = millis();
+
 	if (now - button_chk > 33)	// 30 times per second
 	{
 		button_chk = now;
@@ -832,8 +795,8 @@ void theClock::loop()	// override
 	{
 		last_debug = now;
 
-		time_t sys_time = time(NULL);
-		time_t ntp_time = getNtpTime();
+		uint32_t sys_time = time(NULL);
+		uint32_t ntp_time = getNtpTime();
 		LOGD("---> sys_time=%d   ntp_time=%d",sys_time, ntp_time);
 	}
 
