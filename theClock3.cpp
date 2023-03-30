@@ -1,4 +1,3 @@
-
 #include "theClock3.h"
 #include <myIOTLog.h>
 #include <Adafruit_NeoPixel.h>
@@ -22,39 +21,70 @@
 // (see code below) and that seems to work.
 
 
-// TUNING STRATEGY
-//
-// 1. The hall threshold should be high enough so that we don't get false positions.
-// 2. With springs all the way out, using STATIC (PID off) mode, tune HIGH and LOW values for reliable motion.
-// 3. Adjust the weight to be close, but reliably longer than 1000ms
-// 4. Tune springs a bit
-// 5. With PID mode, fine adjust the springs and values
-
-//----------------------------
-// AS5600 Sensor
-//----------------------------
-
-AS5600 as5600;   //  use default Wire
-
-
 //----------------------------
 // hall sesnsor
 //----------------------------
 
-#define NUM_HALL_SAMPLES   5
-
-static int hall_circ_ptr = 0;
-static int hall_circ_buf[NUM_HALL_SAMPLES];
-static int hall_value;
-static int hall_zero = 1795;
-
+#if WITH_HALL
+	#define HALL_CIRC_BUF   5
+	static int hall_circ_ptr = 0;
+	static int hall_circ_buf[HALL_CIRC_BUF];
+	static int hall_side;
+#endif
 
 //----------------------------
-// motors
+// AS5600 Sensor
+//----------------------------
+// With the AS5600, the return values are 0..4095 where 4096 is 360 degrees (i.e. 0).
+// so each bit is 0.087890625 degrees.  For direction determination, we require a
+// threshold change > AS4500_THRESHOLD.
+
+#define AS4500_THRESHOLD    4
+
+static int as5600_cur = 0;			// bits, not degrees
+static int as5600_side = 0;			// trying zero crossing
+static int as5600_direction = 0;	// on detection of THRESHOLD AS4500_THRESHOLD
+
+static int as5600_min = 0;			// min and max are assigned on direction changes
+static int as5600_max = 0;
+static int as5600_temp_min = 10240;	// and the temps are reset to zero for next go round
+static int as5600_temp_max = -10240;
+
+// angles are calculated for convenience
+
+static float as5600_cur_angle = 0;
+static float as5600_min_angle = 0;
+static float as5600_max_angle = 0;
+
+AS5600 as5600;   //  uses default Wire
+
+
+static float angle(int units)
+{
+	float retval = units * 3600;
+	retval /= 4096;
+	return floor(retval + 0.5) / 10;
+}
+
+//----------------------------
+// motor
 //----------------------------
 
 #define PWM_FREQUENCY	5000
 #define PWM_RESOLUTION	8
+
+int motor_state = 0;
+
+void motor(int state, int power)
+	// note output to channel B for backward compatibility with V1 circuit board
+{
+	motor_state = state;
+	int use_power = state ? power : 0;
+	ledcWrite(0, use_power);
+	digitalWrite(PIN_IN1,state == 1  ? 1 : 0);
+	digitalWrite(PIN_IN2,state == -1 ? 1 : 0);
+	// LOGD("motor(%d,%d)",state,power);
+}
 
 
 //----------------------------
@@ -90,9 +120,10 @@ static uint32_t last_change = 0;
 // PID
 
 
-static int32_t total_error = 0;
-static uint32_t prev_p = 0;
+static float total_error = 0;
 static int pid_power = 0;
+static float prev_p = 0;
+
 
 // Statistics
 
@@ -128,27 +159,6 @@ static uint32_t button_chk = 0;
 static uint32_t button_down = 0;
 
 
-#if 0
-	void one_time_calibrate_hall()
-	{
-		// assuming pendulum is hanging down
-		// set zero for sensors 0 and 1
-
-		Serial.println("calibrating hall pin - move pendulum to one side and press any key");
-		while (!Serial.available()) { delay(5); }
-		int c = Serial.read();
-
-		delay(100);
-		hall_zero = analogRead(PIN_HALL);
-		delay(500);
-
-		Serial.print("hall_calibration complete ");
-		Serial.println(hall_zero);
-	}
-#endif
-
-
-
 
 // virtual
 void theClock::setup()	// override
@@ -156,32 +166,22 @@ void theClock::setup()	// override
 	LOGU("theClock::setup() started");
 
 	pixels.clear();
-	for (int i=0; i<NUM_PIXELS; i++)
+	for (int i=NUM_PIXELS-1; i>=0; i--)
 	{
-		pixels.setPixelColor(0,MY_LED_CYAN);
+		pixels.setPixelColor(i,MY_LED_CYAN);
 		pixels.show();
 		delay(500);
 	}
 	pixels.clear();
-	pixels.setPixelColor(0,MY_LED_RED);
 	pixels.show();
 	delay(500);
 
+	#if WITH_HALL
+		pinMode(PIN_HALL,INPUT);
+	#endif
+
 	pinMode(PIN_BUTTON1,INPUT_PULLUP);
 	pinMode(PIN_BUTTON2,INPUT_PULLUP);
-
-	bool connected = false;
-	while (!connected)
-	{
-		as5600.begin();  //  set direction pin.
-		as5600.setDirection(AS5600_CLOCK_WISE);  // default, just be explicit.
-		connected = as5600.isConnected();
-		LOGD("AS5600 connected=%d",connected);
-		if (!connected)
-			delay(5000);
-	}
-
-	pinMode(PIN_HALL,INPUT);
 
 	ledcSetup(0, PWM_FREQUENCY, PWM_RESOLUTION);
 	ledcAttachPin(PIN_EN, 0);
@@ -191,14 +191,55 @@ void theClock::setup()	// override
 	digitalWrite(PIN_IN1,0);
 	digitalWrite(PIN_IN2,0);
 
-	// one_time_calibrate_hall();
+	// call myIOTDevice::setup()
 
-	pixels.setPixelColor(0,MY_LED_BLUE);
+	pixels.setPixelColor(PIXEL_MAIN,MY_LED_BLUE);
 	pixels.show();
 	myIOTDevice::setup();
-
-	pixels.setPixelColor(0,MY_LED_GREEN);
+	pixels.setPixelColor(PIXEL_MAIN,MY_LED_CYAN);
 	pixels.show();
+	delay(500);
+
+	//--------------------------------------------------
+	// INIT THE AS5600 and set zero angle if not yet set
+	//--------------------------------------------------
+
+	bool connected = false;
+	while (!connected)
+	{
+		as5600.begin();  //  set direction pin.
+		as5600.setDirection(AS5600_CLOCK_WISE);  // default, just be explicit.
+		connected = as5600.isConnected();
+		if (!connected)
+		{
+			LOGE("Could not connect to AS5600");
+			for (int i=0; i<11; i++)
+			{
+				pixels.setPixelColor(PIXEL_MAIN,i&1?MY_LED_RED:MY_LED_BLACK);
+				pixels.show();
+				delay(300);
+			}
+		}
+	}
+	LOGD("AS5600 connected=%d",connected);
+
+	// can't use values until after myIOTDevice::setup() has been called
+	// May need to clear values from NVS (Preferences) if types change!
+	// with call to clearValueById(ID_ZERO_ANGLE);
+	// clearValueById(ID_ZERO_ANGLE);
+	// clearValueById(ID_ZERO_ANGLE_F);
+	// setInt(ID_ZERO_ANGLE,0);
+
+	if (_zero_angle == 0)
+		setZeroAngle();
+
+	//------------------------------------------------
+	// Start the clock task and away we go ...
+	//------------------------------------------------
+
+	pixels.setPixelColor(PIXEL_MAIN,MY_LED_GREEN);
+	pixels.show();
+	delay(500);
 
 	LOGI("starting clockTask");
 	xTaskCreatePinnedToCore(clockTask,
@@ -215,22 +256,11 @@ void theClock::setup()	// override
 		flash_fxn = FUNCTION_STOPPED;
 
 	LOGU("theClock::setup() finished");
-	pixels.setPixelColor(0,MY_LED_BLACK);
+	pixels.clear();
 	pixels.show();
 
 }	// theClock::setup()
 
-
-
-void motor(int state, int power)
-	// note output to channel B for backward compatibility with V1 circuit board
-{
-	int use_power = state ? power : 0;
-	ledcWrite(0, use_power);
-	digitalWrite(PIN_IN1,state == 1  ? 1 : 0);
-	digitalWrite(PIN_IN2,state == -1 ? 1 : 0);
-	// LOGD("motor(%d,%d)",state,power);
-}
 
 
 void init()
@@ -245,8 +275,22 @@ void init()
 	total_error = 0;
 	prev_p = 0;
 
-	hall_circ_ptr = 0;
-	memset(hall_circ_buf,0,NUM_HALL_SAMPLES*sizeof(int));
+	#if WITH_HALL
+		hall_circ_ptr = 0;
+		memset(hall_circ_buf,0,HALL_CIRC_BUF*sizeof(int));
+		hall_side = 0;
+	#endif
+
+	as5600_cur = 0;
+	as5600_side = 0;
+	as5600_direction = 0;
+	as5600_min = 0;
+	as5600_max = 0;
+	as5600_temp_min = 10240;
+	as5600_temp_max = -10240;
+	as5600_cur_angle = 0;
+	as5600_min_angle = 0;
+	as5600_max_angle = 0;
 
 	num_beats = 0;
 	num_restarts = 0;
@@ -340,40 +384,290 @@ void theClock::onPIDModeChanged(const myIOTValue *desc, bool val)
 }
 
 
+void theClock::onPlotValuesChanged(const myIOTValue *desc, uint32_t val)
+{
+	// LOGU("onPlotValuesChanged(%d)",val);
+	if (val == 1)
+	{
+		#if WITH_HALL
+			Serial.print("hall,hall_side,");
+		#endif
+		Serial.print("as5600,side,angle,min,max,");
+		Serial.println("millis,err,motor");
+	}
+}
+
+
+void theClock::setZeroAngle()
+{
+	LOGU("Setting AS5600 zero angle ...");
+	int zero = as5600.readAngle();
+	float zero_f =  angle(zero);
+	LOGU("AS5600 zero angle = %d, %03f", zero,zero_f);
+	the_clock->setInt(ID_ZERO_ANGLE,zero);
+	the_clock->setFloat(ID_ZERO_ANGLE_F,zero_f);
+}
+
+
+#if WITH_HALL
+	void theClock::calibrateHall()
+	{
+		LOGU("Calibrating Hall Sensor - YOU MUST HAVE ALREADY MOVED THE PENDULUM AWAY FROM ZERO!!!");
+		delay(100);
+		int	zero = analogRead(PIN_HALL);
+		delay(500);
+		the_clock->setInt(ID_HALL_ZERO,zero);
+		LOGU("Hall Calibration Complete value=%d",zero);
+	}
+#endif
+
+
+void theClock::onTestMotor(const myIOTValue *desc, int val)
+{
+	LOGU("onTestMotor %d",val);
+	motor(val,_power_low);
+}
+
+
+
+
 //===================================================================
 // run()
 //===================================================================
+// The only values we really use are the hall zero crossings and the
+// extremes of the AS5600 angle sensor.  However we use the AS5600
+// 'direction' change to determine when to set the min and max, so
+// as5600_direction is a necessary static variable.
+
 
 void theClock::run()
+	// This is called every 3 ms ...
+	// The basic sensor code can run in about 1ms
 {
+	uint32_t now = millis();
+
+	static uint32_t cur_millis = 0;
+	static uint32_t last_millis = 0;
+	static uint32_t cur_cycle = 0;
+	static uint32_t last_cycle = 0;
+
+	static bool push_motor = 0;
+	static uint32_t motor_start = 0;
+	static uint32_t motor_dur = 0;
+
 	//-------------------------------------------------
-	// HALLS
+	// unused HALL SENSOR
 	//-------------------------------------------------
 	// read hall sensor through circular buffer
-	// Seems to work better if we throw the first sample out
+	// WHEN MOTOR IS NOT RUNNING!
 
-	int value = 0;
-	hall_circ_buf[hall_circ_ptr++] = analogRead(PIN_HALL) - hall_zero;
-	if (hall_circ_ptr >= NUM_HALL_SAMPLES)
-		hall_circ_ptr = 0;
-	for (int i=1; i<NUM_HALL_SAMPLES-1; i++)
-		value += hall_circ_buf[i];
-	value = value / (NUM_HALL_SAMPLES-1);
-	hall_value = value;
+	#if WITH_HALL
+		static int hall_value = 0;
+		if (!motor_start)
+		{
+			hall_circ_buf[hall_circ_ptr++] = analogRead(PIN_HALL) - _hall_zero;
+			if (hall_circ_ptr >= HALL_CIRC_BUF)
+				hall_circ_ptr = 0;
+			for (int i=0; i<HALL_CIRC_BUF-1; i++)
+				hall_value += hall_circ_buf[i];
+			hall_value = hall_value / HALL_CIRC_BUF;
+
+			int side = hall_side;
+			if (hall_value < -_hall_thresh)
+				side = -1;
+			else if (hall_value > _hall_thresh)
+				side = 1;
+
+			if (hall_side != side)		// ZERO CROSSING
+			{
+				hall_side = side;
+			}
+		}
+	#endif	// WITH_HALL
 
 
 	//-------------------------------------------------
-	// POSITION
+	// AS5600
 	//-------------------------------------------------
-	// Determine position  -1 or 1
-	// Will read angular sensor here
-	// For now ignoring complete change to algorithm
+	// Read, but don't necessariy use the as5600 angle
 
-	if (hall_value < -_hall_thresh)
-		position = -1;
-	else if (hall_value > _hall_thresh)
-		position = 1;
+	int cur = as5600.readAngle() - _zero_angle;
+	as5600_cur_angle = angle(cur);
 
+	// min and max are intrinsicly debounced
+	// set temp min and max per cycle
+
+	if (cur < as5600_temp_min)
+		as5600_temp_min = cur;
+	if (cur > as5600_temp_max)
+		as5600_temp_max = cur;
+
+	// detect direction change or zero crossing
+	// only if the posiion has changed significantly
+
+	int dif = cur - as5600_cur;
+	if (abs(dif) > AS4500_THRESHOLD)
+	{
+		as5600_cur = cur;
+
+		// detect zero crossing
+
+		if ((cur < 0 && as5600_side >= 0) ||
+			(cur > 0 && as5600_side <= 0))
+		{
+			as5600_side = cur < 0 ? -1 : 1;
+
+			// get half and full cycle times
+
+			cur_millis = now - last_millis;
+			last_millis = now;
+			if (as5600_side > 0)
+			{
+				cur_cycle = now - last_cycle;
+				last_cycle = now;
+
+			}
+
+			// defer a push if clock started
+
+			if (clock_started)
+				push_motor = true;
+		}
+
+		// detect direction change
+		// if direction changed, assign min or max and clear temp variable
+
+		int dir = as5600_direction;
+		if (dif < 0)
+			dir = -1;
+		else if (dif > 0)
+			dir = 1;
+		if (as5600_direction != dir)
+		{
+			if (dir > 0)
+			{
+				as5600_min = as5600_temp_min;
+				as5600_temp_min = 10240;
+				as5600_min_angle = angle(as5600_min);
+			}
+			else
+			{
+				as5600_max = as5600_temp_max;
+				as5600_temp_max = -10240;
+				as5600_max_angle = angle(as5600_max);
+			}
+			as5600_direction = dir;
+		}
+	}
+
+	// MOTOR
+
+	if (push_motor && abs(as5600_cur_angle) > _dead_zone)
+	{
+		push_motor = false;
+
+		int use_power = _power_low;
+
+		if (_pid_mode)
+		{
+			float angle = (abs(as5600_min_angle) + abs(as5600_max_angle) ) / 2;
+			float this_p = _target_angle - angle;
+			total_error += this_p;
+			float this_i = total_error;
+			float this_d = prev_p - this_p;;
+			prev_p = this_p;
+
+			this_p = this_p / 100;
+			this_i = this_i / 100;
+			this_d = this_d / 100;
+
+			int old_power = pid_power;
+			float factor = 1 + (_pid_P * this_p) + (_pid_I * this_i) + (_pid_D * this_d);
+			float new_power = pid_power * factor;
+			if (new_power > _power_max) new_power = _power_max;
+			if (new_power  < _power_low) new_power = _power_low;
+			pid_power = new_power;
+
+			if (pid_power < min_power_used)
+				min_power_used = pid_power;
+			if (pid_power > max_power_used)
+				max_power_used = pid_power;
+
+			motor_dur = _dur_right;
+			use_power = pid_power;
+
+			if (!_plot_values)
+				LOGD("PUSH(%-2d) %-4d %3.3f/%3.3f angle=%3.3f  target=%3.3f  p=%3.3f i=%3.3f d=%3.3f  total=%3.3f     power=%d",
+					 as5600_direction,
+					 cur_cycle,
+					 as5600_min_angle,
+					 as5600_max_angle,
+					 angle,
+					 _target_angle,
+					 this_p,
+					 this_i,
+					 this_d,
+					 total_error,
+					 pid_power);
+		}
+
+		motor_start = now;
+		motor_dur = as5600_direction > 0 ? _dur_right : _dur_left;
+		motor(-1,use_power);
+	}
+
+
+	if (motor_start && now - motor_start > motor_dur)
+	{
+		motor_start = 0;
+		motor_dur = 0;
+		motor(0,0);
+	}
+
+
+	// debugging
+
+	if (_plot_values == 1)
+	{
+		float use_angle = as5600_cur_angle * 50;		// 20 degrees == 1000 in output
+		float use_min = as5600_min_angle * 50;
+		float use_max = as5600_max_angle * 50;
+
+		int ang = use_angle;
+		int min = use_min;
+		int max = use_max;
+
+		#if WITH_HALL
+			Serial.print(hall_value);
+			Serial.print(",");
+			Serial.print(hall_side * 100);
+			Serial.print(",");
+		#endif
+
+		Serial.print(as5600_direction * 200);
+		Serial.print(",");
+		Serial.print(as5600_side * 250);
+		Serial.print(",");
+		Serial.print(ang);
+		Serial.print(",");
+		Serial.print(min);
+		Serial.print(",");
+		Serial.print(max);
+		Serial.print(",");
+		Serial.print(cur_millis);
+		Serial.print(",");
+
+		int err = cur_cycle;
+		err -= 1000;
+		Serial.print(err * 40);
+		Serial.print(",");
+
+		Serial.print(motor_state * 400);
+		Serial.println(",1000,-1000");
+	}
+
+
+#if 0
 
 	//----------------------------------------------------------
 	// CYCLE
@@ -564,6 +858,8 @@ void theClock::run()
 		Serial.println(position * 200);
 	}
 
+#endif	// 0
+
 }	// theClock::run()
 
 
@@ -573,15 +869,6 @@ void theClock::run()
 //===================================================================
 
 
-#define AS5600_SAMPLE_MILLIS   300
-#define AS5600_CIRC_BUF  	3
-
-static int as5600_circ_buf[AS5600_CIRC_BUF];
-static int as5600_circ_ptr = 0;
-static float as5600_zero;
-static float as5600_last_angle = 0;
-static uint32_t as5600_last_check = 0;
-
 
 
 // virtual
@@ -589,50 +876,13 @@ void theClock::loop()	// override
 {
 	myIOTDevice::loop();
 
-	uint32_t now = millis();
-
-	//-----------------------------
-	// AS5600 test
-	//-----------------------------
-
-	if (now - as5600_last_check > AS5600_SAMPLE_MILLIS)
-	{
-		as5600_last_check = now;
-		int units = as5600.readAngle();
-
-		#if CIRC_BUF
-			as5600_circ_buf[as5600_circ_ptr++] = units;
-			if (as5600_circ_ptr >= AS5600_CIRC_BUF) as5600_circ_ptr = 0;
-			uint32_t total = 0;
-			for (int i=0; i<AS5600_CIRC_BUF; i++)
-				total += as5600_circ_buf[i];
-			total /= AS5600_CIRC_BUF;
-			units = total;
-		#endif
-
-		float angle = units;
-		angle = angle * (360.0 / 4096.0);
-
-		if (!as5600_zero)
-		{
-			as5600_zero = angle;
-			as5600_last_angle = 0;
-			LOGD("ZERO = %03f", as5600_zero);
-		}
-		angle -= as5600_zero;
-
-		if (as5600_last_angle != angle)
-		{
-			as5600_last_angle = angle;
-			LOGD("angle:%0.3f",angle);
-		}
-	}
+#if 0
 
 	//-----------------------------
 	// handle button
 	//-----------------------------
 
-
+	uint32_t now = millis();
 	if (now - button_chk > 33)	// 30 times per second
 	{
 		button_chk = now;
@@ -800,6 +1050,7 @@ void theClock::loop()	// override
 		LOGD("---> sys_time=%d   ntp_time=%d",sys_time, ntp_time);
 	}
 
+#endif	// 0
 
 }	// theClock::loop()
 
@@ -829,7 +1080,12 @@ void theClock::clockTask(void *param)
         vTaskDelay(0);		// 10 / portTICK_PERIOD_MS);
 		uint32_t now = millis();
 		static uint32_t last_sense = 0;
-		if (now - last_sense > 2)		// why every 3 ms?  dunno.  it works for now
+
+		// we have to allow time for other tasks to run
+		// so we limit thi to 333 times a second, even though
+		// the basic sensor reads only take about 1ms
+
+		if (now - last_sense > 2)		// 3 ms works
 		{
 			last_sense = now;
 			the_clock->run();

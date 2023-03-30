@@ -3,6 +3,9 @@
 #include <Arduino.h>
 #include <myIOTDevice.h>
 
+#define WITH_HALL    0
+
+
 //---------------------------------
 // pin assignments
 //---------------------------------
@@ -13,18 +16,20 @@
 #define PIN_IN2		25
 #define PIN_EN		26
 
-// Hall Sensor
+// Hall Sensor (no longer used)
 
-#define PIN_HALL	35
+#if WITH_HALL
+	#define PIN_HALL	35
+#endif
 
-// Rotary Sensor(s) use Wire Defaults
+
+// Rotary Sensor(s) uses Wire Defaults
 //
 // #define PIN_SDA	21
 // #define PIN_SCL	22
-//
-// SPI bus (MOSI,MISO,SCLK) is still available
 
-// Optical Mouse Sensor
+
+// Optical Mouse Sensor (unused at this time)
 
 #define PIN_SCK		32
 #define PIN_SDIO	33
@@ -41,9 +46,9 @@
 	#define PIN_LEDS	17	// TX2
 #endif
 
-#define PIXEL_MAIN		0
+#define PIXEL_MAIN		4
 
-#define NUM_PIXELS		4
+#define NUM_PIXELS		5
 
 
 //----------------------------------
@@ -78,7 +83,17 @@ extern uint32_t getNtpTime();
 #define ID_PID_MODE			"PID_MODE"
 #define ID_PLOT_VALUES		"PLOT_VALUES"
 
-#define ID_HALL_THRESH		"HALL_THRESH"
+#define ID_SET_ZERO_ANGLE	"SET_ZERO_ANGLE"
+#define ID_ZERO_ANGLE		"ZERO_ANGLE"
+#define ID_ZERO_ANGLE_F		"ZERO_ANGLE_F"
+#define ID_DEAD_ZONE		"DEAD_ZONE"
+#define ID_TARGET_ANGLE		"TARGET_ANGLE"
+
+#if WITH_HALL
+	#define ID_CALIBRATE_HALL	"CALIBRATE_HALL"
+	#define ID_HALL_ZERO		"HALL_ZERO"
+	#define ID_HALL_THRESH		"HALL_THRESH"
+#endif
 
 #define ID_POWER_LOW      	"POWER_LOW"
 #define ID_POWER_HIGH      	"POWER_HIGH"
@@ -109,6 +124,10 @@ extern uint32_t getNtpTime();
 #define ID_MIN_POWER_USED	"MIN_POWER_USED"
 #define ID_MAX_POWER_USED	"MAX_POWER_USED"
 
+#define ID_TEST_MOTOR		"MOTOR"
+	// A CONFIGURATION COMMAND TO TEST THE MOTOR
+	// value is only kept in memory and used once
+	// Will call motor(direction,POWER_LOW) directly!!
 #define ID_STAT_INTERVAL	"STAT_INTERVAL"
 
 
@@ -131,7 +150,17 @@ private:
 	static bool _pid_mode;
 	static uint32_t _plot_values;
 
+	static int _zero_angle;			// actual used value is in as5600 units
+	static float _zero_angle_f;		// displayed value is a float
+	static float _dead_zone;		// degrees dead for pushing about zero
+	static float _target_angle;		// target angle for testing (if not zero)
+
+#if WITH_HALL
+	static int _hall_zero;
 	static int _hall_thresh;
+#endif
+
+	static int _test_motor;		// memory only, only happens onChange
 
 	static int _power_low;		// STATIC: power when sensor reached; PID: mininum power
 	static int _power_high;		// STATIC: power when sensor not reached;  PID: starting power
@@ -162,19 +191,28 @@ private:
 
 	static uint32_t _stat_interval;
 
+	// methods
+
+	static void run();
+	static void clockTask(void *param);
+
 	static void startClock();
 	static void stopClock();
 	static void clearStats();
 
     static void onClockRunningChanged(const myIOTValue *desc, bool val);
     static void onPIDModeChanged(const myIOTValue *desc, bool val);
+	static void onPlotValuesChanged(const myIOTValue *desc, uint32_t val);
 
-	static void run();
-	static void clockTask(void *param);
-};
+	static void setZeroAngle();
+	#if WITH_HALL
+		static void calibrateHall();
+	#endif
+
+	static void onTestMotor(const myIOTValue *desc, int val);
+
+
+};	// class theClock
 
 
 extern theClock *the_clock;
-
-
-
