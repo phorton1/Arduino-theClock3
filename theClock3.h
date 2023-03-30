@@ -3,25 +3,14 @@
 #include <Arduino.h>
 #include <myIOTDevice.h>
 
-#define WITH_HALL    0
-
-
 //---------------------------------
 // pin assignments
 //---------------------------------
 // L293D motor driver
 
-
 #define PIN_IN1		27
 #define PIN_IN2		25
 #define PIN_EN		26
-
-// Hall Sensor (no longer used)
-
-#if WITH_HALL
-	#define PIN_HALL	35
-#endif
-
 
 // Rotary Sensor(s) uses Wire Defaults
 //
@@ -40,14 +29,15 @@
 	#define PIN_BUTTON1 16	// RX2
 	#define PIN_BUTTON2 17	// TX2
 	#define PIN_LEDS	23	// overuse MOSI
-#else	// previous version (built obsolete board)
+#else	// reminder of previous built unused pcb
 	#define PIN_BUTTON1 15
 	#define PIN_BUTTON2 16	// RX2
 	#define PIN_LEDS	17	// TX2
 #endif
 
-#define PIXEL_MAIN		4
+// Pixels
 
+#define PIXEL_MAIN		4
 #define NUM_PIXELS		5
 
 
@@ -89,15 +79,10 @@ extern uint32_t getNtpTime();
 #define ID_DEAD_ZONE		"DEAD_ZONE"
 #define ID_TARGET_ANGLE		"TARGET_ANGLE"
 
-#if WITH_HALL
-	#define ID_CALIBRATE_HALL	"CALIBRATE_HALL"
-	#define ID_HALL_ZERO		"HALL_ZERO"
-	#define ID_HALL_THRESH		"HALL_THRESH"
-#endif
-
 #define ID_POWER_LOW      	"POWER_LOW"
 #define ID_POWER_HIGH      	"POWER_HIGH"
 #define ID_POWER_MAX      	"POWER_MAX"
+#define ID_POWER_PULL      	"POWER_PULL"
 #define ID_POWER_START      "POWER_START"
 
 #define ID_DUR_LEFT      	"DUR_LEFT"
@@ -111,25 +96,29 @@ extern uint32_t getNtpTime();
 #define ID_CLEAR_STATS		"CLEAR_STATS"
 
 #define ID_CUR_TIME			"CUR_TIME"
-#define ID_TIME_LAST_START  "LAST_START"
-#define ID_STAT_RUNTIME		"TIME_RUNNING"
-#define ID_STAT_BEATS		"BEATS"
-#define ID_STAT_RESTARTS	"RESTARTS"
-#define ID_STAT_STALLS_L	"STALLS_LEFT"
-#define ID_STAT_STALLS_R	"STALLS_RIGHT"
-#define ID_STAT_ERROR_L		"ERROR_LOW"
-#define ID_STAT_ERROR_H		"ERROR_HIGH"
-#define ID_STAT_DUR_L		"DUR_LOW"
-#define ID_STAT_DUR_H		"DUR_HIGH"
-#define ID_MIN_POWER_USED	"MIN_POWER_USED"
-#define ID_MAX_POWER_USED	"MAX_POWER_USED"
+#define ID_TIME_START       "TIME_START"
+#define ID_TIME_RUNNING		"TIME_RUNNING"
+#define ID_STAT_BEATS       "STAT_BEATS"
+#define ID_STAT_NUM_PUSH    "STAT_NUM_PUSH"
+#define ID_STAT_NUM_PULL    "STAT_NUM_PULL"
+#define ID_STAT_PULL_RATIO  "STAT_PULL_RATIO"
+#define ID_STAT_MIN_POWER   "STAT_MIN_POWER"
+#define ID_STAT_MAX_POWER   "STAT_MAX_POWER"
+#define ID_STAT_MIN_LEFT    "STAT_MIN_LEFT"
+#define ID_STAT_MAX_LEFT    "STAT_MAX_LEFT"
+#define ID_STAT_MIN_RIGHT   "STAT_MIN_RIGHT"
+#define ID_STAT_MAX_RIGHT   "STAT_MAX_RIGHT"
+#define ID_STAT_MIN_CYCLE   "STAT_MIN_CYCLE"
+#define ID_STAT_MAX_CYCLE   "STAT_MAX_CYCLE"
+#define ID_STAT_MIN_ERROR   "STAT_MIN_ERROR"
+#define ID_STAT_MAX_ERROR   "STAT_MAX_ERROR"
+
+#define ID_STAT_INTERVAL	"STAT_INTERVAL"
 
 #define ID_TEST_MOTOR		"MOTOR"
 	// A CONFIGURATION COMMAND TO TEST THE MOTOR
 	// value is only kept in memory and used once
 	// Will call motor(direction,POWER_LOW) directly!!
-#define ID_STAT_INTERVAL	"STAT_INTERVAL"
-
 
 
 class theClock : public myIOTDevice
@@ -153,46 +142,48 @@ private:
 	static int _zero_angle;			// actual used value is in as5600 units
 	static float _zero_angle_f;		// displayed value is a float
 	static float _dead_zone;		// degrees dead for pushing about zero
-	static float _target_angle;		// target angle for testing (if not zero)
+	static float _target_angle;		// target angle for clock
 
-#if WITH_HALL
-	static int _hall_zero;
-	static int _hall_thresh;
-#endif
+	static int _power_low;			// PID mininum power, also power for !PID and motor test
+	static int _power_high;			// PID starting power
+	static int _power_max;      	// PID maximum power
+	static int _power_pull;			// PID power while pulling
+	static int _power_start;    	// power during startup pulse
 
-	static int _test_motor;		// memory only, only happens onChange
-
-	static int _power_low;		// STATIC: power when sensor reached; PID: mininum power
-	static int _power_high;		// STATIC: power when sensor not reached;  PID: starting power
-	static int _power_max;      // PID: maximum power
-	static int _power_start;    // power during startup pulse
-
-	static int _dur_left;		// duration of left power pulse for both PID and STATIC
-	static int _dur_right;		// duration of right power pulse for both PID and STATIC
-	static int _dur_start;		// duration of startup pulse
+	static int _dur_left;			// duration of left power pulse for both PID and STATIC
+	static int _dur_right;			// duration of right power pulse for both PID and STATIC
+	static int _dur_start;			// duration of startup pulse
 
 	static float _pid_P;
 	static float _pid_I;
 	static float _pid_D;
 
-    static uint32_t _time_last_start;
-	static uint32_t _cur_time;
-	static String _stat_time_running;
+    static uint32_t _cur_time;
+	static uint32_t _time_start;
+	static String 	_time_running;
 	static uint32_t _stat_beats;
-	static uint32_t _stat_restarts;
-	static uint32_t _stat_stalls_left;
-	static uint32_t _stat_stalls_right;
-	static int _stat_error_low;
-	static int _stat_error_high;
-	static int _stat_dur_low;
-	static int _stat_dur_high;
-	static uint32_t _min_power_used;
-	static uint32_t _max_power_used;
+	static uint32_t _stat_num_push;
+	static uint32_t _stat_num_pull;
+	static float	_stat_pull_ratio;
+	static uint32_t _stat_min_power;
+	static uint32_t _stat_max_power;
+	static float	_stat_min_left;
+	static float	_stat_max_left;
+	static float	_stat_min_right;
+	static float	_stat_max_right;
+	static int32_t	_stat_min_cycle;
+	static int32_t	_stat_max_cycle;
+	static int32_t  _stat_min_error;
+	static int32_t  _stat_max_error;
 
 	static uint32_t _stat_interval;
 
+	static int _test_motor;		// memory only, only happens onChange
+
+
 	// methods
 
+	static void init();
 	static void run();
 	static void clockTask(void *param);
 
@@ -203,12 +194,7 @@ private:
     static void onClockRunningChanged(const myIOTValue *desc, bool val);
     static void onPIDModeChanged(const myIOTValue *desc, bool val);
 	static void onPlotValuesChanged(const myIOTValue *desc, uint32_t val);
-
 	static void setZeroAngle();
-	#if WITH_HALL
-		static void calibrateHall();
-	#endif
-
 	static void onTestMotor(const myIOTValue *desc, int val);
 
 
