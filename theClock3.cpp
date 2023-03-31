@@ -57,6 +57,7 @@ static float angle(int units)
 	return floor(retval + 0.5) / 10;
 }
 
+
 //----------------------------
 // motor
 //----------------------------
@@ -201,18 +202,16 @@ void theClock::setup()	// override
 	digitalWrite(PIN_IN1,0);
 	digitalWrite(PIN_IN2,0);
 
-	// call myIOTDevice::setup()
 
 	pixels.setPixelColor(PIXEL_MAIN,MY_LED_BLUE);
-	pixels.show();
-	myIOTDevice::setup();
-	pixels.setPixelColor(PIXEL_MAIN,MY_LED_CYAN);
 	pixels.show();
 	delay(500);
 
 	//--------------------------------------------------
-	// INIT THE AS5600 and set zero angle if not yet set
+	// INIT THE AS5600 before myIOTDevice::setup()
 	//--------------------------------------------------
+	// cuz it's better done when WIFI and all that stuff
+	// has not yet been started ...
 
 	bool connected = false;
 	while (!connected)
@@ -233,6 +232,18 @@ void theClock::setup()	// override
 	}
 	LOGD("AS5600 connected=%d",connected);
 
+
+	//------------------------------
+	// call myIOTDevice::setup()
+	//------------------------------
+
+	pixels.setPixelColor(PIXEL_MAIN,MY_LED_CYAN);
+	pixels.show();
+	myIOTDevice::setup();
+
+	//-------------------------------
+	// set zero angle if not yet set
+	//-------------------------------
 	// can't use values until after myIOTDevice::setup() has been called
 	// May need to clear values from NVS (Preferences) if types change!
 	// with call to clearValueById(ID_ZERO_ANGLE);
@@ -240,16 +251,15 @@ void theClock::setup()	// override
 	// clearValueById(ID_ZERO_ANGLE_F);
 	// setInt(ID_ZERO_ANGLE,0);
 
+	pixels.setPixelColor(PIXEL_MAIN,MY_LED_GREEN);
+	pixels.show();
 	if (_zero_angle == 0)
 		setZeroAngle();
+	delay(500);
 
 	//------------------------------------------------
 	// Start the clock task and away we go ...
 	//------------------------------------------------
-
-	pixels.setPixelColor(PIXEL_MAIN,MY_LED_GREEN);
-	pixels.show();
-	delay(500);
 
 	LOGI("starting clockTask");
 	xTaskCreatePinnedToCore(clockTask,
@@ -407,17 +417,17 @@ void theClock::onPIDModeChanged(const myIOTValue *desc, bool val)
 
 void theClock::onPlotValuesChanged(const myIOTValue *desc, uint32_t val)
 {
-	if (val == 1)
-		Serial.print("as5600,side,angle,min,max,err,motor");
+	if (val)
+		Serial.println("dir,side,angle,min,max,err,motor");
 }
 
 
 void theClock::setZeroAngle()
 {
-	LOGU("Setting AS5600 zero angle ...");
+	LOGD("Setting AS5600 zero angle ...");
 	int zero = as5600.readAngle();
 	float zero_f =  angle(zero);
-	LOGU("AS5600 zero angle = %d, %03f", zero,zero_f);
+	LOGU("AS5600 zero angle=%d  %0.3f", zero,zero_f);
 	the_clock->setInt(ID_ZERO_ANGLE,zero);
 	the_clock->setFloat(ID_ZERO_ANGLE_F,zero_f);
 }
@@ -674,208 +684,12 @@ void theClock::run()
 		Serial.print(max);
 		Serial.print(",");
 
-		int err = cur_cycle;
-		err -= 1000;
-		Serial.print(err * 40);
+		Serial.print(millis_error * 20);
 		Serial.print(",");
 
 		Serial.print(motor_state * 400);
 		Serial.println(",1000,-1000");
 	}
-
-
-#if 0
-
-	//----------------------------------------------------------
-	// CYCLE
-	//----------------------------------------------------------
-	// The full cycle is when the pendulum goes from positioni -1 to 1 and should take 1000 ms.
-	// A half cycle is determined by the transition from position -1 to 1 in either direction.
-
-	static int last_position = 0;
-	static uint32_t motor_start = 0;
-	static uint32_t motor_dur = 0;
-
-	// if there have been no changes for 3 seconds
-	// restart the clock
-
-	uint32_t now = millis();
-	if (clock_started && (now - last_change > 3000))
-	{
-		num_restarts++;
-		LOGE("CLOCK STOPPED! - restarting!!");
-		startClock();
-		last_change = now;
-	}
-
-	if (last_position != position) //  && (now - last_change > 20))
-	{
-		int use_power = 0;
-		last_change = now;
-
-		// moving left to right
-
-		if (last_position == -1 && position == 1)
-		{
-			num_beats++;
-
-			if (clock_started && max_right < 3)
-			{
-				LOGE("STALL_RIGHT",0);
-				num_stalls_right++;
-			}
-
-			if (cycle_start)	// not the first time through
-			{
-				cycle_duration = now - cycle_start;
-				total_error += cycle_duration - 1000;
-
-				if (total_error > high_error)
-					high_error = total_error;
-				if (total_error < low_error)
-					low_error = total_error;
-				if (cycle_duration < low_dur)
-					low_dur = cycle_duration;
-				if (cycle_duration > high_dur)
-					high_dur = cycle_duration;
-
-				if (_pid_mode && clock_started)
-				{
-					float this_p =  cycle_duration;		// this error
-					this_p = this_p - 1000;
-					float this_i = total_error;			// total error at this time
-					float this_d = 0;
-
-					if (prev_p)
-					{
-						this_d = this_p;
-						this_d -= prev_p;
-					}
-					prev_p = this_p;
-
-					this_p = this_p / 1000;
-					this_i = this_i / 1000;
-					this_d = this_d / 1000;
-
-					int old_power = pid_power;
-					float factor = 1 + (_pid_P * this_p) + (_pid_I * this_i) + (_pid_D * this_d);
-					float new_power = pid_power * factor;
-					if (new_power > _power_max) new_power = _power_max;
-					if (new_power  < _power_low) new_power = _power_low;
-					pid_power = new_power;
-
-					if (pid_power < min_power_used)
-						min_power_used = pid_power;
-					if (pid_power > max_power_used)
-						max_power_used = pid_power;
-
-					motor_dur = _dur_right;
-					use_power = pid_power;
-				}
-
-				// static mode right
-
-				else if (clock_started)
-				{
-					motor_dur = _dur_right;
-					if (max_right == 3)
-						use_power = _power_low;
-					else
-						use_power = _power_high;
-				}
-
-				if (clock_started && !button_down && !flash_fxn)
-				{
-					setPixel(PIXEL_MAIN,
-						total_error > 2000 ? MY_LED_BLUE :
-						total_error < -2000 ? MY_LED_RED :
-						total_error > 200 ? MY_LED_BLUECYAN :
-						total_error < -200 ? MY_LED_ORANGE :
-						cycle_duration < 995 ?  MY_LED_YELLOW :
-						cycle_duration > 1005 ? MY_LED_CYAN :
-						MY_LED_GREEN);
-				}
-
-				if (!_plot_values)
-					LOGI("RIGHT(%d) dur(%d) power(%d) cycle(%d) error(%d)",max_right,motor_dur,use_power,cycle_duration,total_error);
-
-				max_right = 0;
-
-			}
-			cycle_start = now;
-		}
-
-		// moving right to left
-
-		if (clock_started && TIMposition == 1 && position == -1)
-		{
-			if (max_left > -3)
-			{
-				LOGE("STALL_LEFT",0);
-				num_stalls_left++;
-			}
-
-			if (_dur_left)
-			{
-				motor_dur = _dur_left;
-				if (_pid_mode)
-					use_power = pid_power;
-				else if (max_right == 3)
-					use_power = _power_low;
-				else
-					use_power = _power_high;
-
-				if (!_plot_values)
-					LOGI(" LEFT(%d) dur(%d) power(%d)",max_left,motor_dur,use_power);
-			}
-
-			max_left = 0;
-		}
-
-		// IMPULSE
-
-		if (use_power)
-		{
-			motor_start = now;
-			motor(-1,use_power);
-		}
-
-		last_position = position;
-	}
-
-
-	//------------------------------------------------
-	// stop the impulse
-	//------------------------------------------------
-
-	if (motor_start && now - motor_start > motor_dur)
-	{
-		motor_start = 0;
-		motor_dur = 0;
-		motor(0,0);
-	}
-
-	if (show_pixels)
-		pixels.show();
-
-	//------------------------
-	// plot values
-	//------------------------
-
-	if (_plot_values == 1)
-	{
-		Serial.print(hall_value);
-		Serial.print(",");
-
-		// Serial.print(cycle_duration);
-
-		int err = cycle_duration - 1000;
-		Serial.print(1000 + err * 20);
-		Serial.print(",1000,-1400,1400,");
-		Serial.println(position * 200);
-	}
-
-#endif	// 0
 
 }	// theClock::run()
 
@@ -892,8 +706,6 @@ void theClock::run()
 void theClock::loop()	// override
 {
 	myIOTDevice::loop();
-
-#if 0
 
 	//-----------------------------
 	// handle button
@@ -1010,6 +822,8 @@ void theClock::loop()	// override
 		}
 	}
 
+
+#if 0
 
 	// Testing NTP
 	// I am using the "pause" mode of _plot_values for this.
