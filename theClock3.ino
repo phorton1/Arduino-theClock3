@@ -24,8 +24,8 @@
 #define DEFAULT_DEAD_ZONE		0.7			// dead degrees about zero
 #define DEFAULT_TARGET_ANGLE 	8.0			// early pid control value
 
-#define DEFAULT_POWER_LOW		120
-#define DEFAULT_POWER_HIGH		210
+#define DEFAULT_POWER_MIN		120
+#define DEFAULT_POWER_PID		210
 #define DEFAULT_POWER_MAX		255
 #define DEFAULT_POWER_PULL		210
 #define DEFAULT_POWER_START     255
@@ -35,7 +35,7 @@
 #define DEFAULT_DUR_START		120
 
 #define DEFAULT_PID_P			12.0		// mostly proportional
-#define DEFAULT_PID_I			0.05		// very little integral
+#define DEFAULT_PID_I			0.50		// very little integral
 #define DEFAULT_PID_D			-9.0		// lots of negative feedback on rate of change
 
 #define DEFAULT_STAT_INTERVAL	0
@@ -46,6 +46,7 @@
 static valueIdType dash_items[] = {
 	ID_RUNNING,
 	ID_PID_MODE,
+	ID_PULL_MODE,
 	ID_PLOT_VALUES,
 
 	ID_CLEAR_STATS,
@@ -83,8 +84,8 @@ static valueIdType device_items[] = {
 	ID_ZERO_ANGLE_F,
 	ID_DEAD_ZONE,
 	ID_TARGET_ANGLE,
-	ID_POWER_LOW,
-    ID_POWER_HIGH,
+	ID_POWER_MIN,
+    ID_POWER_PID,
 	ID_POWER_MAX,
 	ID_POWER_PULL,
 	ID_POWER_START,
@@ -107,6 +108,13 @@ static enumValue plotAllowed[] = {
     0};
 
 
+static enumValue pullAllowed[] = {
+    "Use Both",
+    "Push Only",
+    "Pull Only",
+    0};
+
+
 
 
 // value descriptors for theClock
@@ -118,6 +126,8 @@ const valDescriptor theClock::m_clock_values[] =
 
 	{ ID_RUNNING,      		VALUE_TYPE_BOOL,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_clock_running,(void *) onClockRunningChanged, { .int_range = { DEFAULT_RUNNING }} },
 	{ ID_PID_MODE,      	VALUE_TYPE_BOOL,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_pid_mode, 	(void *) onPIDModeChanged, 		{ .int_range = { DEFAULT_PID_MODE }} },
+
+	{ ID_PULL_MODE,      	VALUE_TYPE_ENUM,     VALUE_STORE_PUB,      VALUE_STYLE_NONE,       (void *) &_pull_mode, 	NULL,   						{ .enum_range = { 0, pullAllowed }} },
 	{ ID_PLOT_VALUES,      	VALUE_TYPE_ENUM,     VALUE_STORE_PUB,      VALUE_STYLE_NONE,       (void *) &_plot_values, 	(void *) onPlotValuesChanged,   { .enum_range = { 0, plotAllowed }} },
 
 	{ ID_SET_ZERO_ANGLE,  	VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    (void *) setZeroAngle },
@@ -126,8 +136,8 @@ const valDescriptor theClock::m_clock_values[] =
 	{ ID_DEAD_ZONE,  		VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_dead_zone,	NULL,  { .float_range = { DEFAULT_DEAD_ZONE,      0,  OVER_MAX_ANGLE}} },
 	{ ID_TARGET_ANGLE,  	VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_target_angle,	NULL,  { .float_range = { DEFAULT_TARGET_ANGLE,   0,  OVER_MAX_ANGLE}} },
 
-	{ ID_POWER_LOW,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_power_low,	NULL,  { .int_range = { DEFAULT_POWER_LOW,  	0,  255}} },
-	{ ID_POWER_HIGH,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_power_high,	NULL,  { .int_range = { DEFAULT_POWER_HIGH,   	0,  255}} },
+	{ ID_POWER_MIN,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_power_min,	NULL,  { .int_range = { DEFAULT_POWER_MIN,  	0,  255}} },
+	{ ID_POWER_PID,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_power_pid,	NULL,  { .int_range = { DEFAULT_POWER_PID,   	0,  255}} },
 	{ ID_POWER_MAX,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_power_max,	NULL,  { .int_range = { DEFAULT_POWER_MAX,   	0,  255}} },
 	{ ID_POWER_PULL,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_power_pull,	NULL,  { .int_range = { DEFAULT_POWER_PULL,   	0,  255}} },
 	{ ID_POWER_START,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_power_start,	NULL,  { .int_range = { DEFAULT_POWER_START,   	0,  255}} },
@@ -174,6 +184,7 @@ const valDescriptor theClock::m_clock_values[] =
 
 bool 	theClock::_clock_running;
 bool 	theClock::_pid_mode;
+uint32_t theClock::_pull_mode;
 uint32_t theClock::_plot_values;
 
 int  	theClock::_zero_angle;
@@ -182,8 +193,8 @@ float   theClock::_dead_zone;
 float   theClock::_target_angle;
 
 
-int  	theClock::_power_low;
-int  	theClock::_power_high;
+int  	theClock::_power_min;
+int  	theClock::_power_pid;
 int  	theClock::_power_max;
 int  	theClock::_power_pull;
 int  	theClock::_power_start;
@@ -213,9 +224,6 @@ int32_t	 theClock::_stat_min_cycle;
 int32_t	 theClock::_stat_max_cycle;
 int32_t  theClock::_stat_min_error;
 int32_t  theClock::_stat_max_error;
-
-
-
 
 uint32_t theClock::_stat_interval;
 int 	 theClock::_test_motor;

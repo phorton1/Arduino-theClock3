@@ -71,6 +71,7 @@ extern uint32_t getNtpTime();
 
 #define ID_RUNNING			"RUNNING"
 #define ID_PID_MODE			"PID_MODE"
+#define ID_PULL_MODE		"PULL_MODE"
 #define ID_PLOT_VALUES		"PLOT_VALUES"
 
 #define ID_SET_ZERO_ANGLE	"SET_ZERO_ANGLE"
@@ -79,8 +80,8 @@ extern uint32_t getNtpTime();
 #define ID_DEAD_ZONE		"DEAD_ZONE"
 #define ID_TARGET_ANGLE		"TARGET_ANGLE"
 
-#define ID_POWER_LOW      	"POWER_LOW"
-#define ID_POWER_HIGH      	"POWER_HIGH"
+#define ID_POWER_MIN      	"POWER_MIN"
+#define ID_POWER_PID      	"POWER_PID"
 #define ID_POWER_MAX      	"POWER_MAX"
 #define ID_POWER_PULL      	"POWER_PULL"
 #define ID_POWER_START      "POWER_START"
@@ -120,6 +121,18 @@ extern uint32_t getNtpTime();
 	// value is only kept in memory and used once
 	// Will call motor(direction,POWER_LOW) directly!!
 
+// enumerated type values
+
+#define PLOT_OFF		0
+#define PLOT_ON			1
+#define PLOT_PAUSE		2
+
+#define PUSH_AND_PULL 	0
+#define PUSH_ONLY		1
+#define PULL_ONLY		2
+
+
+// theClock declaration
 
 class theClock : public myIOTDevice
 {
@@ -137,6 +150,7 @@ private:
 
 	static bool _clock_running;
 	static bool _pid_mode;
+	static uint32_t _pull_mode;
 	static uint32_t _plot_values;
 
 	static int _zero_angle;			// actual used value is in as5600 units
@@ -144,8 +158,8 @@ private:
 	static float _dead_zone;		// degrees dead for pushing about zero
 	static float _target_angle;		// target angle for clock
 
-	static int _power_low;			// PID mininum power, also power for !PID and motor test
-	static int _power_high;			// PID starting power
+	static int _power_min;			// PID mininum power, also power for !PID and motor test
+	static int _power_pid;			// PID starting power
 	static int _power_max;      	// PID maximum power
 	static int _power_pull;			// PID power while pulling
 	static int _power_start;    	// power during startup pulse
@@ -183,7 +197,7 @@ private:
 
 	// methods
 
-	static void init();
+	static void init(bool cold);
 	static void run();
 	static void clockTask(void *param);
 
@@ -196,6 +210,9 @@ private:
 	static void onPlotValuesChanged(const myIOTValue *desc, uint32_t val);
 	static void setZeroAngle();
 	static void onTestMotor(const myIOTValue *desc, int val);
+
+	static int setPidPower(float avg_angle);
+
 
 
 };	// class theClock

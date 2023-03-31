@@ -4,6 +4,8 @@
 #include <AS5600.h>
 #include <Wire.h>
 
+#define MAX_INT		32767
+#define MIN_INT		-32767
 
 // USES A TASK FOR RUNNING THE CLOCK
 //
@@ -19,8 +21,6 @@
 // as I read that would yield without delay.  No joy.  I set the priority
 // of the task down to 1, no joy.  Finally I disabled the Watch Dog Timer,
 // (see code below) and that seems to work.
-
-
 
 
 //----------------------------
@@ -97,34 +97,22 @@ void setPixel(int num, uint32_t color)
 //--------------------------------------------
 // vars
 //--------------------------------------------
-// The algorithm works by using a PID controller to target the ANGLE
-// by using "pushes" after crossing zero, varying the power delivered
-// from POWER_LOW to POWER_HIGH.  Tbis depends on many parameters including
-// the ZERO_ANGLE of the pendulum, the DEAD_ZONE about zero where we wait to
-// initiate the pulse, the DUR_LEFT and DUR_RIGHT which determine the durations
-// of the pulses and the PID variables, all of which have been heuristically
-// determined and represented in the defaults.  We actually control for the
-// average of the left and right maximum swings, since they are different
-//
-// The clock is tuned to run a little bit slow, on the order of an
-// average of 10ms or so per second and we keep track of the current
-// 'cur_cycle' (one full second) in milliseconds, and a cumulative error
-// in 'millis_error'.
-//
-// We can speed it up by "pulling" the pendulum towards the center.
-// When pulling the pulse starts just as soon as the push ends, and continues
-// until we are within 2 deadzones of the center again.  The 'pull' has a
-// separate constant power setting which has also been heuristically tuned.
-//
-// The application of the accumulated error is simple .. if the clock is
-// running slow, we start pulling. If it is running fast we stop pulling.
 
 
-static bool clock_started = 0;		// the clock is running
+#define MILLIS_ERROR_THRESHOLD		40
+	// if the clock gets this many millis fast or slow (cumulative error)
+	// we will switch from pulling to pushing or vice-versa
 
-static bool push_motor = 0;			// push the pendulum after it leaves deadzone (determined at zero crossing)
-static bool pull_motor = 0;			// pull motor after pushing (also determined at zero crossing)
-static bool pulling = 0;			// we are in a pull at this time
+static bool clock_started = 0;		// the clock has been started
+static bool clock_running = 0;		// the clock has achieved the target_angle, and so is "running"; stats will be reset on a cold start
+static int  use_state = -1;			// -1 == push, 1=pull.  We start out pushing in all cases until the clock is running
+	// in order to smooth out frequency changes and prevent wild swings,
+	// once the motor is running, we only change the state when the
+	// error threshold has been exceeded
+
+static bool push_motor = 0;			// local state - push the pendulum after it leaves deadzone (determined at zero crossing)
+static bool pull_motor = 0;			// local state - pull motor after pushing (also determined at zero crossing)
+static bool pulling = 0;			// local state - we are in a pull at this time
 
 
 // PID
@@ -133,11 +121,9 @@ static float total_error = 0;		// accumluated degrees of error
 static float prev_p = 0;			// the previous error (for "D" determination)
 static int pid_power = 0;			// power adjusted by pid algorithm
 
-
 static int32_t cur_cycle = 0;		// millis in this 'cycle' (forward zero crossing)
 static int32_t last_cycle = 0;		// millis at previous forward zero crossing
 static int32_t millis_error = 0;
-
 
 
 // Statistics
@@ -201,7 +187,6 @@ void theClock::setup()	// override
 	pinMode(PIN_IN2,OUTPUT);
 	digitalWrite(PIN_IN1,0);
 	digitalWrite(PIN_IN2,0);
-
 
 	pixels.setPixelColor(PIXEL_MAIN,MY_LED_BLUE);
 	pixels.show();
@@ -283,9 +268,22 @@ void theClock::setup()	// override
 
 
 
-void theClock::init()
+void theClock::init(bool cold)
 {
-	clock_started = 0;
+	if (cold)
+	{
+		clock_started = 0;
+		clock_running = !_pid_mode;
+			// the clock is 'running' as soon as it's started
+			// in !pid_mode
+		use_state = _pull_mode == PULL_ONLY ? 1 : -1;
+			// start the clock preferentially pushing
+		LOGD("COLD_INIT  clock_running(%d) use_state(%d)",clock_running,use_state);
+	}
+
+	push_motor = 0;
+	pull_motor = 0;
+	pulling = 0;
 
 	total_error = 0;
 	prev_p = 0;
@@ -294,16 +292,23 @@ void theClock::init()
 	cur_cycle = 0;
 	last_cycle = 0;
 
-	as5600_cur = 0;
-	as5600_side = 0;
-	as5600_direction = 0;
-	as5600_min = 0;
-	as5600_max = 0;
-	as5600_temp_min = 10240;
-	as5600_temp_max = -10240;
-	as5600_cur_angle = 0;
-	as5600_min_angle = 0;
-	as5600_max_angle = 0;
+	// we don't clear the min angle and max angle
+	// if clearing stats because that causes an
+	// artificial pulse of high power
+
+	if (cold)
+	{
+		as5600_cur = 0;
+		as5600_side = 0;
+		as5600_direction = 0;
+		as5600_min = 0;
+		as5600_max = 0;
+		as5600_temp_min = MAX_INT;
+		as5600_temp_max = MIN_INT;
+		as5600_cur_angle = 0;
+		as5600_min_angle = 0;
+		as5600_max_angle = 0;
+	}
 
     the_clock->_cur_time = 0;
 	the_clock->_time_start = 0;
@@ -314,14 +319,14 @@ void theClock::init()
 	the_clock->_stat_pull_ratio = 0.5;
 	the_clock->_stat_min_power = 255;
 	the_clock->_stat_max_power = 0;
-	the_clock->_stat_min_left = -360;
-	the_clock->_stat_max_left = 360;
-	the_clock->_stat_min_right = -360;
-	the_clock->_stat_max_right = 360;
-	the_clock->_stat_min_cycle = 32767;
-	the_clock->_stat_max_cycle = -32767;
-	the_clock->_stat_min_error = 32767;
-	the_clock->_stat_max_error = -32767;
+	the_clock->_stat_min_left = MIN_INT;
+	the_clock->_stat_max_left = MAX_INT;
+	the_clock->_stat_min_right = MAX_INT;
+	the_clock->_stat_max_right = MIN_INT;
+	the_clock->_stat_min_cycle = MAX_INT;
+	the_clock->_stat_max_cycle = MIN_INT;
+	the_clock->_stat_min_error = MAX_INT;
+	the_clock->_stat_max_error = MIN_INT;
 
 }
 
@@ -329,35 +334,7 @@ void theClock::init()
 void theClock::clearStats()
 {
 	LOGU("STATISTICS CLEARED");
-
-	total_error = 0;
-	prev_p = 0;
-
-	millis_error = 0;
-	cur_cycle = 0;
-	last_cycle = 0;
-
-    the_clock->_cur_time = 0;
-	the_clock->_time_start = 0;
-	the_clock->_time_running = "";
-	the_clock->_stat_beats = 0;
-	the_clock->_stat_num_push = 0;
-	the_clock->_stat_num_pull = 0;
-	the_clock->_stat_pull_ratio = 0.5;
-	the_clock->_stat_min_power = 255;
-	the_clock->_stat_max_power = 0;
-	the_clock->_stat_min_left = -360;
-	the_clock->_stat_max_left = 360;
-	the_clock->_stat_min_right = 360;
-	the_clock->_stat_max_right = -360;
-	the_clock->_stat_min_cycle = 32767;
-	the_clock->_stat_max_cycle = -32767;
-	the_clock->_stat_min_error = 32767;
-	the_clock->_stat_max_error = -32767;
-
-	// resetting the statistics also resets the
-	// start time for display.
-
+	init(0);
 	if (clock_started)
 		the_clock->setTime(ID_TIME_START,time(NULL));
 
@@ -369,7 +346,7 @@ void theClock::startClock()
 {
 	LOGU("startClock()");
 
-	init();
+	init(1);
 	clock_started = 1;
 	setPixel(PIXEL_MAIN, MY_LED_WHITE);
 	pixels.show();
@@ -378,17 +355,19 @@ void theClock::startClock()
 	motor(0,0);
 	setPixel(PIXEL_MAIN, MY_LED_BLACK);
 	pixels.show();
-
 	the_clock->setTime(ID_TIME_START,time(NULL));
-
-	pid_power = _power_high;
+	pid_power = _power_pid;
 	flash_fxn = FUNCTION_NONE;
 }
 
 
 void theClock::stopClock()
 {
-	init();
+	init(0);
+
+	clock_started = 0;
+	clock_running = 0;
+
 	motor(0,0);
 	flash_fxn = FUNCTION_STOPPED;
 	flash_count = 0;
@@ -411,7 +390,7 @@ void theClock::onClockRunningChanged(const myIOTValue *desc, bool val)
 void theClock::onPIDModeChanged(const myIOTValue *desc, bool val)
 {
 	LOGU("onPIDModeChanged(%d)",val);
-	pid_power = _power_high;
+	pid_power = _power_pid;
 }
 
 
@@ -437,7 +416,7 @@ void theClock::setZeroAngle()
 void theClock::onTestMotor(const myIOTValue *desc, int val)
 {
 	LOGU("onTestMotor %d",val);
-	motor(val,_power_low);
+	motor(val,_power_min);
 }
 
 
@@ -446,6 +425,33 @@ void theClock::onTestMotor(const myIOTValue *desc, int val)
 //===================================================================
 // run()
 //===================================================================
+
+int theClock::setPidPower(float avg_angle)
+{
+	float this_p = _target_angle - avg_angle;
+	total_error += this_p;
+	float this_i = total_error;
+	float this_d = prev_p - this_p;;
+	prev_p = this_p;
+
+	this_p = this_p / 100;
+	this_i = this_i / 100;
+	this_d = this_d / 100;
+
+	float factor = 1 + (_pid_P * this_p) + (_pid_I * this_i) + (_pid_D * this_d);
+	float new_power = pid_power * factor;
+	if (new_power > _power_max) new_power = _power_max;
+	if (new_power  < _power_min) new_power = _power_min;
+	pid_power = new_power;
+
+	if (pid_power < min_power_used)
+		min_power_used = pid_power;
+	if (pid_power > max_power_used)
+		max_power_used = pid_power;
+
+	return pid_power;
+}
+
 
 
 void theClock::run()
@@ -476,6 +482,9 @@ void theClock::run()
 	// detect direction change or zero crossing
 	// only if the posiion has changed significantly
 
+	bool zero_cross = 0;
+	bool at_extreme = 0;
+
 	int dif = cur - as5600_cur;
 	if (abs(dif) > AS4500_THRESHOLD)
 	{
@@ -487,6 +496,7 @@ void theClock::run()
 			(cur > 0 && as5600_side <= 0))
 		{
 			as5600_side = cur < 0 ? -1 : 1;
+			zero_cross = true;
 
 			// get full cycle time
 			// and add it to the accumulated error if running
@@ -513,22 +523,10 @@ void theClock::run()
 						_stat_min_error = millis_error;
 					if (millis_error > _stat_max_error)
 						_stat_max_error = millis_error;
-
-					if (_pid_mode)
-					{
-						if (millis_error > 0)
-							pull_motor = true;
-						else
-							pull_motor = false;
-					}
 				}
 			}
-
-			// defer a push if clock started
-
-			if (clock_started)
-				push_motor = true;
 		}
+
 
 		// detect direction change
 		// if direction changed, assign min or max and clear temp variable
@@ -540,10 +538,13 @@ void theClock::run()
 			dir = 1;
 		if (as5600_direction != dir)
 		{
+			as5600_direction = dir;
+			at_extreme = true;
+
 			if (dir > 0)
 			{
 				as5600_min = as5600_temp_min;
-				as5600_temp_min = 10240;
+				as5600_temp_min = MAX_INT;
 				as5600_min_angle = angle(as5600_min);
 
 				if (as5600_min_angle < _stat_max_left)
@@ -554,7 +555,7 @@ void theClock::run()
 			else
 			{
 				as5600_max = as5600_temp_max;
-				as5600_temp_max = -10240;
+				as5600_temp_max = MIN_INT;
 				as5600_max_angle = angle(as5600_max);
 
 				if (as5600_max_angle > _stat_max_right)
@@ -562,64 +563,99 @@ void theClock::run()
 				if (as5600_max_angle < _stat_min_right)
 					_stat_min_right = as5600_max_angle;
 			}
-
-			as5600_direction = dir;
 		}
 	}
+
+	//------------------------------------------------
+	// state machine
+	//------------------------------------------------
+	// !clock_running implies pid_mode
+
+	if (clock_started)
+	{
+		if (!clock_running &&
+			as5600_max_angle >= _target_angle &&
+			as5600_min_angle <= -_target_angle)
+		{
+			clock_running = 1;
+			LOGU("Clock running!");
+			clearStats();
+		}
+
+		if (zero_cross)
+		{
+			if (clock_running &&
+				_pull_mode != PUSH_ONLY &&
+				use_state == -1 &&
+				millis_error > MILLIS_ERROR_THRESHOLD)
+			{
+				LOGD("SET STATE 1=PULL");
+				use_state = 1;
+			}
+
+			if (use_state == -1)
+				push_motor = true;
+		}
+
+		if (at_extreme)
+		{
+			if (clock_running &&
+				_pull_mode != PULL_ONLY &&
+				use_state == 1 &&
+				millis_error < -MILLIS_ERROR_THRESHOLD)
+			{
+				LOGD("SET STATE -1=PUSH");
+				use_state = -1;
+			}
+
+			if (use_state == 1)
+				pull_motor = true;
+		}
+	}
+
 
 
 	//-------------------
 	// MOTOR
 	//-------------------
-	// stop any pull if within 2 deadzones of zero
+	// We use the same pid controller for pushing and pulling
+	// and set motor_dir as a flag to actually start the motor below.
+	// We only start push if out of dead zone, wheras we start pull immediately
 
-	if (pulling && abs(as5600_cur_angle) < 2 * _dead_zone)
+	int motor_dir = 0;
+	int use_power = 0;
+	float avg_angle = (abs(as5600_min_angle) + abs(as5600_max_angle) ) / 2;
+
+	if (pull_motor)
 	{
-		pulling = false;
-		motor(0,0);
+		pull_motor = false;
+		motor_dir = 1;
+		use_power = _pid_mode ? setPidPower(avg_angle) : _power_pull;
+		_stat_num_pull++;
+		pulling = true;
 	}
-
-	// push if out of dead zone
-
 	if (push_motor && abs(as5600_cur_angle) > _dead_zone)
 	{
 		push_motor = false;
+		motor_dir = -1;
+		use_power = _pid_mode ? setPidPower(avg_angle) : _power_min;
+		_stat_num_push++;
 
-		int use_power = _power_low;
-		float avg_angle = (abs(as5600_min_angle) + abs(as5600_max_angle) ) / 2;
+		motor_start = now;
+		motor_dur = as5600_direction > 0 ? _dur_right : _dur_left;
+		motor(-1,use_power);
+	}
 
-		if (_pid_mode)
-		{
-			float this_p = _target_angle - avg_angle;
-			total_error += this_p;
-			float this_i = total_error;
-			float this_d = prev_p - this_p;;
-			prev_p = this_p;
+	// DO THE ACTUAL PUSH OR PULL
+	// and display state and update stats
 
-			this_p = this_p / 100;
-			this_i = this_i / 100;
-			this_d = this_d / 100;
-
-			int old_power = pid_power;
-			float factor = 1 + (_pid_P * this_p) + (_pid_I * this_i) + (_pid_D * this_d);
-			float new_power = pid_power * factor;
-			if (new_power > _power_max) new_power = _power_max;
-			if (new_power  < _power_low) new_power = _power_low;
-			pid_power = new_power;
-
-			if (pid_power < min_power_used)
-				min_power_used = pid_power;
-			if (pid_power > max_power_used)
-				max_power_used = pid_power;
-
-			motor_dur = _dur_right;
-			use_power = pid_power;
-		}
-
-		if (!_plot_values)
-			LOGD("push(%-2d) pull(%d) %-4d %3.3f/%3.3f=%3.3f  target=%3.3f  accum=%3.3f  power=%d  err=%d",			// p=%3.3f i=%3.3f d=%3.3f
+	if (motor_dir)
+	{
+		if (_plot_values == PLOT_OFF)
+			LOGD("%-6s %s(%-2d) %-4d %3.3f/%3.3f=%3.3f  target=%3.3f  accum=%3.3f  power=%d  err=%d",			// p=%3.3f i=%3.3f d=%3.3f
+				 clock_running ? "run" : "start",
+				 motor_dir > 0 ? "pull" : "push",
 				 as5600_direction,
-				 pull_motor,
 				 cur_cycle,
 				 as5600_min_angle,
 				 as5600_max_angle,
@@ -632,38 +668,36 @@ void theClock::run()
 				 use_power,
 				 millis_error);
 
-		_stat_num_push++;
 		if (use_power > _stat_max_power)
 			_stat_max_power = use_power;
 		if (use_power < _stat_min_power)
 			_stat_min_power = use_power;
 
-		motor_start = now;
-		motor_dur = as5600_direction > 0 ? _dur_right : _dur_left;
-		motor(-1,use_power);
+		motor(motor_dir,use_power);
 	}
 
-
-	// stop pushing and possibly start pulling
+	// Stop the motor as needed
+	// We stop pushes based on duration,
+	// and pulls based on 2 * _dead_zone
 
 	if (motor_start && now - motor_start > motor_dur)
 	{
 		motor_start = 0;
 		motor_dur = 0;
 		motor(0,0);
-
-		if (clock_started && pull_motor)
-		{
-			pulling = true;
-			_stat_num_pull++;
-			motor(1,_power_pull);
-		}
+	}
+	if (pulling && abs(as5600_cur_angle) < 2 * _dead_zone)
+	{
+		pulling = false;
+		motor(0,0);
 	}
 
 
+	//----------------------
 	// plotting
+	//----------------------
 
-	if (_plot_values == 1)
+	if (_plot_values == PLOT_ON)
 	{
 		float use_angle = as5600_cur_angle * 50;		// 20 degrees == 1000 in output
 		float use_min = as5600_min_angle * 50;
@@ -833,7 +867,7 @@ void theClock::loop()	// override
 
 
 	static uint32_t last_debug = 0;
-	if (_plot_values == 2 && now > last_debug + 5000 )
+	if (_plot_values == PLOT_PAUSED && now > last_debug + 5000 )
 	{
 		last_debug = now;
 
@@ -853,7 +887,7 @@ void theClock::loop()	// override
 
 	if (_stat_interval &&
 		_stat_beats % _stat_interval == 0 &&
-		!_plot_values &&
+		_plot_values == PLOT_OFF &&
 		clock_started &&
 		_stat_beats != last_num_beats)
 	{
