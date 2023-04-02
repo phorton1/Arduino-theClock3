@@ -557,6 +557,7 @@ int theClock::setPidPower(float avg_angle)
 
 
 
+
 void theClock::run()
 	// This is called every 3 ms ...
 	// The basic sensor code can run in about 1ms
@@ -570,8 +571,16 @@ void theClock::run()
 	// AS5600
 	//-------------------------------------------------
 	// Read, but don't necessariy use the as5600 angle
+	// Throw out bogus readings .... first try to fix weirdness
+
+	#define MAX_ANGLE  14.0
 
 	int cur = as5600.readAngle() - _zero_angle;
+	while (abs(angle(cur)) > MAX_ANGLE)
+	{
+		delay(1);
+		cur = as5600.readAngle() - _zero_angle;
+	}
 	as5600_cur_angle = angle(cur);
 
 	// min and max are intrinsicly debounced
