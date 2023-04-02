@@ -1057,6 +1057,7 @@ void theClock::loop()	// override
 		!clock_running ? MY_LED_MAGENTA :
 		millis_error > 2 * MILLIS_ERROR_THRESHOLD ? MY_LED_BLUE :
 		millis_error < -2 * MILLIS_ERROR_THRESHOLD ? MY_LED_RED :
+		push_or_pull < 0 ? MY_LED_CYAN :
 		MY_LED_GREEN;
 	if (last_pixel_right != pixel_right)
 	{

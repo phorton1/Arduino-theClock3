@@ -39,7 +39,7 @@
 #define DEFAULT_PID_D			-9.0		// lots of negative feedback on rate of change
 
 #define DEFAULT_NTP_INTERVAL	86400L	// one day
-#define DEFAULT_SYNC_INTERVAL	86400L	// one day
+#define DEFAULT_SYNC_INTERVAL	7200L	// two hours
 #define DEFAULT_STAT_INTERVAL	0
 
 
