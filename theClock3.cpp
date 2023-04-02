@@ -97,23 +97,28 @@ void setPixel(int num, uint32_t color)
 //--------------------------------------------
 // vars
 //--------------------------------------------
+#define RESTART_MILLIS   5000
+	// after 5 seconds of no pendulum movement, we restart the clock
 
+#define MIN_RUNNING_ANGLE  4.0
+#define RUNNING_ERROR_THRESHOLD  2.0
+	// The clock is considered 'running' after it has been 'started' and gotten
+	// at least the minimum running angle and given total millis_error
 
 #define MILLIS_ERROR_THRESHOLD		40
-	// if the clock gets this many millis fast or slow (cumulative error)
-	// we will switch from pulling to pushing or vice-versa
+	// Once it IS running, we only switch from pushing to pulling if the
+	// clock gets this many millis fast or slow (total millis_error)
+
+// BASIC STATE
 
 static bool clock_started = 0;		// the clock has been started
-static bool clock_running = 0;		// the clock has achieved the target_angle, and so is "running"; stats will be reset on a cold start
-static int  use_state = -1;			// -1 == push, 1=pull.  We start out pushing in all cases until the clock is running
-	// in order to smooth out frequency changes and prevent wild swings,
-	// once the motor is running, we only change the state when the
-	// error threshold has been exceeded
+static bool clock_running = 0;		// the clock has achieved the target millis_error and so is considered 'running'
+static uint32_t last_change = 0;	// millis of last noticible pendulum movement
 
-static bool push_motor = 0;			// local state - push the pendulum after it leaves deadzone (determined at zero crossing)
-static bool pull_motor = 0;			// local state - pull motor after pushing (also determined at zero crossing)
-static bool pulling = 0;			// local state - we are in a pull at this time
-
+static int32_t 	cur_cycle = 0;		// millis in this 'cycle' (forward zero crossing)
+static int32_t 	last_cycle = 0;		// millis at previous forward zero crossing
+static uint32_t num_beats = 0;		// number of beats (while running)
+static int32_t millis_error = 0;	// IMPORTANT cumulative number of millis total error
 
 // PID
 
@@ -121,23 +126,64 @@ static float total_error = 0;		// accumluated degrees of error
 static float prev_p = 0;			// the previous error (for "D" determination)
 static int pid_power = 0;			// power adjusted by pid algorithm
 
-static int32_t cur_cycle = 0;		// millis in this 'cycle' (forward zero crossing)
-static int32_t last_cycle = 0;		// millis at previous forward zero crossing
-static int32_t millis_error = 0;
+// CONTROL
+
+static int  push_or_pull  = -1;		// -1==push, 1=pull.  We start out pushing in all cases until the clock is running
+	// in order to smooth out frequency changes and prevent wild swings,
+	// once the motor is running, we only change the state when the
+	// error threshold has been exceeded
+
+static bool push_motor = 0;			// push the pendulum next time after it leaves deadzone (determined at zero crossing)
+static bool pull_motor = 0;			// pull motor immediately (could be local variable)
+static bool pulling = 0;			// we are in a pull at this time
+
+static uint32_t last_beat = 0xffffffff;
+static uint32_t last_sync = 0;
+static uint32_t last_stats = 0;
+static uint32_t last_ntp = 0;
+
+
+// NTP correction
+// We merely correct the ESP32 clock to NTP time occasionally,
+// and note the changes for debugging
+
+static int32_t  last_ntp_diff = 0;
+static uint32_t num_ntp_checks = 0;
+static uint32_t num_ntp_fails = 0;
+static uint32_t num_ntp_corrections = 0;
+static uint32_t total_abs_ntp_corrections = 0;
+static int32_t  total_ntp_corrections = 0;
+
+// Error correction
+
+static bool     in_sync = 0;
+static int 		sync_sign = 0;
+static int32_t  sync_millis = 0;
+static uint32_t num_sync_checks = 0;
+static uint32_t num_sync_changes = 0;
+static uint32_t total_sync_changes = 0;
+static uint32_t total_abs_sync_changes = 0;
+
 
 
 // Statistics
 
-static uint32_t num_beats   = 0;
-static int num_restarts     = 0;
-static int num_stalls_left  = 0;
-static int num_stalls_right = 0;
-static int32_t low_error    = 0;
-static int32_t high_error   = 0;
-static int32_t low_dur      = 0;
-static int32_t high_dur     = 0;
-static int min_power_used 	= 0;
-static int max_power_used   = 0;
+static bool update_stats = false;
+
+static uint32_t  stat_num_restarts;
+static uint32_t  stat_num_push;
+static uint32_t  stat_num_pull;
+static float	 stat_pull_ratio;
+static uint32_t  stat_min_power;
+static uint32_t  stat_max_power;
+static float	 stat_min_left;
+static float	 stat_max_left;
+static float	 stat_min_right;
+static float	 stat_max_right;
+static int32_t	 stat_min_cycle;
+static int32_t	 stat_max_cycle;
+static int32_t   stat_min_error;
+static int32_t   stat_max_error;
 
 
 // Buttons and pixel flashing
@@ -161,12 +207,15 @@ static uint32_t button_down = 0;
 
 
 
+
 // virtual
 void theClock::setup()	// override
 {
 	LOGU("theClock::setup() started");
 
 	pixels.clear();
+	pixels.setBrightness(64);
+
 	for (int i=NUM_PIXELS-1; i>=0; i--)
 	{
 		pixels.setPixelColor(i,MY_LED_CYAN);
@@ -256,7 +305,10 @@ void theClock::setup()	// override
 		ESP32_CORE_OTHER);
 
 	if (_clock_running)
+	{
+		delay(1200);	// wait for things to settle, including WiFi, etc
 		startClock();
+	}
 	else
 		flash_fxn = FUNCTION_STOPPED;
 
@@ -276,28 +328,14 @@ void theClock::init(bool cold)
 		clock_running = !_pid_mode;
 			// the clock is 'running' as soon as it's started
 			// in !pid_mode
-		use_state = _pull_mode == PULL_ONLY ? 1 : -1;
+		push_or_pull = _pull_mode == PULL_ONLY ? 1 : -1;
 			// start the clock preferentially pushing
-		LOGD("COLD_INIT  clock_running(%d) use_state(%d)",clock_running,use_state);
-	}
+		LOGD("COLD_INIT  clock_running(%d) push_or_pull(%d)",clock_running,push_or_pull);
 
-	push_motor = 0;
-	pull_motor = 0;
-	pulling = 0;
+		// we don't clear the min angle and max angle
+		// if clearing stats because that causes an
+		// artificial pulse of high power
 
-	total_error = 0;
-	prev_p = 0;
-
-	millis_error = 0;
-	cur_cycle = 0;
-	last_cycle = 0;
-
-	// we don't clear the min angle and max angle
-	// if clearing stats because that causes an
-	// artificial pulse of high power
-
-	if (cold)
-	{
 		as5600_cur = 0;
 		as5600_side = 0;
 		as5600_direction = 0;
@@ -310,54 +348,107 @@ void theClock::init(bool cold)
 		as5600_max_angle = 0;
 	}
 
+	push_motor = 0;
+	pull_motor = 0;
+	pulling = 0;
+
+	total_error = 0;
+	prev_p = 0;
+
+	cur_cycle = 0;
+	last_cycle = 0;
+	num_beats = 0;
+	millis_error = 0;
+
+	last_beat = 0xffffffff;
+	last_sync = 0;
+	last_stats = 0;
+	last_ntp = 0;
+
+	last_ntp_diff = 0;
+	num_ntp_checks = 0;
+	num_ntp_fails = 0;
+	num_ntp_corrections = 0;
+	total_abs_ntp_corrections = 0;
+	total_ntp_corrections = 0;
+
+	in_sync = 0;
+	sync_sign = 0;
+	sync_millis = 0;
+	num_sync_checks = 0;
+	num_sync_changes = 0;
+	total_sync_changes = 0;
+	total_abs_sync_changes = 0;
+
     the_clock->_cur_time = 0;
 	the_clock->_time_start = 0;
-	the_clock->_time_running = "";
-	the_clock->_stat_beats = 0;
-	the_clock->_stat_num_push = 0;
-	the_clock->_stat_num_pull = 0;
-	the_clock->_stat_pull_ratio = 0.5;
-	the_clock->_stat_min_power = 255;
-	the_clock->_stat_max_power = 0;
-	the_clock->_stat_min_left = MIN_INT;
-	the_clock->_stat_max_left = MAX_INT;
-	the_clock->_stat_min_right = MAX_INT;
-	the_clock->_stat_max_right = MIN_INT;
-	the_clock->_stat_min_cycle = MAX_INT;
-	the_clock->_stat_max_cycle = MIN_INT;
-	the_clock->_stat_min_error = MAX_INT;
-	the_clock->_stat_max_error = MIN_INT;
 
+	update_stats = false;
+
+	stat_num_restarts = 0;
+	stat_num_push = 0;
+	stat_num_pull = 0;
+	stat_pull_ratio = 0.5;
+	stat_min_power = 255;
+	stat_max_power = 0;
+	stat_min_left = MIN_INT;
+	stat_max_left = MAX_INT;
+	stat_min_right = MAX_INT;
+	stat_max_right = MIN_INT;
+	stat_min_cycle = MAX_INT;
+	stat_max_cycle = MIN_INT;
+	stat_min_error = MAX_INT;
+	stat_max_error = MIN_INT;
 }
+
 
 
 void theClock::clearStats()
 {
 	LOGU("STATISTICS CLEARED");
 	init(0);
-	if (clock_started)
-		the_clock->setTime(ID_TIME_START,time(NULL));
-
+	update_stats = true;
 }
 
 
 
 void theClock::startClock()
 {
+	last_change = millis();
+	flash_fxn = FUNCTION_NONE;
 	LOGU("startClock()");
+
+	the_clock->setString(ID_STAT_MSG1,"");
+	the_clock->setString(ID_STAT_MSG2,"");
+	the_clock->setString(ID_STAT_MSG3,"");
+	the_clock->setString(ID_STAT_MSG4,"");
+	the_clock->setString(ID_STAT_MSG5,"");
+	the_clock->setString(ID_STAT_MSG6,"");
+
+	// there is some question whether this single context free
+	// impulse is sufficient to guarantee that the clock starts.
+	// Another idea would be to use maximum pulses until the pendulum
+	// changes direction ...
 
 	init(1);
 	clock_started = 1;
+
 	setPixel(PIXEL_MAIN, MY_LED_WHITE);
 	pixels.show();
+
+	// give it a bit of a jiggle then a push
+
+	motor(1,_power_start);
+	delay(10);
 	motor(-1,_power_start);
 	delay(_dur_start);
 	motor(0,0);
+
 	setPixel(PIXEL_MAIN, MY_LED_BLACK);
 	pixels.show();
-	the_clock->setTime(ID_TIME_START,time(NULL));
+
 	pid_power = _power_pid;
-	flash_fxn = FUNCTION_NONE;
+	last_change = millis();
 }
 
 
@@ -413,10 +504,26 @@ void theClock::setZeroAngle()
 
 
 
+#include <sys/time.h>
+
 void theClock::onTestMotor(const myIOTValue *desc, int val)
 {
 	LOGU("onTestMotor %d",val);
-	motor(val,_power_min);
+
+	// millis_error += 1000 * val;
+	// motor(val,_power_min);
+
+	if (val == 0)
+	{
+		syncNTPTime();
+	}
+	else
+	{
+		int32_t a_time = time(NULL) + val;
+		timeval e_time = {a_time, 0};
+		settimeofday((const timeval*)&e_time, 0);
+	}
+
 }
 
 
@@ -430,6 +537,7 @@ int theClock::setPidPower(float avg_angle)
 {
 	float this_p = _target_angle - avg_angle;
 	total_error += this_p;
+
 	float this_i = total_error;
 	float this_d = prev_p - this_p;;
 	prev_p = this_p;
@@ -443,11 +551,6 @@ int theClock::setPidPower(float avg_angle)
 	if (new_power > _power_max) new_power = _power_max;
 	if (new_power  < _power_min) new_power = _power_min;
 	pid_power = new_power;
-
-	if (pid_power < min_power_used)
-		min_power_used = pid_power;
-	if (pid_power > max_power_used)
-		max_power_used = pid_power;
 
 	return pid_power;
 }
@@ -489,6 +592,7 @@ void theClock::run()
 	if (abs(dif) > AS4500_THRESHOLD)
 	{
 		as5600_cur = cur;
+		last_change = now;
 
 		// detect zero crossing
 
@@ -512,17 +616,65 @@ void theClock::run()
 				{
 					int err = cur_cycle;
 					err -= 1000;
+
+					// if sync_sign, we are in a sync and the err is
+					// added to the sync_millisuntil it changes sign,
+					// at which point the sync is "turned off" and the
+					// remaining error falls through to the 'millis_error'
+
+					if (sync_sign)
+					{
+						sync_millis += err;
+						int new_sign =
+							sync_millis > 0 ? 1 :
+							sync_millis < 0 ? -1 : 0;
+
+						if (new_sign != sync_sign)
+						{
+							LOGU("SYNC_DONE - remainder=%d",sync_millis);
+							err = sync_millis;
+							sync_sign = 0;
+							sync_millis = 0;
+							setPixel(1,MY_LED_BLACK);
+							pixels.show();
+						}
+
+						// if the sync is not turned off, it ate all the error millis
+
+						else
+						{
+							err = 0;
+						}
+					}
+
+					// might be zero contribution while syncing ...
+
 					millis_error += err;
 
-					_stat_beats++;
-					if (cur_cycle < _stat_min_cycle)
-						_stat_min_cycle = cur_cycle;
-					if (cur_cycle > _stat_max_cycle)
-						_stat_max_cycle = cur_cycle;
-					if (millis_error < _stat_min_error)
-						_stat_min_error = millis_error;
-					if (millis_error > _stat_max_error)
-						_stat_max_error = millis_error;
+					// yet another attempt to get beats to match seconds
+					// we are either on the 0th beat (starting the clock)
+					// or we start with the first beat one full cycle later ..
+
+					if (!_time_start)
+					{
+						update_stats = true;
+						_time_start = time(NULL);
+					}
+					else
+					{
+						if (!num_beats)
+							update_stats = true;
+						num_beats++;
+					}
+
+					if (cur_cycle < stat_min_cycle)
+						stat_min_cycle = cur_cycle;
+					if (cur_cycle > stat_max_cycle)
+						stat_max_cycle = cur_cycle;
+					if (millis_error < stat_min_error)
+						stat_min_error = millis_error;
+					if (millis_error > stat_max_error)
+						stat_max_error = millis_error;
 				}
 			}
 		}
@@ -547,10 +699,10 @@ void theClock::run()
 				as5600_temp_min = MAX_INT;
 				as5600_min_angle = angle(as5600_min);
 
-				if (as5600_min_angle < _stat_max_left)
-					_stat_max_left = as5600_min_angle;
-				if (as5600_min_angle > _stat_min_left)
-					_stat_min_left = as5600_min_angle;
+				if (as5600_min_angle < stat_max_left)
+					stat_max_left = as5600_min_angle;
+				if (as5600_min_angle > stat_min_left)
+					stat_min_left = as5600_min_angle;
 			}
 			else
 			{
@@ -558,10 +710,10 @@ void theClock::run()
 				as5600_temp_max = MIN_INT;
 				as5600_max_angle = angle(as5600_max);
 
-				if (as5600_max_angle > _stat_max_right)
-					_stat_max_right = as5600_max_angle;
-				if (as5600_max_angle < _stat_min_right)
-					_stat_min_right = as5600_max_angle;
+				if (as5600_max_angle > stat_max_right)
+					stat_max_right = as5600_max_angle;
+				if (as5600_max_angle < stat_min_right)
+					stat_min_right = as5600_max_angle;
 			}
 		}
 	}
@@ -569,13 +721,18 @@ void theClock::run()
 	//------------------------------------------------
 	// state machine
 	//------------------------------------------------
-	// !clock_running implies pid_mode
+	// !clock_running implies pid_mode ...
+	// We determine that the clock is 'running' when it has exceeded some
+	// critical minimum angle (which is less than the target angle) AND
+	// the accumulated error has been brought down to a reasonable number.
+	// It used to use _target_angle being exceeded on both sides.
 
 	if (clock_started)
 	{
 		if (!clock_running &&
-			as5600_max_angle >= _target_angle &&
-			as5600_min_angle <= -_target_angle)
+			as5600_max_angle >= MIN_RUNNING_ANGLE &&
+			as5600_min_angle <= -MIN_RUNNING_ANGLE &&
+			abs(total_error) < RUNNING_ERROR_THRESHOLD)
 		{
 			clock_running = 1;
 			LOGU("Clock running!");
@@ -586,14 +743,14 @@ void theClock::run()
 		{
 			if (clock_running &&
 				_pull_mode != PUSH_ONLY &&
-				use_state == -1 &&
-				millis_error > MILLIS_ERROR_THRESHOLD)
+				push_or_pull == -1 &&
+				millis_error + sync_millis > MILLIS_ERROR_THRESHOLD)
 			{
 				LOGD("SET STATE 1=PULL");
-				use_state = 1;
+				push_or_pull = 1;
 			}
 
-			if (use_state == -1)
+			if (push_or_pull == -1)
 				push_motor = true;
 		}
 
@@ -601,14 +758,14 @@ void theClock::run()
 		{
 			if (clock_running &&
 				_pull_mode != PULL_ONLY &&
-				use_state == 1 &&
-				millis_error < -MILLIS_ERROR_THRESHOLD)
+				push_or_pull == 1 &&
+				millis_error + sync_millis < -MILLIS_ERROR_THRESHOLD)
 			{
 				LOGD("SET STATE -1=PUSH");
-				use_state = -1;
+				push_or_pull = -1;
 			}
 
-			if (use_state == 1)
+			if (push_or_pull == 1)
 				pull_motor = true;
 		}
 	}
@@ -631,7 +788,7 @@ void theClock::run()
 		pull_motor = false;
 		motor_dir = 1;
 		use_power = _pid_mode ? setPidPower(avg_angle) : _power_pull;
-		_stat_num_pull++;
+		stat_num_pull++;
 		pulling = true;
 	}
 	if (push_motor && abs(as5600_cur_angle) > _dead_zone)
@@ -639,7 +796,7 @@ void theClock::run()
 		push_motor = false;
 		motor_dir = -1;
 		use_power = _pid_mode ? setPidPower(avg_angle) : _power_min;
-		_stat_num_push++;
+		stat_num_push++;
 
 		motor_start = now;
 		motor_dur = as5600_direction > 0 ? _dur_right : _dur_left;
@@ -652,6 +809,7 @@ void theClock::run()
 	if (motor_dir)
 	{
 		if (_plot_values == PLOT_OFF)
+		{
 			LOGD("%-6s %s(%-2d) %-4d %3.3f/%3.3f=%3.3f  target=%3.3f  accum=%3.3f  power=%d  err=%d",			// p=%3.3f i=%3.3f d=%3.3f
 				 clock_running ? "run" : "start",
 				 motor_dir > 0 ? "pull" : "push",
@@ -668,10 +826,14 @@ void theClock::run()
 				 use_power,
 				 millis_error);
 
-		if (use_power > _stat_max_power)
-			_stat_max_power = use_power;
-		if (use_power < _stat_min_power)
-			_stat_min_power = use_power;
+			if (sync_sign)
+				LOGI("SYNC sign(%d) millis(%d)",sync_sign,sync_millis);
+		}
+
+		if (use_power > stat_max_power)
+			stat_max_power = use_power;
+		if (use_power < stat_min_power)
+			stat_min_power = use_power;
 
 		motor(motor_dir,use_power);
 	}
@@ -690,6 +852,16 @@ void theClock::run()
 	{
 		pulling = false;
 		motor(0,0);
+	}
+
+	// Restart if necessary
+
+	if (clock_started &&
+		now - last_change > RESTART_MILLIS)
+	{
+		LOGE("RESTARTING CLOCK!!");
+		stat_num_restarts++;
+		startClock();
 	}
 
 
@@ -856,72 +1028,214 @@ void theClock::loop()	// override
 		}
 	}
 
+	// handle the 'starting' vs 'running' main pixel
 
-#if 0
-
-	// Testing NTP
-	// I am using the "pause" mode of _plot_values for this.
-	// Typically I turn off the clock.
-	// I am not sure if the ESP32 intercepts the UDP calls, but otherwise,
-	//     there should be some drift between them over time.
-
-
-	static uint32_t last_debug = 0;
-	if (_plot_values == PLOT_PAUSED && now > last_debug + 5000 )
+	static bool pixel_on = 0;
+	if (clock_started &&
+		!clock_running &&
+		!pixel_on)
 	{
-		last_debug = now;
-
-		uint32_t sys_time = time(NULL);
-		uint32_t ntp_time = getNtpTime();
-		LOGD("---> sys_time=%d   ntp_time=%d",sys_time, ntp_time);
+		pixel_on = 1;
+		setPixel(PIXEL_MAIN,MY_LED_MAGENTA);
+		pixels.show();
+	}
+	else if (pixel_on && clock_running)
+	{
+		pixel_on = 0;
+		setPixel(PIXEL_MAIN,MY_LED_BLACK);
+		pixels.show();
 	}
 
-#endif	// 0
 
+	//--------------------------------------
+	// static pixels
+	//--------------------------------------
 
-	//---------------------------------
-	// show stats every so many beats
-	//---------------------------------
-
-	static uint32_t last_num_beats;
-
-	if (_stat_interval &&
-		_stat_beats % _stat_interval == 0 &&
-		_plot_values == PLOT_OFF &&
-		clock_started &&
-		_stat_beats != last_num_beats)
+	static uint32_t last_pixel_right = MY_LED_BLACK;
+	uint32_t pixel_right =
+		!clock_started ? MY_LED_BLACK :
+		!clock_running ? MY_LED_MAGENTA :
+		millis_error > 2 * MILLIS_ERROR_THRESHOLD ? MY_LED_BLUE :
+		millis_error < -2 * MILLIS_ERROR_THRESHOLD ? MY_LED_RED :
+		MY_LED_GREEN;
+	if (last_pixel_right != pixel_right)
 	{
-		last_num_beats = _stat_beats;
+		last_pixel_right = pixel_right;
+		setPixel(0,pixel_right);
+		pixels.show();
+	}
 
-		setTime(ID_CUR_TIME,time(NULL));
+	//------------------------------------------
+	// THINGS BASED ON THE BEAT CHANGING
+	//------------------------------------------
+	// Do error correction time check
 
-		uint32_t secs = _cur_time - _time_start;
-		uint32_t mins = secs / 60;
-		uint32_t hours = mins / 60;
-		uint32_t save_secs = secs;
-		secs = secs - mins * 60;
-		mins = mins - hours * 60;
+	if (clock_started &&
+		last_beat != num_beats)
+	{
+		last_beat = num_beats;
+		static char buf[255];
 
-		static char buf[80];
-		sprintf(buf,"%02d:%02d:%02d  == %d secs",hours,mins,secs,save_secs);
-		setString(ID_TIME_RUNNING,buf);
+		// Do error correction
 
-		setInt	(ID_STAT_BEATS     	,_stat_beats);
-		setInt	(ID_STAT_NUM_PUSH  	,_stat_num_push);
-		setInt	(ID_STAT_NUM_PULL  	,_stat_num_pull);
-		setInt	(ID_STAT_MIN_POWER 	,_stat_min_power);
-		setInt	(ID_STAT_MAX_POWER 	,_stat_max_power);
-		setFloat(ID_STAT_MIN_LEFT  	,_stat_min_left);
-		setFloat(ID_STAT_MAX_LEFT  	,_stat_max_left);
-		setFloat(ID_STAT_MIN_RIGHT 	,_stat_min_right);
-		setFloat(ID_STAT_MAX_RIGHT 	,_stat_max_right);
-		setInt	(ID_STAT_MIN_CYCLE 	,_stat_min_cycle);
-		setInt	(ID_STAT_MAX_CYCLE 	,_stat_max_cycle);
-		setInt	(ID_STAT_MIN_ERROR 	,_stat_min_error);
-		setInt	(ID_STAT_MAX_ERROR 	,_stat_max_error);
+		if (!sync_sign &&
+			_time_start &&
+			clock_running &&
+			_sync_interval &&
+			num_beats - last_sync >= _sync_interval)
+		{
+			last_sync = num_beats;
+			num_sync_checks++;
 
-		if (_stat_num_push || _stat_num_pull)
-			setFloat(ID_STAT_PULL_RATIO	,((float)(_stat_num_pull))/((float)(_stat_num_pull +_stat_num_push)));
+			_cur_time = time(NULL);
+			int32_t num_secs = _cur_time - _time_start;
+			int32_t diff = num_secs - num_beats;
+
+			if (diff > 0)
+				sync_sign = 1;
+			else if (diff < 0)
+				sync_sign = -1;
+
+			if (sync_sign)
+			{
+				sync_millis = diff  * 1000;
+				num_sync_changes++;
+				total_sync_changes += sync_millis;
+				total_abs_sync_changes += abs(sync_millis);
+				LOGU("SYNC CHANGE!!  BEATS(%d) SECS(%d) diff(%d) sign=%d  millis=%d",
+						num_beats,
+						num_secs,
+						diff,
+						sync_sign,
+						sync_millis);
+				setPixel(1,sync_sign < 0 ? MY_LED_RED : MY_LED_BLUE);
+				pixels.show();
+			}
+
+			sprintf(buf,"SYNC%s sign(%d) millis(%d)  num(%d) chgs(%d) total(%d) abs(%d)%s",
+				(num_sync_changes ? "<b>" : ""),
+				sync_sign,
+				sync_millis,
+				num_sync_checks,
+				num_sync_changes,
+				total_sync_changes,
+				total_abs_sync_changes,
+				(num_sync_changes ? "</b>" : ""));
+			setString(ID_STAT_MSG5,buf);
+		}
+
+
+		// Do statistics
+
+		else if (_stat_interval &&
+				 _plot_values == PLOT_OFF &&
+				 last_stats != num_beats && (
+				 update_stats ||
+				 num_beats % _stat_interval == 0))
+		{
+			update_stats = false;
+			last_stats = num_beats;
+
+			setTime(ID_CUR_TIME,time(NULL));
+			setTime(ID_TIME_START,_time_start);
+			uint32_t full_secs = _time_start ? _cur_time - _time_start : 0;
+
+			uint32_t secs = full_secs;
+			uint32_t mins = secs / 60;
+			uint32_t hours = mins / 60;
+			secs = secs - mins * 60;
+			mins = mins - hours * 60;
+
+			sprintf(buf,"%s %02d:%02d:%02d  == %d SECS %d BEATS",
+				(clock_running?"RUNNING":"STARTING"),
+				hours,
+				mins,
+				secs,
+				full_secs,
+				num_beats);
+			setString(ID_STAT_MSG1,buf);
+
+			if (num_beats)	// to prevent annoying -32767's on 0th cycle
+			{
+				float pull_ratio = stat_num_push + stat_num_pull ?
+					((float)(stat_num_pull))/((float)(stat_num_pull + stat_num_push)) : 0;
+
+				sprintf(buf,"restarts(%d) pushes(%d) pulls(%d) pull_ratio(%0.3f)",
+						stat_num_restarts,
+						stat_num_push,
+						stat_num_pull,
+						pull_ratio);
+				setString(ID_STAT_MSG2,buf);
+
+				sprintf(buf,"power min(%d) max(%d)  angle left(%0.3f,%0.3f) to right(%0.3f,%0.3f)",
+					stat_min_power,
+					stat_max_power,
+					stat_max_left,
+					stat_min_left,
+					stat_min_right,
+					stat_max_right);
+				setString(ID_STAT_MSG3,buf);
+
+				sprintf(buf,"cycle(%d,%d)  error(%d,%d)",
+					stat_min_cycle,
+					stat_max_cycle,
+					stat_min_error,
+					stat_max_error);
+				setString(ID_STAT_MSG4,buf);
+			}
+		}
+
+		// Do NPT clock correction
+
+	#if CLOCK_WITH_NTP
+
+		else if (clock_running &&
+				_ntp_interval &&
+				num_beats - last_ntp >= _ntp_interval)
+		{
+			last_ntp = num_beats;
+			num_ntp_checks++;
+			uint32_t ntp_time = getNtpTime();
+			if (ntp_time)
+			{
+				uint32_t this_time = time(NULL);
+				int32_t diff_time = this_time - ntp_time;
+				const char *msg = "NTP_OK";
+
+				if (diff_time)
+				{
+					msg = "NTP_DIF";
+					LOGW("NTP TIME CHECK DIFFERENCE == %d",diff_time);
+					num_ntp_corrections ++;
+					last_ntp_diff = diff_time;
+					total_ntp_corrections += diff_time;
+					total_abs_ntp_corrections += abs(diff_time);
+					syncNTPTime();
+				}
+				else
+				{
+					LOGU("NTP TIME CHECK - NTP and local time() are the same");
+				}
+
+				sprintf(buf,"NTP num(%d) fails(%d)%s CORRECTIONS(%d)%s last(%d) total(%d) total_abs(%d)",
+					num_ntp_checks,
+					num_ntp_fails,
+					(num_ntp_corrections ? "<b>" : ""),
+					num_ntp_corrections,
+					(num_ntp_corrections ? "</b>" : ""),
+					last_ntp_diff,
+					total_ntp_corrections,
+					total_abs_ntp_corrections);
+				setString(ID_STAT_MSG6,buf);
+			}
+			else
+			{
+				num_ntp_fails++;
+				LOGE("NTP TIME CHECK FAILURE");
+			}
+		}
+
+	#endif
 
 	}
 

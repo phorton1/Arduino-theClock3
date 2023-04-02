@@ -32,12 +32,14 @@
 
 #define DEFAULT_DUR_LEFT		140
 #define DEFAULT_DUR_RIGHT		140
-#define DEFAULT_DUR_START		120
+#define DEFAULT_DUR_START		140
 
 #define DEFAULT_PID_P			12.0		// mostly proportional
 #define DEFAULT_PID_I			0.50		// very little integral
 #define DEFAULT_PID_D			-9.0		// lots of negative feedback on rate of change
 
+#define DEFAULT_NTP_INTERVAL	86400L	// one day
+#define DEFAULT_SYNC_INTERVAL	86400L	// one day
 #define DEFAULT_STAT_INTERVAL	0
 
 
@@ -48,30 +50,18 @@ static valueIdType dash_items[] = {
 	ID_PID_MODE,
 	ID_PULL_MODE,
 	ID_PLOT_VALUES,
-
 	ID_CLEAR_STATS,
-
 	ID_CUR_TIME,
 	ID_TIME_START,
-	ID_TIME_RUNNING,
-	ID_STAT_BEATS,
-
-	ID_STAT_MIN_CYCLE,
-	ID_STAT_MAX_CYCLE,
-	ID_STAT_MIN_ERROR,
-	ID_STAT_MAX_ERROR,
-
-	ID_STAT_MIN_POWER,
-	ID_STAT_MAX_POWER,
-	ID_STAT_MIN_LEFT,
-	ID_STAT_MAX_LEFT,
-	ID_STAT_MIN_RIGHT,
-	ID_STAT_MAX_RIGHT,
-
-	ID_STAT_NUM_PUSH,
-	ID_STAT_NUM_PULL,
-	ID_STAT_PULL_RATIO,
-
+	ID_STAT_MSG1,
+	ID_STAT_MSG2,
+	ID_STAT_MSG3,
+	ID_STAT_MSG4,
+	ID_STAT_MSG5,
+	ID_STAT_MSG6,
+	ID_SET_ZERO_ANGLE,
+	ID_ZERO_ANGLE,
+	ID_ZERO_ANGLE_F,
 	0,
 };
 
@@ -79,11 +69,8 @@ static valueIdType dash_items[] = {
 // what shows up on the "device" UI tab
 
 static valueIdType device_items[] = {
-	ID_SET_ZERO_ANGLE,
-	ID_ZERO_ANGLE,
-	ID_ZERO_ANGLE_F,
-	ID_DEAD_ZONE,
 	ID_TARGET_ANGLE,
+	ID_DEAD_ZONE,
 	ID_POWER_MIN,
     ID_POWER_PID,
 	ID_POWER_MAX,
@@ -95,6 +82,10 @@ static valueIdType device_items[] = {
 	ID_PID_P,
 	ID_PID_I,
 	ID_PID_D,
+#if CLOCK_WITH_NTP
+	ID_NTP_INTERVAL,
+#endif
+	ID_SYNC_INTERVAL,
 	ID_STAT_INTERVAL,
     ID_TEST_MOTOR,
 	0
@@ -127,7 +118,7 @@ const valDescriptor theClock::m_clock_values[] =
 	{ ID_RUNNING,      		VALUE_TYPE_BOOL,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_clock_running,(void *) onClockRunningChanged, { .int_range = { DEFAULT_RUNNING }} },
 	{ ID_PID_MODE,      	VALUE_TYPE_BOOL,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_pid_mode, 	(void *) onPIDModeChanged, 		{ .int_range = { DEFAULT_PID_MODE }} },
 
-	{ ID_PULL_MODE,      	VALUE_TYPE_ENUM,     VALUE_STORE_PUB,      VALUE_STYLE_NONE,       (void *) &_pull_mode, 	NULL,   						{ .enum_range = { 0, pullAllowed }} },
+	{ ID_PULL_MODE,      	VALUE_TYPE_ENUM,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_pull_mode, 	NULL,   						{ .enum_range = { 0, pullAllowed }} },
 	{ ID_PLOT_VALUES,      	VALUE_TYPE_ENUM,     VALUE_STORE_PUB,      VALUE_STYLE_NONE,       (void *) &_plot_values, 	(void *) onPlotValuesChanged,   { .enum_range = { 0, plotAllowed }} },
 
 	{ ID_SET_ZERO_ANGLE,  	VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    (void *) setZeroAngle },
@@ -144,7 +135,7 @@ const valDescriptor theClock::m_clock_values[] =
 
 	{ ID_DUR_LEFT,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_dur_left,		NULL,  { .int_range = { DEFAULT_DUR_LEFT,   	0,  1000}} },
 	{ ID_DUR_RIGHT,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_dur_right,	NULL,  { .int_range = { DEFAULT_DUR_RIGHT,   	0,  1000}} },
-	{ ID_DUR_START,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_dur_start,	NULL,  { .int_range = { DEFAULT_DUR_START,   	0,  255}} },
+	{ ID_DUR_START,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_dur_start,	NULL,  { .int_range = { DEFAULT_DUR_START,   	0,  1000}} },
 
 	{ ID_PID_P,  			VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_pid_P,		NULL,  { .float_range = { DEFAULT_PID_P,   	-1000,  1000}} },
 	{ ID_PID_I,  			VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_pid_I,		NULL,  { .float_range = { DEFAULT_PID_I,    -1000,  1000}} },
@@ -154,26 +145,22 @@ const valDescriptor theClock::m_clock_values[] =
 
 	{ ID_CUR_TIME,   		VALUE_TYPE_TIME,     VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_cur_time, },
 	{ ID_TIME_START,   		VALUE_TYPE_TIME,     VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_time_start, },
-	{ ID_TIME_RUNNING,      VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_time_running, },
-	{ ID_STAT_BEATS,  		VALUE_TYPE_INT,      VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_beats, 		NULL,  { .int_range = { 0, -DEVICE_MAX_INT-1,DEVICE_MAX_INT}} },
-	{ ID_STAT_NUM_PUSH,  	VALUE_TYPE_INT,      VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_num_push, 	NULL,  { .int_range = { 0, -DEVICE_MAX_INT-1,DEVICE_MAX_INT}} },
-	{ ID_STAT_NUM_PULL,  	VALUE_TYPE_INT,      VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_num_pull, 	NULL,  { .int_range = { 0, -DEVICE_MAX_INT-1,DEVICE_MAX_INT}} },
 
-	{ ID_STAT_PULL_RATIO,  	VALUE_TYPE_FLOAT,    VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_pull_ratio,	NULL,  { .float_range = { 0.5, 0, 1}} },
+	{ ID_STAT_MSG1,      	VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_msg1, },
+	{ ID_STAT_MSG2,      	VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_msg2, },
+	{ ID_STAT_MSG3,      	VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_msg3, },
+	{ ID_STAT_MSG4,      	VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_msg4, },
+	{ ID_STAT_MSG5,      	VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_msg5, },
+	{ ID_STAT_MSG6,      	VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_msg6, },
 
-	{ ID_STAT_MIN_POWER,	VALUE_TYPE_INT,      VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_min_power,	NULL,  { .int_range = { 0, -DEVICE_MAX_INT-1,DEVICE_MAX_INT}} },
-	{ ID_STAT_MAX_POWER,	VALUE_TYPE_INT,      VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_max_power,	NULL,  { .int_range = { 0, -DEVICE_MAX_INT-1,DEVICE_MAX_INT}} },
-	{ ID_STAT_MIN_LEFT, 	VALUE_TYPE_FLOAT,    VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_min_left,	NULL,  { .float_range = { 0, -360, 360}} },
-	{ ID_STAT_MAX_LEFT, 	VALUE_TYPE_FLOAT,    VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_max_left,	NULL,  { .float_range = { 0, -360, 360}} },
-	{ ID_STAT_MIN_RIGHT,	VALUE_TYPE_FLOAT,    VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_min_right,	NULL,  { .float_range = { 0, -360, 360}} },
-	{ ID_STAT_MAX_RIGHT,	VALUE_TYPE_FLOAT,    VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_max_right,	NULL,  { .float_range = { 0, -360, 360}} },
-	{ ID_STAT_MIN_CYCLE,	VALUE_TYPE_INT,      VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_min_cycle,	NULL,  { .int_range = { 0, -DEVICE_MAX_INT-1,DEVICE_MAX_INT}} },
-	{ ID_STAT_MAX_CYCLE,	VALUE_TYPE_INT,      VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_max_cycle,	NULL,  { .int_range = { 0, -DEVICE_MAX_INT-1,DEVICE_MAX_INT}} },
-	{ ID_STAT_MIN_ERROR,	VALUE_TYPE_INT,      VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_min_error,	NULL,  { .int_range = { 0, -DEVICE_MAX_INT-1,DEVICE_MAX_INT}} },
-	{ ID_STAT_MAX_ERROR,	VALUE_TYPE_INT,      VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_max_error,	NULL,  { .int_range = { 0, -DEVICE_MAX_INT-1,DEVICE_MAX_INT}} },
+	// 3000000L == about one month of seconds
 
-	{ ID_STAT_INTERVAL,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_stat_interval, 	NULL,  { .int_range = { DEFAULT_STAT_INTERVAL,1,3600}} },
-	{ ID_TEST_MOTOR,  		VALUE_TYPE_INT,    	 VALUE_STORE_PUB,      VALUE_STYLE_NONE,   		(void *) &_test_motor,	(void *) onTestMotor,  { .int_range = { 0, -1, 1}} },
+#if CLOCK_WITH_NTP
+	{ ID_NTP_INTERVAL,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_ntp_interval, 	NULL,  { .int_range = { DEFAULT_NTP_INTERVAL,1,3000000L}} },
+#endif
+	{ ID_SYNC_INTERVAL,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_sync_interval, 	NULL,  { .int_range = { DEFAULT_SYNC_INTERVAL,1,3000000L}} },
+	{ ID_STAT_INTERVAL,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_stat_interval, 	NULL,  { .int_range = { DEFAULT_STAT_INTERVAL,1,3000000L}} },
+	{ ID_TEST_MOTOR,  		VALUE_TYPE_INT,    	 VALUE_STORE_PUB,      VALUE_STYLE_NONE,   	   (void *) &_test_motor,		(void *) onTestMotor,  { .int_range = { 0, -10, 10}} },
 };
 
 
@@ -209,22 +196,17 @@ float  	theClock::_pid_D;
 
 uint32_t theClock::_cur_time;
 uint32_t theClock::_time_start;
-String 	 theClock::_time_running;
-uint32_t theClock::_stat_beats;
-uint32_t theClock::_stat_num_push;
-uint32_t theClock::_stat_num_pull;
-float	 theClock::_stat_pull_ratio;
-uint32_t theClock::_stat_min_power;
-uint32_t theClock::_stat_max_power;
-float	 theClock::_stat_min_left;
-float	 theClock::_stat_max_left;
-float	 theClock::_stat_min_right;
-float	 theClock::_stat_max_right;
-int32_t	 theClock::_stat_min_cycle;
-int32_t	 theClock::_stat_max_cycle;
-int32_t  theClock::_stat_min_error;
-int32_t  theClock::_stat_max_error;
+String 	 theClock::_stat_msg1;
+String 	 theClock::_stat_msg2;
+String 	 theClock::_stat_msg3;
+String 	 theClock::_stat_msg4;
+String 	 theClock::_stat_msg5;
+String 	 theClock::_stat_msg6;
 
+#if CLOCK_WITH_NTP
+	uint32_t theClock::_ntp_interval;
+#endif
+uint32_t theClock::_sync_interval;
 uint32_t theClock::_stat_interval;
 int 	 theClock::_test_motor;
 

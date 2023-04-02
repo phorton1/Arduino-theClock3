@@ -5,6 +5,8 @@
 #include <myIOTLog.h>
 #include <WiFi.h>
 #include <WiFiUdp.h>
+#include <myIOTdevice.h>
+
 
 static unsigned int localPort = 2390;      // local port to listen for UDP packets
 static const char* ntpServer = "pool.ntp.org";
@@ -110,4 +112,23 @@ uint32_t getNtpTime()
 
 	LOGE("No NTP Response :-(");
 	return 0; // return 0 if unable to get the time
+}
+
+
+
+void syncNTPTime()
+	// This snippet, copied from myIOT::myIOTHTTP.cpp, causes the
+	// ESP32 to synchronize it's clock to the given NTP server.
+	// It is an obtruse way of doing things, and I have no idea
+	// ho long it takes.
+{
+        LOGD("Synchronizing to ntpServer");
+        const char* ntpServer = "pool.ntp.org";
+        uint32_t tz_enum = my_iot_device->getEnum(ID_DEVICE_TZ);
+        const char *tz_string = tzString(static_cast<IOT_TIMEZONE>(tz_enum));
+        LOGI(" using TZ(%d)=%s",tz_enum,tz_string);
+        configTime(0, 0, ntpServer);	// <<-- THE magic is here
+        setenv("TZ", tz_string, 1);
+        tzset();
+
 }

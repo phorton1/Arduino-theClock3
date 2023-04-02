@@ -1,3 +1,5 @@
+## Basic Algorithm
+
 The algorithm works by using a PID controller to target the ANGLE by using
 "pushes" after crossing zero, or "pulls" after turning around at the extremes.
 Pushes tend to slow the clock down a bit, and pulls tend to speed it up.
@@ -28,5 +30,22 @@ Pushes tend to slow the clock down a bit, and pulls tend to speed it up.
 	PID_MODE, so that the pendulum swings wide, but not past design considerations.
 
 
+## Controlling clock drift - ticks/beats versus ESP32 clock versus NTP
 
+As initially implemented, the clock manipulates the pendulum so that ticks average to 1000 ms.
 
+There is initially no correlation between the ESP32 clock, or NTP, and the pendulum.
+
+There is concern about seconds zero crossing and superflously attempting to correct the clock.
+In other words the pendulum is not perfectly syncrhonized so that its seconds 'line up' with ESP32 clock seconds,
+and if we simply assume it is aligned, then we may find ourselves in a situation where we are correcting
+back and forth across a 'seconds boundry'.  In fact it is typically the case that the number of 'beats'
+the clock has performed, and the number of 'seconds' it has been running differ by one.
+
+Therefore one idea is to ONLY correct the clock by one second
+when it is two or more seconds fast or slow.
+
+Kind of the same argument can be made for NPT versus ESP32 clock time.  As much as we would like to assume
+that they are exactly synchronized (to closer than 1ms) we cannot guarantee that.
+
+Plus we would like to keep track of the corrections made, "know" them, so that we can see them in the UI.

@@ -62,7 +62,12 @@
 // from nptTime.cpp
 //--------------------------------
 
-extern uint32_t getNtpTime();
+#define CLOCK_WITH_NTP   1
+
+#if CLOCK_WITH_NTP
+	extern uint32_t getNtpTime();
+	extern void syncNTPTime();
+#endif
 
 
 //------------------------
@@ -98,23 +103,21 @@ extern uint32_t getNtpTime();
 
 #define ID_CUR_TIME			"CUR_TIME"
 #define ID_TIME_START       "TIME_START"
-#define ID_TIME_RUNNING		"TIME_RUNNING"
-#define ID_STAT_BEATS       "STAT_BEATS"
-#define ID_STAT_NUM_PUSH    "STAT_NUM_PUSH"
-#define ID_STAT_NUM_PULL    "STAT_NUM_PULL"
-#define ID_STAT_PULL_RATIO  "STAT_PULL_RATIO"
-#define ID_STAT_MIN_POWER   "STAT_MIN_POWER"
-#define ID_STAT_MAX_POWER   "STAT_MAX_POWER"
-#define ID_STAT_MIN_LEFT    "STAT_MIN_LEFT"
-#define ID_STAT_MAX_LEFT    "STAT_MAX_LEFT"
-#define ID_STAT_MIN_RIGHT   "STAT_MIN_RIGHT"
-#define ID_STAT_MAX_RIGHT   "STAT_MAX_RIGHT"
-#define ID_STAT_MIN_CYCLE   "STAT_MIN_CYCLE"
-#define ID_STAT_MAX_CYCLE   "STAT_MAX_CYCLE"
-#define ID_STAT_MIN_ERROR   "STAT_MIN_ERROR"
-#define ID_STAT_MAX_ERROR   "STAT_MAX_ERROR"
 
+#define ID_STAT_MSG1		"STAT_MSG1"
+#define ID_STAT_MSG2		"STAT_MSG2"
+#define ID_STAT_MSG3		"STAT_MSG3"
+#define ID_STAT_MSG4		"STAT_MSG4"
+#define ID_STAT_MSG5		"STAT_MSG5"
+#define ID_STAT_MSG6		"STAT_MSG6"
+
+#if CLOCK_WITH_NTP
+	#define ID_NTP_INTERVAL	"NTP_INTERVAL"
+#endif
+
+#define ID_SYNC_INTERVAL	"SYNC_INTERVAL"
 #define ID_STAT_INTERVAL	"STAT_INTERVAL"
+
 
 #define ID_TEST_MOTOR		"MOTOR"
 	// A CONFIGURATION COMMAND TO TEST THE MOTOR
@@ -172,24 +175,19 @@ private:
 	static float _pid_I;
 	static float _pid_D;
 
-    static uint32_t _cur_time;
+	static uint32_t _cur_time;
 	static uint32_t _time_start;
-	static String 	_time_running;
-	static uint32_t _stat_beats;
-	static uint32_t _stat_num_push;
-	static uint32_t _stat_num_pull;
-	static float	_stat_pull_ratio;
-	static uint32_t _stat_min_power;
-	static uint32_t _stat_max_power;
-	static float	_stat_min_left;
-	static float	_stat_max_left;
-	static float	_stat_min_right;
-	static float	_stat_max_right;
-	static int32_t	_stat_min_cycle;
-	static int32_t	_stat_max_cycle;
-	static int32_t  _stat_min_error;
-	static int32_t  _stat_max_error;
+	static String 	_stat_msg1;
+	static String 	_stat_msg2;
+	static String 	_stat_msg3;
+	static String 	_stat_msg4;
+	static String 	_stat_msg5;
+	static String 	_stat_msg6;
 
+#if CLOCK_WITH_NTP
+	static uint32_t _ntp_interval;
+#endif
+	static uint32_t _sync_interval;
 	static uint32_t _stat_interval;
 
 	static int _test_motor;		// memory only, only happens onChange
