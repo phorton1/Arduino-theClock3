@@ -32,15 +32,22 @@
 
 #define DEFAULT_DUR_LEFT		140
 #define DEFAULT_DUR_RIGHT		140
-#define DEFAULT_DUR_START		140
+#define DEFAULT_DUR_START		500
 
 #define DEFAULT_PID_P			12.0		// mostly proportional
 #define DEFAULT_PID_I			0.50		// very little integral
 #define DEFAULT_PID_D			-9.0		// lots of negative feedback on rate of change
 
+#define DEFAULT_RUNNING_ANGLE   4.0
+#define DEFAULT_RUNNING_ERROR   2.0
+
+#define DEFAULT_PUSH_PULL_MS	40
+#define DEFAULT_RESTART_MILLIS  5000
+
 #define DEFAULT_NTP_INTERVAL	86400L	// one day
 #define DEFAULT_SYNC_INTERVAL	7200L	// two hours
 #define DEFAULT_STAT_INTERVAL	0
+
 
 
 // what shows up on the "dashboard" UI tab
@@ -62,6 +69,9 @@ static valueIdType dash_items[] = {
 	ID_SET_ZERO_ANGLE,
 	ID_ZERO_ANGLE,
 	ID_ZERO_ANGLE_F,
+    ID_TEST_MOTOR,
+	ID_DIDDLE_CLOCK,
+	ID_SYNC_NTP,
 	0,
 };
 
@@ -82,12 +92,15 @@ static valueIdType device_items[] = {
 	ID_PID_P,
 	ID_PID_I,
 	ID_PID_D,
+	ID_RUNNING_ANGLE,
+	ID_RUNNING_ERROR,
+	ID_PUSH_PULL_MS,
+	ID_RESTART_MILLIS,
 #if CLOCK_WITH_NTP
 	ID_NTP_INTERVAL,
 #endif
 	ID_SYNC_INTERVAL,
 	ID_STAT_INTERVAL,
-    ID_TEST_MOTOR,
 	0
 };
 
@@ -141,6 +154,11 @@ const valDescriptor theClock::m_clock_values[] =
 	{ ID_PID_I,  			VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_pid_I,		NULL,  { .float_range = { DEFAULT_PID_I,    -1000,  1000}} },
 	{ ID_PID_D,  			VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_pid_D,		NULL,  { .float_range = { DEFAULT_PID_D,   	-1000,  1000}} },
 
+	{ ID_RUNNING_ANGLE,  	VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_running_angle, NULL, { .float_range = { DEFAULT_RUNNING_ANGLE, 0, 12}} },
+	{ ID_RUNNING_ERROR,  	VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_running_error, NULL, { .float_range = { DEFAULT_RUNNING_ERROR, 1.0, 100}} },
+	{ ID_PUSH_PULL_MS,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_push_pull_ms,  NULL, { .int_range = { DEFAULT_PUSH_PULL_MS,   	0,  5000}} },
+	{ ID_RESTART_MILLIS,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_restart_millis,NULL, { .int_range = { DEFAULT_RESTART_MILLIS,   	0,  60000}} },
+
 	{ ID_CLEAR_STATS,       VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    (void *) clearStats },
 
 	{ ID_CUR_TIME,   		VALUE_TYPE_TIME,     VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_cur_time, },
@@ -160,7 +178,10 @@ const valDescriptor theClock::m_clock_values[] =
 #endif
 	{ ID_SYNC_INTERVAL,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_sync_interval, 	NULL,  { .int_range = { DEFAULT_SYNC_INTERVAL,1,3000000L}} },
 	{ ID_STAT_INTERVAL,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_stat_interval, 	NULL,  { .int_range = { DEFAULT_STAT_INTERVAL,1,3000000L}} },
-	{ ID_TEST_MOTOR,  		VALUE_TYPE_INT,    	 VALUE_STORE_PUB,      VALUE_STYLE_NONE,   	   (void *) &_test_motor,		(void *) onTestMotor,  { .int_range = { 0, -10, 10}} },
+
+	{ ID_TEST_MOTOR,  		VALUE_TYPE_INT,    	 VALUE_STORE_PUB,      VALUE_STYLE_NONE,   	   (void *) &_test_motor,		(void *) onTestMotor,  { .int_range = { 0, -1, 1}} },
+	{ ID_DIDDLE_CLOCK,  	VALUE_TYPE_INT,    	 VALUE_STORE_PUB,      VALUE_STYLE_NONE,   	   (void *) &_diddle_clock,		(void *) onDiddleClock,  { .int_range = { 0, -10, 10}} },
+	{ ID_SYNC_NTP,  		VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    	(void *) onSyncNTP },
 };
 
 
@@ -194,6 +215,11 @@ float  	theClock::_pid_P;
 float  	theClock::_pid_I;
 float  	theClock::_pid_D;
 
+float  	theClock::_running_angle;
+float  	theClock::_running_error;
+int 	theClock::_push_pull_ms;
+uint32_t theClock::_restart_millis;
+
 uint32_t theClock::_cur_time;
 uint32_t theClock::_time_start;
 String 	 theClock::_stat_msg1;
@@ -208,7 +234,9 @@ String 	 theClock::_stat_msg6;
 #endif
 uint32_t theClock::_sync_interval;
 uint32_t theClock::_stat_interval;
+
 int 	 theClock::_test_motor;
+int 	 theClock::_diddle_clock;
 
 
 // ctor

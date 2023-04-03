@@ -14,8 +14,8 @@
 // When just run from the default core(1), along with the Webserver, it
 // regularly misses crossings, etc, esp when the myIOT WebSocket goes on and off.
 //
-// So I made it a task on the unused core 0. However, tasks are limited to 10ms
-// time slices, and so it did not work at first.
+// So I made it a task on the unused core 0. However, usually tasks are limited
+// to 10ms time slices, and so it did not work at first.
 //
 // I was able to get it working. First I changed the call to vTaskDelay(0)
 // as I read that would yield without delay.  No joy.  I set the priority
@@ -30,7 +30,7 @@
 // so each bit is 0.087890625 degrees.  For direction determination, we require a
 // threshold change > AS4500_THRESHOLD.
 
-#define AS4500_THRESHOLD    4
+#define AS4500_THRESHOLD    4		// 5 required for change == about 0.5 degrees
 
 static int as5600_cur = 0;			// bits, not degrees
 static int as5600_side = 0;			// trying zero crossing
@@ -41,7 +41,7 @@ static int as5600_max = 0;
 static int as5600_temp_min = 10240;	// and the temps are reset to zero for next go round
 static int as5600_temp_max = -10240;
 
-// angles are calculated for convenience
+// angles are calculated from integers when they change
 
 static float as5600_cur_angle = 0;
 static float as5600_min_angle = 0;
@@ -75,7 +75,6 @@ void motor(int state, int power)
 	ledcWrite(0, use_power);
 	digitalWrite(PIN_IN1,state == 1  ? 1 : 0);
 	digitalWrite(PIN_IN2,state == -1 ? 1 : 0);
-	// LOGD("motor(%d,%d)",state,power);
 }
 
 
@@ -85,53 +84,44 @@ void motor(int state, int power)
 
 static Adafruit_NeoPixel pixels(NUM_PIXELS,PIN_LEDS);
 
-static bool show_pixels = false;
-
 void setPixel(int num, uint32_t color)
 {
 	pixels.setPixelColor(num,color);
-	show_pixels = true;
 }
 
 
 //--------------------------------------------
 // vars
 //--------------------------------------------
-#define RESTART_MILLIS   5000
-	// after 5 seconds of no pendulum movement, we restart the clock
-
-#define MIN_RUNNING_ANGLE  4.0
-#define RUNNING_ERROR_THRESHOLD  2.0
-	// The clock is considered 'running' after it has been 'started' and gotten
-	// at least the minimum running angle and given total millis_error
-
-#define MILLIS_ERROR_THRESHOLD		40
-	// Once it IS running, we only switch from pushing to pulling if the
-	// clock gets this many millis fast or slow (total millis_error)
 
 // BASIC STATE
+// NOTE that underscore _clock_running is the UI variable!!!
 
 static bool clock_started = 0;		// the clock has been started
-static bool clock_running = 0;		// the clock has achieved the target millis_error and so is considered 'running'
+static uint32_t clock_starting = 0;	// time at which we started initial clock starting pulse (push)
+static bool clock_running = 0;		// the clock has achieved the target running_angle and running_error and so is considered 'running'
 static uint32_t last_change = 0;	// millis of last noticible pendulum movement
 
 static int32_t 	cur_cycle = 0;		// millis in this 'cycle' (forward zero crossing)
 static int32_t 	last_cycle = 0;		// millis at previous forward zero crossing
-static uint32_t num_beats = 0;		// number of beats (while running)
-static int32_t millis_error = 0;	// IMPORTANT cumulative number of millis total error
+static uint32_t num_beats = 0;		// number of beats (while clock_started && !clock_starting)
+static int32_t  total_millis_errror = 0;	// important cumulative number of millis total error
 
 // PID
 
-static float total_error = 0;		// accumluated degrees of error
-static float prev_p = 0;			// the previous error (for "D" determination)
+static float total_ang_error = 0;	// accumluated degrees of error (for "I")
+static float prev_ang_error = 0;	// the previous error (for "D")
 static int pid_power = 0;			// power adjusted by pid algorithm
 
 // CONTROL
 
-static int  push_or_pull  = -1;		// -1==push, 1=pull.  We start out pushing in all cases until the clock is running
-	// in order to smooth out frequency changes and prevent wild swings,
-	// once the motor is running, we only change the state when the
-	// error threshold has been exceeded
+static int  push_or_pull  = -1;		// -1==push, 1=pull.
+	// We start out pushing in all cases until the clock is 'running'.
+	// In order to smooth out frequency changes and prevent wild swings,
+	// once the motor is running, we only change from pushing to pulling
+	// and vice versa when the total_millis_error exceeds +/- _push_pull_ms
+	// which defaults to 40 milliseconds of accumulated error, and which
+	// takes 20-40 beats to switch each time
 
 static bool push_motor = 0;			// push the pendulum next time after it leaves deadzone (determined at zero crossing)
 static bool pull_motor = 0;			// pull motor immediately (could be local variable)
@@ -170,6 +160,7 @@ static uint32_t total_abs_sync_changes = 0;
 
 static bool update_stats = false;
 
+static uint32_t  stat_num_bad_reads;
 static uint32_t  stat_num_restarts;
 static uint32_t  stat_num_push;
 static uint32_t  stat_num_pull;
@@ -184,28 +175,28 @@ static int32_t	 stat_min_cycle;
 static int32_t	 stat_max_cycle;
 static int32_t   stat_min_error;
 static int32_t   stat_max_error;
+static uint32_t  stat_num_push_syncs;
+static uint32_t  stat_num_pull_syncs;
 
 
-// Buttons and pixel flashing
 
-#define FUNCTION_NONE  			0
-#define FUNCTION_STOPPED		1	// white		state
-#define FUNCTION_STOPPING		2	// white		short press
-#define FUNCTION_STARTING       3	// green		short press
-#define FUNCTION_WIFI_ON        4	// blue			long press (over 2 seconds)
-#define FUNCTION_WIFI_OFF       5	// magenta		long press (over 2 seconds)
-#define FUNCTION_RESET			6	// red			super long press (over 8 seconds)
-
-static int flash_fxn = FUNCTION_NONE;
-static bool flash_on = 0;
-static int flash_count = 0;
-static uint32_t flash_dur = 0;
-static uint32_t flash_time = 0;
-
-static uint32_t button_chk = 0;
-static uint32_t button_down = 0;
-
-
+#if 0
+	// Buttons and pixel flashing
+	#define FUNCTION_NONE  			0
+	#define FUNCTION_STOPPED		1	// white		state
+	#define FUNCTION_STOPPING		2	// white		short press
+	#define FUNCTION_STARTING       3	// green		short press
+	#define FUNCTION_WIFI_ON        4	// blue			long press (over 2 seconds)
+	#define FUNCTION_WIFI_OFF       5	// magenta		long press (over 2 seconds)
+	#define FUNCTION_RESET			6	// red			super long press (over 8 seconds)
+	static int flash_fxn = FUNCTION_NONE;
+	static bool flash_on = 0;
+	static int flash_count = 0;
+	static uint32_t flash_dur = 0;
+	static uint32_t flash_time = 0;
+	static uint32_t button_chk = 0;
+	static uint32_t button_down = 0;
+#endif
 
 
 // virtual
@@ -264,8 +255,8 @@ void theClock::setup()	// override
 			}
 		}
 	}
-	LOGD("AS5600 connected=%d",connected);
 
+	LOGD("AS5600 connected=%d",connected);
 
 	//------------------------------
 	// call myIOTDevice::setup()
@@ -288,8 +279,13 @@ void theClock::setup()	// override
 	pixels.setPixelColor(PIXEL_MAIN,MY_LED_GREEN);
 	pixels.show();
 	if (_zero_angle == 0)
+	{
 		setZeroAngle();
+	}
+	LOGU("_zero_angle=%d == %0.3f degrees",_zero_angle,angle(_zero_angle));
 	delay(500);
+
+	// debug_angle("in theClock::setup() before starting clockTask");
 
 	//------------------------------------------------
 	// Start the clock task and away we go ...
@@ -304,13 +300,6 @@ void theClock::setup()	// override
 		NULL,           // returned task handle
 		ESP32_CORE_OTHER);
 
-	if (_clock_running)
-	{
-		delay(1200);	// wait for things to settle, including WiFi, etc
-		startClock();
-	}
-	else
-		flash_fxn = FUNCTION_STOPPED;
 
 	LOGU("theClock::setup() finished");
 	pixels.clear();
@@ -322,12 +311,14 @@ void theClock::setup()	// override
 
 void theClock::init(bool cold)
 {
+	clock_starting = 0;
+
 	if (cold)
 	{
 		clock_started = 0;
 		clock_running = !_pid_mode;
-			// the clock is 'running' as soon as it's started
-			// in !pid_mode
+			// the clock is 'running' as soon as it's started in !pid_mode
+			// otherwise we wait for the pid controller to stabilize
 		push_or_pull = _pull_mode == PULL_ONLY ? 1 : -1;
 			// start the clock preferentially pushing
 		LOGD("COLD_INIT  clock_running(%d) push_or_pull(%d)",clock_running,push_or_pull);
@@ -336,7 +327,8 @@ void theClock::init(bool cold)
 		// if clearing stats because that causes an
 		// artificial pulse of high power
 
-		as5600_cur = 0;
+		as5600_cur = _zero_angle;
+			// initial angle starts as biased zero
 		as5600_side = 0;
 		as5600_direction = 0;
 		as5600_min = 0;
@@ -352,13 +344,13 @@ void theClock::init(bool cold)
 	pull_motor = 0;
 	pulling = 0;
 
-	total_error = 0;
-	prev_p = 0;
+	total_ang_error = 0;
+	prev_ang_error = 0;
 
 	cur_cycle = 0;
 	last_cycle = 0;
 	num_beats = 0;
-	millis_error = 0;
+	total_millis_errror = 0;
 
 	last_beat = 0xffffffff;
 	last_sync = 0;
@@ -385,6 +377,7 @@ void theClock::init(bool cold)
 
 	update_stats = false;
 
+	stat_num_bad_reads = 0;
 	stat_num_restarts = 0;
 	stat_num_push = 0;
 	stat_num_pull = 0;
@@ -399,6 +392,8 @@ void theClock::init(bool cold)
 	stat_max_cycle = MIN_INT;
 	stat_min_error = MAX_INT;
 	stat_max_error = MIN_INT;
+	stat_num_push_syncs = 0;
+    stat_num_pull_syncs = 0;
 }
 
 
@@ -414,9 +409,11 @@ void theClock::clearStats()
 
 void theClock::startClock()
 {
-	last_change = millis();
-	flash_fxn = FUNCTION_NONE;
 	LOGU("startClock()");
+	last_change = millis();
+	init(1);
+
+	// clear statistic display
 
 	the_clock->setString(ID_STAT_MSG1,"");
 	the_clock->setString(ID_STAT_MSG2,"");
@@ -425,44 +422,24 @@ void theClock::startClock()
 	the_clock->setString(ID_STAT_MSG5,"");
 	the_clock->setString(ID_STAT_MSG6,"");
 
-	// there is some question whether this single context free
-	// impulse is sufficient to guarantee that the clock starts.
-	// Another idea would be to use maximum pulses until the pendulum
-	// changes direction ...
+	// turn the motor on for initial push of _dur_start
 
-	init(1);
-	clock_started = 1;
-
-	setPixel(PIXEL_MAIN, MY_LED_WHITE);
-	pixels.show();
-
-	// give it a bit of a jiggle then a push
-
-	motor(1,_power_start);
-	delay(10);
 	motor(-1,_power_start);
-	delay(_dur_start);
-	motor(0,0);
 
-	setPixel(PIXEL_MAIN, MY_LED_BLACK);
-	pixels.show();
+	// set final variables
 
 	pid_power = _power_pid;
-	last_change = millis();
+	clock_starting = last_change = millis();
+	clock_started = 1;
 }
 
 
 void theClock::stopClock()
 {
-	init(0);
-
 	clock_started = 0;
 	clock_running = 0;
-
 	motor(0,0);
-	flash_fxn = FUNCTION_STOPPED;
-	flash_count = 0;
-	flash_time = millis();
+	init(0);
 	LOGU("stopClock()");
 }
 
@@ -471,10 +448,6 @@ void theClock::stopClock()
 void theClock::onClockRunningChanged(const myIOTValue *desc, bool val)
 {
 	LOGU("onClockRunningChanged(%d)",val);
-	if (val)
-		startClock();
-	else
-		stopClock();
 }
 
 
@@ -494,7 +467,7 @@ void theClock::onPlotValuesChanged(const myIOTValue *desc, uint32_t val)
 
 void theClock::setZeroAngle()
 {
-	LOGD("Setting AS5600 zero angle ...");
+	LOGI("Setting AS5600 zero angle ...");
 	int zero = as5600.readAngle();
 	float zero_f =  angle(zero);
 	LOGU("AS5600 zero angle=%d  %0.3f", zero,zero_f);
@@ -503,27 +476,26 @@ void theClock::setZeroAngle()
 }
 
 
-
-#include <sys/time.h>
-
 void theClock::onTestMotor(const myIOTValue *desc, int val)
 {
 	LOGU("onTestMotor %d",val);
+	motor(val,_power_min);
+}
 
-	// millis_error += 1000 * val;
-	// motor(val,_power_min);
 
-	if (val == 0)
-	{
-		syncNTPTime();
-	}
-	else
-	{
-		int32_t a_time = time(NULL) + val;
-		timeval e_time = {a_time, 0};
-		settimeofday((const timeval*)&e_time, 0);
-	}
+#include <sys/time.h>
+void theClock::onDiddleClock(const myIOTValue *desc, int val)
+{
+	LOGU("onDiddleClock %d",val);
+	int32_t a_time = time(NULL) + val;
+	timeval e_time = {a_time, 0};
+	settimeofday((const timeval*)&e_time, 0);
+}
 
+void theClock::onSyncNTP()
+{
+	LOGU("onSyncNTP()");
+	syncNTPTime();
 }
 
 
@@ -535,12 +507,15 @@ void theClock::onTestMotor(const myIOTValue *desc, int val)
 
 int theClock::setPidPower(float avg_angle)
 {
-	float this_p = _target_angle - avg_angle;
-	total_error += this_p;
+	// this_p == current angular error
+	// this_i == total running angular error
+	// this_d == delta angular error this cycle
 
-	float this_i = total_error;
-	float this_d = prev_p - this_p;;
-	prev_p = this_p;
+	float this_p = _target_angle - avg_angle;
+	total_ang_error += this_p;
+	float this_i = total_ang_error;
+	float this_d = prev_ang_error - this_p;;
+	prev_ang_error = this_p;
 
 	this_p = this_p / 100;
 	this_i = this_i / 100;
@@ -557,30 +532,64 @@ int theClock::setPidPower(float avg_angle)
 
 
 
-
 void theClock::run()
-	// This is called every 3 ms ...
-	// The basic sensor code can run in about 1ms
+	// This is called every 4 ms ...
+	// Note that there is no pixel stuff or setXXX value calls
+	// in this method EXCEPT if we start or stop the clock from the loop
 {
-	uint32_t now = millis();
+	// handle clock running state changes
 
-	static uint32_t motor_start = 0;
-	static uint32_t motor_dur = 0;
+	if (_clock_running && !clock_started)
+	{
+	    startClock();
+	}
+	else if (!_clock_running && clock_started)
+	{
+		stopClock();
+	}
+	if (!clock_started)
+		return;
+
+	// end the starting pulse if 'clock_starting'
+
+	uint32_t now = millis();
+	if (clock_starting)
+	{
+		if (now - clock_starting > _dur_start)
+		{
+			clock_starting = 0;
+			motor(0,0);
+		}
+		else
+		{
+			return;
+		}
+	}
+
 
 	//-------------------------------------------------
 	// AS5600
 	//-------------------------------------------------
 	// Read, but don't necessariy use the as5600 angle
-	// Throw out bogus readings .... first try to fix weirdness
+	// Note that sometimes, particularly when first starting, I get bogus readings here.
+	// I think they *may* be related to neopixels disabling interrupts
+	// or something going on in Wifi etc.
+	// Using a semaphore around readAngle() and showPixels() did not seem to help.
+	// Current solution is compare the angle to some arbitrary value (14 degrees)
+	// and bail on this time through the loop if it's larger than that.
 
 	#define MAX_ANGLE  14.0
 
-	int cur = as5600.readAngle() - _zero_angle;
-	while (abs(angle(cur)) > MAX_ANGLE)
+	int raw = as5600.readAngle();
+	int cur = raw - _zero_angle;
+	float cur_angle = angle(cur);
+	if (abs(cur_angle) > MAX_ANGLE)
 	{
-		delay(1);
-		cur = as5600.readAngle() - _zero_angle;
+		stat_num_bad_reads++;
+		LOGE("Bogus angle reading raw=%d cur=%d zero=%d angle=%0.3f",raw,cur,_zero_angle,cur_angle);
+		return;
 	}
+
 	as5600_cur_angle = angle(cur);
 
 	// min and max are intrinsicly debounced
@@ -621,7 +630,7 @@ void theClock::run()
 					cur_cycle = now - last_cycle;
 				last_cycle = now;
 
-				if (clock_started && cur_cycle)
+				if (cur_cycle)
 				{
 					int err = cur_cycle;
 					err -= 1000;
@@ -629,7 +638,7 @@ void theClock::run()
 					// if sync_sign, we are in a sync and the err is
 					// added to the sync_millisuntil it changes sign,
 					// at which point the sync is "turned off" and the
-					// remaining error falls through to the 'millis_error'
+					// remaining error falls through to the 'total_millis_errror'
 
 					if (sync_sign)
 					{
@@ -644,8 +653,6 @@ void theClock::run()
 							err = sync_millis;
 							sync_sign = 0;
 							sync_millis = 0;
-							setPixel(1,MY_LED_BLACK);
-							pixels.show();
 						}
 
 						// if the sync is not turned off, it ate all the error millis
@@ -658,7 +665,7 @@ void theClock::run()
 
 					// might be zero contribution while syncing ...
 
-					millis_error += err;
+					total_millis_errror += err;
 
 					// yet another attempt to get beats to match seconds
 					// we are either on the 0th beat (starting the clock)
@@ -680,10 +687,10 @@ void theClock::run()
 						stat_min_cycle = cur_cycle;
 					if (cur_cycle > stat_max_cycle)
 						stat_max_cycle = cur_cycle;
-					if (millis_error < stat_min_error)
-						stat_min_error = millis_error;
-					if (millis_error > stat_max_error)
-						stat_max_error = millis_error;
+					if (total_millis_errror < stat_min_error)
+						stat_min_error = total_millis_errror;
+					if (total_millis_errror > stat_max_error)
+						stat_max_error = total_millis_errror;
 				}
 			}
 		}
@@ -728,57 +735,52 @@ void theClock::run()
 	}
 
 	//------------------------------------------------
-	// state machine
+	// running/push/pull state machine
 	//------------------------------------------------
 	// !clock_running implies pid_mode ...
 	// We determine that the clock is 'running' when it has exceeded some
 	// critical minimum angle (which is less than the target angle) AND
 	// the accumulated error has been brought down to a reasonable number.
-	// It used to use _target_angle being exceeded on both sides.
 
-	if (clock_started)
+	if (!clock_running &&
+		as5600_max_angle >= _running_angle &&
+		as5600_min_angle <= -_running_angle &&
+		abs(total_ang_error) < _running_error)
 	{
-		if (!clock_running &&
-			as5600_max_angle >= MIN_RUNNING_ANGLE &&
-			as5600_min_angle <= -MIN_RUNNING_ANGLE &&
-			abs(total_error) < RUNNING_ERROR_THRESHOLD)
-		{
-			clock_running = 1;
-			LOGU("Clock running!");
-			clearStats();
-		}
-
-		if (zero_cross)
-		{
-			if (clock_running &&
-				_pull_mode != PUSH_ONLY &&
-				push_or_pull == -1 &&
-				millis_error + sync_millis > MILLIS_ERROR_THRESHOLD)
-			{
-				LOGD("SET STATE 1=PULL");
-				push_or_pull = 1;
-			}
-
-			if (push_or_pull == -1)
-				push_motor = true;
-		}
-
-		if (at_extreme)
-		{
-			if (clock_running &&
-				_pull_mode != PULL_ONLY &&
-				push_or_pull == 1 &&
-				millis_error + sync_millis < -MILLIS_ERROR_THRESHOLD)
-			{
-				LOGD("SET STATE -1=PUSH");
-				push_or_pull = -1;
-			}
-
-			if (push_or_pull == 1)
-				pull_motor = true;
-		}
+		clock_running = 1;
+		LOGU("Clock running!");
+		clearStats();
 	}
 
+	if (zero_cross)
+	{
+		if (clock_running &&
+			_pull_mode != PUSH_ONLY &&
+			push_or_pull == -1 &&
+			total_millis_errror + sync_millis > _push_pull_ms)
+		{
+			LOGI("SET STATE 1=PULL");
+			push_or_pull = 1;
+		}
+
+		if (push_or_pull == -1)
+			push_motor = true;
+	}
+
+	if (at_extreme)
+	{
+		if (clock_running &&
+			_pull_mode != PULL_ONLY &&
+			push_or_pull == 1 &&
+			total_millis_errror + sync_millis < -_push_pull_ms)
+		{
+			LOGI("SET STATE -1=PUSH");
+			push_or_pull = -1;
+		}
+
+		if (push_or_pull == 1)
+			pull_motor = true;
+	}
 
 
 	//-------------------
@@ -788,12 +790,17 @@ void theClock::run()
 	// and set motor_dir as a flag to actually start the motor below.
 	// We only start push if out of dead zone, wheras we start pull immediately
 
-	int motor_dir = 0;
 	int use_power = 0;
+	int motor_dir = 0;
+	static uint32_t motor_start = 0;
+	static uint32_t motor_dur = 0;
 	float avg_angle = (abs(as5600_min_angle) + abs(as5600_max_angle) ) / 2;
 
 	if (pull_motor)
 	{
+		if (sync_sign)
+			stat_num_pull_syncs++;
+
 		pull_motor = false;
 		motor_dir = 1;
 		use_power = _pid_mode ? setPidPower(avg_angle) : _power_pull;
@@ -802,6 +809,9 @@ void theClock::run()
 	}
 	if (push_motor && abs(as5600_cur_angle) > _dead_zone)
 	{
+		if (sync_sign)
+			stat_num_push_syncs++;
+
 		push_motor = false;
 		motor_dir = -1;
 		use_power = _pid_mode ? setPidPower(avg_angle) : _power_min;
@@ -819,7 +829,7 @@ void theClock::run()
 	{
 		if (_plot_values == PLOT_OFF)
 		{
-			LOGD("%-6s %s(%-2d) %-4d %3.3f/%3.3f=%3.3f  target=%3.3f  accum=%3.3f  power=%d  err=%d",			// p=%3.3f i=%3.3f d=%3.3f
+			LOGI("%-6s %s(%-2d) %-4d %3.3f/%3.3f=%3.3f  target=%3.3f  accum=%3.3f  power=%d  err=%d",			// p=%3.3f i=%3.3f d=%3.3f
 				 clock_running ? "run" : "start",
 				 motor_dir > 0 ? "pull" : "push",
 				 as5600_direction,
@@ -831,9 +841,9 @@ void theClock::run()
 				 // this_p,
 				 // this_i,
 				 // this_d,
-				 total_error,
+				 total_ang_error,
 				 use_power,
-				 millis_error);
+				 total_millis_errror);
 
 			if (sync_sign)
 				LOGI("SYNC sign(%d) millis(%d)",sync_sign,sync_millis);
@@ -865,10 +875,9 @@ void theClock::run()
 
 	// Restart if necessary
 
-	if (clock_started &&
-		now - last_change > RESTART_MILLIS)
+	if (_restart_millis && now - last_change > _restart_millis)
 	{
-		LOGE("RESTARTING CLOCK!!");
+		LOGW("RESTARTING CLOCK!!");
 		stat_num_restarts++;
 		startClock();
 	}
@@ -899,7 +908,7 @@ void theClock::run()
 		Serial.print(max);
 		Serial.print(",");
 
-		Serial.print(millis_error * 20);
+		Serial.print(total_millis_errror * 20);
 		Serial.print(",");
 
 		Serial.print(motor_state * 400);
@@ -922,163 +931,180 @@ void theClock::loop()	// override
 {
 	myIOTDevice::loop();
 
-	//-----------------------------
-	// handle button
-	//-----------------------------
+	bool show_pixels = 0;
 
-	uint32_t now = millis();
-	if (now - button_chk > 33)	// 30 times per second
-	{
-		button_chk = now;
-		static int last_press = 0;
-		bool val = !digitalRead(PIN_BUTTON1);
-		if (button_down)
+	#if 0
+
+		//-----------------------------
+		// BUTTONS
+		//-----------------------------
+
+		uint32_t now = millis();
+		if (now - button_chk > 33)	// 30 times per second
 		{
-			uint32_t dur = now - button_down;
-			int press =
-				dur > 8000 ? 3 :			// long press
-				dur > 2000 ? 2 : 1;			// medium, short press
-			int fxn =
-				press == 3 ? FUNCTION_RESET :
-				press == 2 ? getBool(ID_DEVICE_WIFI) ?
-					FUNCTION_WIFI_OFF :
-					FUNCTION_WIFI_ON :
-				getBool(ID_RUNNING) ?
-					FUNCTION_STOPPING :
-					FUNCTION_STARTING;
-
-			if (!val)
+			button_chk = now;
+			static int last_press = 0;
+			bool val = !digitalRead(PIN_BUTTON1);
+			if (button_down)
 			{
-				LOGD("button_up dur(%d) press(%d) fxn(%d)",dur,press,fxn);
+				uint32_t dur = now - button_down;
+				int press =
+					dur > 8000 ? 3 :			// long press
+					dur > 2000 ? 2 : 1;			// medium, short press
+				int fxn =
+					press == 3 ? FUNCTION_RESET :
+					press == 2 ? getBool(ID_DEVICE_WIFI) ?
+						FUNCTION_WIFI_OFF :
+						FUNCTION_WIFI_ON :
+					getBool(ID_RUNNING) ?
+						FUNCTION_STOPPING :
+						FUNCTION_STARTING;
 
-				flash_fxn = fxn;
-				button_down = 0;
-				setPixel(PIXEL_MAIN,MY_LED_BLACK);
-				pixels.show();
+				if (!val)
+				{
+					LOGD("button_up dur(%d) press(%d) fxn(%d)",dur,press,fxn);
+
+					flash_fxn = fxn;
+					button_down = 0;
+					setPixel(PIXEL_MAIN,MY_LED_BLACK);
+					show_pixels = 1;
+				}
+				else if (last_press != press)
+				{
+					LOGD("button_down dur(%d) press(%d) fxn(%d)",dur,press,fxn);
+
+					last_press = press;
+					setPixel(PIXEL_MAIN,
+						fxn == FUNCTION_RESET ? MY_LED_RED :
+						fxn == FUNCTION_WIFI_OFF ? MY_LED_MAGENTA :
+						fxn == FUNCTION_WIFI_ON ? MY_LED_BLUE :
+						fxn == FUNCTION_STARTING ? MY_LED_GREEN :
+						MY_LED_WHITE);
+					show_pixels = 1;
+				}
 			}
-			else if (last_press != press)
+			else if (val && !button_down)
 			{
-				LOGD("button_down dur(%d) press(%d) fxn(%d)",dur,press,fxn);
-
-				last_press = press;
-				setPixel(PIXEL_MAIN,
-					fxn == FUNCTION_RESET ? MY_LED_RED :
-					fxn == FUNCTION_WIFI_OFF ? MY_LED_MAGENTA :
-					fxn == FUNCTION_WIFI_ON ? MY_LED_BLUE :
-					fxn == FUNCTION_STARTING ? MY_LED_GREEN :
-					MY_LED_WHITE);
-				pixels.show();
+				LOGD("button_down",0);
+				button_down = now;
+				flash_fxn = 0;
+				flash_count = 0;
+				flash_time = 0;
+				last_press = 0;
 			}
 		}
-		else if (val && !button_down)
-		{
-			LOGD("button_down",0);
-			button_down = now;
-			flash_fxn = 0;
-			flash_count = 0;
-			flash_time = 0;
-			last_press = 0;
-		}
-	}
 
-	//------------------------
-	// FLASH PIXELS
-	//------------------------
+		//------------------------
+		// PIXELS
+		//------------------------
 
-	if (flash_fxn && now - flash_time > flash_dur)
-	{
-		uint32_t color;
-		if (flash_on)
+		if (flash_fxn && now - flash_time > flash_dur)
 		{
-			flash_on = 0;
-			flash_dur = 400;
-			flash_count++;
-			color = MY_LED_BLACK;
-		}
-		else
-		{
-			flash_on = 1;
-			flash_dur = 100;
-			color =
-				flash_fxn == FUNCTION_STARTING ? MY_LED_GREEN :
-				flash_fxn == FUNCTION_WIFI_ON ? MY_LED_BLUE :
-				flash_fxn == FUNCTION_WIFI_OFF ? MY_LED_MAGENTA :
-				flash_fxn == FUNCTION_RESET ? MY_LED_RED :
-				MY_LED_WHITE;	// STOPPED or STOPPING
-				MY_LED_YELLOW;	// unknown function
-
-		}
-		flash_time = now;
-		setPixel(PIXEL_MAIN,color);
-		pixels.show();
-		if (flash_count == 5)
-		{
-			int fxn = flash_fxn;
-			flash_fxn = FUNCTION_NONE;
-
-			if (fxn == FUNCTION_RESET)
-				the_clock->factoryReset();
-			else if (fxn == FUNCTION_WIFI_OFF)
-				the_clock->setBool(ID_DEVICE_WIFI,0);
-			else if (fxn == FUNCTION_WIFI_ON)
-				the_clock->setBool(ID_DEVICE_WIFI,1);
-			else if (fxn == FUNCTION_STARTING)
-				the_clock->setBool(ID_RUNNING,1);
-			else if (fxn == FUNCTION_STOPPING && clock_started)
+			uint32_t color;
+			if (flash_on)
 			{
-				the_clock->setBool(ID_RUNNING,0);
-				flash_fxn = FUNCTION_STOPPED;
+				flash_on = 0;
+				flash_dur = 400;
+				flash_count++;
+				color = MY_LED_BLACK;
 			}
-			else if (fxn == FUNCTION_STOPPED)
-				flash_fxn = FUNCTION_STOPPED;
+			else
+			{
+				flash_on = 1;
+				flash_dur = 100;
+				color =
+					flash_fxn == FUNCTION_STARTING ? MY_LED_GREEN :
+					flash_fxn == FUNCTION_WIFI_ON ? MY_LED_BLUE :
+					flash_fxn == FUNCTION_WIFI_OFF ? MY_LED_MAGENTA :
+					flash_fxn == FUNCTION_RESET ? MY_LED_RED :
+					MY_LED_WHITE;	// STOPPED or STOPPING
+					MY_LED_YELLOW;	// unknown function
 
-			flash_dur = 5000;
-			flash_count = 0;
+			}
+			flash_time = now;
+			setPixel(PIXEL_MAIN,color);
+			show_pixels = 1;
+			if (flash_count == 5)
+			{
+				int fxn = flash_fxn;
+				flash_fxn = FUNCTION_NONE;
+
+				if (fxn == FUNCTION_RESET)
+					the_clock->factoryReset();
+				else if (fxn == FUNCTION_WIFI_OFF)
+					the_clock->setBool(ID_DEVICE_WIFI,0);
+				else if (fxn == FUNCTION_WIFI_ON)
+					the_clock->setBool(ID_DEVICE_WIFI,1);
+				else if (fxn == FUNCTION_STARTING)
+					the_clock->setBool(ID_RUNNING,1);
+				else if (fxn == FUNCTION_STOPPING && clock_started)
+				{
+					the_clock->setBool(ID_RUNNING,0);
+					flash_fxn = FUNCTION_STOPPED;
+				}
+				else if (fxn == FUNCTION_STOPPED)
+					flash_fxn = FUNCTION_STOPPED;
+
+				flash_dur = 5000;
+				flash_count = 0;
+			}
 		}
-	}
-
-	// handle the 'starting' vs 'running' main pixel
-
-	static bool pixel_on = 0;
-	if (clock_started &&
-		!clock_running &&
-		!pixel_on)
-	{
-		pixel_on = 1;
-		setPixel(PIXEL_MAIN,MY_LED_MAGENTA);
-		pixels.show();
-	}
-	else if (pixel_on && clock_running)
-	{
-		pixel_on = 0;
-		setPixel(PIXEL_MAIN,MY_LED_BLACK);
-		pixels.show();
-	}
+	#endif // 0
 
 
-	//--------------------------------------
 	// static pixels
-	//--------------------------------------
 
-	static uint32_t last_pixel_right = MY_LED_BLACK;
-	uint32_t pixel_right =
-		!clock_started ? MY_LED_BLACK :
+	static uint32_t last_pixel_main = 0;
+	static uint32_t last_pixel_state = 0;
+	static uint32_t last_pixel_sync = 0;
+
+	uint32_t pixel_main =
+		!_clock_running ? MY_LED_RED :
+		!clock_started ? MY_LED_ORANGE :
+		clock_starting ? MY_LED_WHITE :
 		!clock_running ? MY_LED_MAGENTA :
-		millis_error > 2 * MILLIS_ERROR_THRESHOLD ? MY_LED_BLUE :
-		millis_error < -2 * MILLIS_ERROR_THRESHOLD ? MY_LED_RED :
-		push_or_pull < 0 ? MY_LED_CYAN :
 		MY_LED_GREEN;
-	if (last_pixel_right != pixel_right)
+	if (last_pixel_main != pixel_main)
 	{
-		last_pixel_right = pixel_right;
-		setPixel(0,pixel_right);
-		pixels.show();
+		last_pixel_main = pixel_main;
+		setPixel(PIXEL_MAIN,pixel_main);
+		show_pixels = 1;
 	}
+
+	uint32_t pixel_state =
+		!clock_started ? MY_LED_BLACK :
+		total_millis_errror > 2 * _push_pull_ms ? MY_LED_BLUE :
+		total_millis_errror < -2 * _push_pull_ms ? MY_LED_RED :
+		push_or_pull < 0 ? MY_LED_GREEN :
+		MY_LED_CYAN;
+	if (last_pixel_state != pixel_state)
+	{
+		last_pixel_state = pixel_state;
+		setPixel(PIXEL_STATE,pixel_state);
+		show_pixels = 1;
+	}
+
+	uint32_t pixel_sync =
+			sync_sign < 0 ? MY_LED_RED :
+			sync_sign > 0 ? MY_LED_BLUE :
+			MY_LED_BLACK;
+	if (last_pixel_sync != pixel_sync)
+	{
+		last_pixel_sync = pixel_sync;
+		setPixel(PIXEL_SYNC,pixel_sync);
+		show_pixels = 1;
+	}
+
+	if (show_pixels)
+		pixels.show();
+
 
 	//------------------------------------------
 	// THINGS BASED ON THE BEAT CHANGING
 	//------------------------------------------
-	// Do error correction time check
+	// 1. Error correction vs ESP32 clock
+	// 2. Sbow statistics
+	// 3. NTP vs ESP32 clock correction
 
 	if (clock_started &&
 		last_beat != num_beats)
@@ -1086,7 +1112,7 @@ void theClock::loop()	// override
 		last_beat = num_beats;
 		static char buf[255];
 
-		// Do error correction
+		// 1. Error correction vs ESP32 clock
 
 		if (!sync_sign &&
 			_time_start &&
@@ -1118,11 +1144,10 @@ void theClock::loop()	// override
 						diff,
 						sync_sign,
 						sync_millis);
-				setPixel(1,sync_sign < 0 ? MY_LED_RED : MY_LED_BLUE);
-				pixels.show();
+
 			}
 
-			sprintf(buf,"SYNC%s sign(%d) millis(%d)  num(%d) chgs(%d) total(%d) abs(%d)%s",
+			sprintf(buf,"SYNC%s sign(%d) millis(%d)  num(%d) chgs(%d) total(%d) abs(%d) push(%d) pull(%d)%s",
 				(num_sync_changes ? "<b>" : ""),
 				sync_sign,
 				sync_millis,
@@ -1130,12 +1155,14 @@ void theClock::loop()	// override
 				num_sync_changes,
 				total_sync_changes,
 				total_abs_sync_changes,
+				stat_num_push_syncs,
+				stat_num_pull_syncs,
 				(num_sync_changes ? "</b>" : ""));
 			setString(ID_STAT_MSG5,buf);
 		}
 
 
-		// Do statistics
+		// 2. Sbow statistics
 
 		else if (_stat_interval &&
 				 _plot_values == PLOT_OFF &&
@@ -1170,7 +1197,8 @@ void theClock::loop()	// override
 				float pull_ratio = stat_num_push + stat_num_pull ?
 					((float)(stat_num_pull))/((float)(stat_num_pull + stat_num_push)) : 0;
 
-				sprintf(buf,"restarts(%d) pushes(%d) pulls(%d) pull_ratio(%0.3f)",
+				sprintf(buf,"num_bad(%d) restarts(%d) pushes(%d) pulls(%d) pull_ratio(%0.3f)",
+						stat_num_bad_reads,
 						stat_num_restarts,
 						stat_num_push,
 						stat_num_pull,
@@ -1195,9 +1223,9 @@ void theClock::loop()	// override
 			}
 		}
 
-		// Do NPT clock correction
-
 	#if CLOCK_WITH_NTP
+
+		// 3. NTP vs ESP32 clock correction
 
 		else if (clock_running &&
 				_ntp_interval &&
@@ -1247,9 +1275,7 @@ void theClock::loop()	// override
 
 	#endif
 
-	}
-
-
+	}	// things based on beat changing
 
 }	// theClock::loop()
 
@@ -1271,9 +1297,11 @@ void theClock::loop()	// override
 void theClock::clockTask(void *param)
 {
 	esp_task_wdt_init(0x0FFFFFFF, false);
-    delay(1200);
+    delay(100);
     LOGI("starting clockTask loop on core(%d)",xPortGetCoreID());
-    delay(1200);
+    delay(100);
+	// debug_angle("in clockTask");
+
     while (1)
     {
         vTaskDelay(0);		// 10 / portTICK_PERIOD_MS);
@@ -1281,13 +1309,32 @@ void theClock::clockTask(void *param)
 		static uint32_t last_sense = 0;
 
 		// we have to allow time for other tasks to run
-		// so we limit thi to 333 times a second, even though
+		// so we limit thi to 250 times a second, even though
 		// the basic sensor reads only take about 1ms
 
-		if (now - last_sense > 2)		// 3 ms works
+		if (now - last_sense > 3)		// 3 ms works
 		{
 			last_sense = now;
 			the_clock->run();
 		}
 	}
 }
+
+
+
+void theClock::debug_angle(const char *s)
+{
+	LOGI("DEBUG ANGLE(%s)",s);
+	for (int i=0; i<5; i++)
+	{
+		int raw = as5600.readAngle();
+		int cur = raw - _zero_angle;;
+		float cur_angle = angle(cur);
+		LOGI("    test_angle(%d) raw(%d) cur(%d) angle=%0.3f degrees",i,raw,cur,cur_angle);
+		delay(100);
+	}
+	delay(100);
+}
+
+
+
