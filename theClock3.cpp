@@ -402,6 +402,14 @@ void theClock::clearStats()
 {
 	LOGU("STATISTICS CLEARED");
 	init(0);
+
+	the_clock->setString(ID_STAT_MSG1,"");
+	the_clock->setString(ID_STAT_MSG2,"");
+	the_clock->setString(ID_STAT_MSG3,"");
+	the_clock->setString(ID_STAT_MSG4,"");
+	the_clock->setString(ID_STAT_MSG5,"");
+	the_clock->setString(ID_STAT_MSG6,"");
+
 	update_stats = true;
 }
 
@@ -923,6 +931,22 @@ void theClock::run()
 // loop
 //===================================================================
 
+void theClock::syncMsg(char *buf)
+{
+	sprintf(buf,"SYNC%s sign(%d) millis(%d)  num(%d) chgs(%d) total(%d) abs(%d) push(%d) pull(%d)%s",
+		(num_sync_changes ? "<b>" : ""),
+		sync_sign,
+		sync_millis,
+		num_sync_checks,
+		num_sync_changes,
+		total_sync_changes,
+		total_abs_sync_changes,
+		stat_num_push_syncs,
+		stat_num_pull_syncs,
+		(num_sync_changes ? "</b>" : ""));
+	the_clock->setString(ID_STAT_MSG5,buf);
+}
+
 
 
 
@@ -1147,18 +1171,7 @@ void theClock::loop()	// override
 
 			}
 
-			sprintf(buf,"SYNC%s sign(%d) millis(%d)  num(%d) chgs(%d) total(%d) abs(%d) push(%d) pull(%d)%s",
-				(num_sync_changes ? "<b>" : ""),
-				sync_sign,
-				sync_millis,
-				num_sync_checks,
-				num_sync_changes,
-				total_sync_changes,
-				total_abs_sync_changes,
-				stat_num_push_syncs,
-				stat_num_pull_syncs,
-				(num_sync_changes ? "</b>" : ""));
-			setString(ID_STAT_MSG5,buf);
+			syncMsg(buf);
 		}
 
 
@@ -1220,6 +1233,9 @@ void theClock::loop()	// override
 					stat_min_error,
 					stat_max_error);
 				setString(ID_STAT_MSG4,buf);
+
+				if (num_sync_checks)
+					syncMsg(buf);
 			}
 		}
 
@@ -1335,6 +1351,3 @@ void theClock::debug_angle(const char *s)
 	}
 	delay(100);
 }
-
-
-

@@ -239,6 +239,8 @@ private:
 	static void clockTask(void *param);
 	static int setPidPower(float avg_angle);
 
+	static void syncMsg(char *buf);
+
 	static void debug_angle(const char *s);
 
 };	// class theClock
