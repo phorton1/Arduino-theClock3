@@ -80,6 +80,8 @@
 // theClock definition
 //------------------------
 
+#define ID_START_CLOCK		"START_CLOCK"
+
 #define ID_RUNNING			"RUNNING"
 #define ID_CLOCK_MODE		"CLOCK_MODE"
 #define ID_PLOT_VALUES		"PLOT_VALUES"
@@ -100,7 +102,6 @@
 #define ID_DUR_PULSE      	"DUR_PULSE"
 #define ID_DUR_START		"DUR_START"
 
-
 #define ID_PID_P			"PID_P"
 #define ID_PID_I			"PID_I"
 #define ID_PID_D			"PID_D"
@@ -109,17 +110,14 @@
 #define ID_APID_I			"APID_I"
 #define ID_APID_D			"APID_D"
 
-
 #define ID_RUNNING_ANGLE	"RUNNING_ANGLE"
 #define ID_RUNNING_ERROR	"RUNNING_ERROR"
-
+#define ID_MIN_MAX_MS		"MIN_MAX_MS"
 #define ID_RESTART_MILLIS	"RESTART_MILLIS"
 
 #define ID_CLEAR_STATS		"CLEAR_STATS"
 
-#define ID_CUR_TIME			"CUR_TIME"
-#define ID_TIME_START       "TIME_START"
-
+#define ID_STAT_MSG0		"STAT_MSG0"
 #define ID_STAT_MSG1		"STAT_MSG1"
 #define ID_STAT_MSG2		"STAT_MSG2"
 #define ID_STAT_MSG3		"STAT_MSG3"
@@ -127,12 +125,16 @@
 #define ID_STAT_MSG5		"STAT_MSG5"
 #define ID_STAT_MSG6		"STAT_MSG6"
 
+
+#define ID_STAT_INTERVAL	"STAT_INTERVAL"
+#define ID_SYNC_INTERVAL	"SYNC_INTERVAL"
+#define ID_SYNC_RTC			"SYNC_RTC"
+
 #if CLOCK_WITH_NTP
 	#define ID_NTP_INTERVAL	"NTP_INTERVAL"
+	#define ID_SYNC_NTP		"SYNC_NTP"
 #endif
 
-#define ID_SYNC_INTERVAL	"SYNC_INTERVAL"
-#define ID_STAT_INTERVAL	"STAT_INTERVAL"
 
 
 #define ID_TEST_MOTOR		"MOTOR"
@@ -142,9 +144,6 @@
 #define ID_DIDDLE_CLOCK		"DIDDLE_CLOCK"
 	// Will add given number of seconds to ESP32 clock
 	// for testing sync code
-#define ID_SYNC_NTP			"SYNC_NTP"
-	// Will sync the clock back to NTP time to test
-	// sync code
 
 
 
@@ -209,62 +208,62 @@ private:
 	static float _apid_I;
 	static float _apid_D;
 
-
 	static float _running_angle;		// minimum angle for clock to be considered "running"
 	static float _running_error;		// minimum accumulated angular error for clock to be considered running
+	static int 	 _min_max_ms;			// ms threshold for min/max algorithm
 	static uint32_t _restart_millis;	// millis for automatic restart (0 == off)
 
-	static uint32_t _cur_time;		// current time of last stat message
-	static uint32_t _time_start;	// time clock was 'started' (or changed to running)
-	static String 	_stat_msg1;		// messages
+	static String 	_stat_msg0;		// messages
+	static String 	_stat_msg1;
 	static String 	_stat_msg2;
 	static String 	_stat_msg3;
 	static String 	_stat_msg4;
 	static String 	_stat_msg5;
 	static String 	_stat_msg6;
 
+	static uint32_t _stat_interval;	// interval, in beats/seconds for statistic to be displayed
+	static uint32_t _sync_interval;	// interval, in beats/seconds for beats vs ESP32 clock check
 #if CLOCK_WITH_NTP
 	static uint32_t _ntp_interval;	// interval, in beats/seconds for NTP vs ESP32 clock check
 #endif
-	static uint32_t _sync_interval;	// interval, in beats/seconds for beats vs ESP32 clock check
-	static uint32_t _stat_interval;	// interval, in beats/seconds for statistic to be displayed
 
 	static int _test_motor;		// memory only, only happens onChange
 	static int _diddle_clock;	// memory only, only happens onChange
 
 	// UI methods
 
-	static void startClock();
-	static void stopClock();
-	static void clearStats();
+	static void onStartClockSynchronized();
 
-	static void setZeroAngle();
     static void onClockRunningChanged(const myIOTValue *desc, bool val);
     static void onClockModeChanged(const myIOTValue *desc, uint32_t val);
 	static void onPlotValuesChanged(const myIOTValue *desc, uint32_t val);
+
+	static void clearStats();
+	static void setZeroAngle();
+	static void onSyncRTC();
+	#if CLOCK_WITH_NTP
+		static void onSyncNTP();
+	#endif
 
 	// UI test methods
 
 	static void onTestMotor(const myIOTValue *desc, int val);
 	static void onDiddleClock(const myIOTValue *desc, int val);
-	static void onSyncNTP();
 
-	// low level methods
+	// Internal Private methods
 
 	static void initAS5600();
 	static void initMotor();
 	static void initStats();
 
-
 	static void run();
 	static void clockTask(void *param);
 
+	static void startClock();
+	static void stopClock();
+
 	static float getPidAngle();
 	static int getPidPower(float avg_angle);
-
-	static void syncMsg(char *buf);
-
-
 
 };	// class theClock
 

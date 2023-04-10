@@ -22,11 +22,11 @@
 #define DEFAULT_ZERO_ANGLE		0			// 0 means it's not yet set
 #define DEFAULT_ZERO_ANGLE_F	0.00		// 0 means it's not yet set
 #define DEFAULT_DEAD_ZONE		0.7			// dead degrees about zero
-#define DEFAULT_ANGLE_START 	10.0		// starting value for clock_pid control
+#define DEFAULT_ANGLE_START 	9.7		// starting value for clock_pid control
 #define DEFAULT_ANGLE_MIN 		9.0
 #define DEFAULT_ANGLE_MAX 		11.0
 
-#define DEFAULT_POWER_MIN		120
+#define DEFAULT_POWER_MIN		140
 #define DEFAULT_POWER_PID		210
 #define DEFAULT_POWER_MAX		255
 #define DEFAULT_POWER_START     255
@@ -38,14 +38,14 @@
 #define DEFAULT_PID_I			0.50
 #define DEFAULT_PID_D			-9.0
 
-#define DEFAULT_APID_P			10.0
-#define DEFAULT_APID_I			0.50
-#define DEFAULT_APID_D			-1.0
-
+#define DEFAULT_APID_P			1.0
+#define DEFAULT_APID_I			0.20
+#define DEFAULT_APID_D			0.00
 
 #define DEFAULT_RUNNING_ANGLE   4.0
 #define DEFAULT_RUNNING_ERROR   2.0
 
+#define DEFAULT_MIN_MAX_MS		40
 #define DEFAULT_RESTART_MILLIS  5000
 
 #define DEFAULT_NTP_INTERVAL	14400L	// four hours
@@ -61,8 +61,7 @@ static valueIdType dash_items[] = {
 	ID_CLOCK_MODE,
 	ID_PLOT_VALUES,
 	ID_CLEAR_STATS,
-	ID_CUR_TIME,
-	ID_TIME_START,
+	ID_STAT_MSG0,
 	ID_STAT_MSG1,
 	ID_STAT_MSG2,
 	ID_STAT_MSG3,
@@ -72,9 +71,12 @@ static valueIdType dash_items[] = {
 	ID_SET_ZERO_ANGLE,
 	ID_ZERO_ANGLE,
 	ID_ZERO_ANGLE_F,
-    ID_TEST_MOTOR,
-	ID_DIDDLE_CLOCK,
+	ID_SYNC_RTC,
+#if CLOCK_WITH_NTP
 	ID_SYNC_NTP,
+#endif
+	ID_TEST_MOTOR,
+	ID_DIDDLE_CLOCK,
 	0,
 };
 
@@ -100,12 +102,13 @@ static valueIdType device_items[] = {
 	ID_APID_D,
 	ID_RUNNING_ANGLE,
 	ID_RUNNING_ERROR,
+	ID_MIN_MAX_MS,
 	ID_RESTART_MILLIS,
+	ID_STAT_INTERVAL,
+	ID_SYNC_INTERVAL,
 #if CLOCK_WITH_NTP
 	ID_NTP_INTERVAL,
 #endif
-	ID_SYNC_INTERVAL,
-	ID_STAT_INTERVAL,
 	0
 };
 
@@ -148,6 +151,8 @@ const valDescriptor theClock::m_clock_values[] =
     { ID_DEVICE_NAME,      VALUE_TYPE_STRING,    VALUE_STORE_PREF,     VALUE_STYLE_REQUIRED,   NULL,   NULL,   THE_CLOCK },
         // DEVICE_NAME overrides base class element
 
+	{ ID_START_CLOCK,  		VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    	(void *) onStartClockSynchronized },
+
 	{ ID_RUNNING,      		VALUE_TYPE_BOOL,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_clock_running,(void *) onClockRunningChanged, { .int_range = { DEFAULT_RUNNING }} },
 	{ ID_CLOCK_MODE,      	VALUE_TYPE_ENUM,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_clock_mode, 	(void *) onClockModeChanged, 	{ .enum_range = { 0, clockAllowed }} },
 	{ ID_PLOT_VALUES,      	VALUE_TYPE_ENUM,     VALUE_STORE_PUB,      VALUE_STYLE_NONE,       (void *) &_plot_values, 	(void *) onPlotValuesChanged,   { .enum_range = { 0, plotAllowed }} },
@@ -178,13 +183,12 @@ const valDescriptor theClock::m_clock_values[] =
 
 	{ ID_RUNNING_ANGLE,  	VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_running_angle, NULL, { .float_range = { DEFAULT_RUNNING_ANGLE, 0, 12}} },
 	{ ID_RUNNING_ERROR,  	VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_running_error, NULL, { .float_range = { DEFAULT_RUNNING_ERROR, 1.0, 100}} },
+	{ ID_MIN_MAX_MS,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,   	   (void *) &_min_max_ms,	 NULL, { .int_range = { DEFAULT_MIN_MAX_MS,   	    10,  1000}} },
 	{ ID_RESTART_MILLIS,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_restart_millis,NULL, { .int_range = { DEFAULT_RESTART_MILLIS,   	0,  60000}} },
 
 	{ ID_CLEAR_STATS,       VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    (void *) clearStats },
 
-	{ ID_CUR_TIME,   		VALUE_TYPE_TIME,     VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_cur_time, },
-	{ ID_TIME_START,   		VALUE_TYPE_TIME,     VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_time_start, },
-
+	{ ID_STAT_MSG0,      	VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_msg0, },
 	{ ID_STAT_MSG1,      	VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_msg1, },
 	{ ID_STAT_MSG2,      	VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_msg2, },
 	{ ID_STAT_MSG3,      	VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_msg3, },
@@ -192,17 +196,17 @@ const valDescriptor theClock::m_clock_values[] =
 	{ ID_STAT_MSG5,      	VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_msg5, },
 	{ ID_STAT_MSG6,      	VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_msg6, },
 
-	// 3000000L == about one month of seconds
+	{ ID_STAT_INTERVAL,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_stat_interval, 	NULL,  { .int_range = { DEFAULT_STAT_INTERVAL,1,3000000L}} },
+	{ ID_SYNC_INTERVAL,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_sync_interval, 	NULL,  { .int_range = { DEFAULT_SYNC_INTERVAL,1,3000000L}} },
+	{ ID_SYNC_RTC,  		VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    	(void *) onSyncRTC },
 
 #if CLOCK_WITH_NTP
 	{ ID_NTP_INTERVAL,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_ntp_interval, 	NULL,  { .int_range = { DEFAULT_NTP_INTERVAL,1,3000000L}} },
+	{ ID_SYNC_NTP,  		VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    	(void *) onSyncNTP },
 #endif
-	{ ID_SYNC_INTERVAL,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_sync_interval, 	NULL,  { .int_range = { DEFAULT_SYNC_INTERVAL,1,3000000L}} },
-	{ ID_STAT_INTERVAL,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_stat_interval, 	NULL,  { .int_range = { DEFAULT_STAT_INTERVAL,1,3000000L}} },
 
 	{ ID_TEST_MOTOR,  		VALUE_TYPE_INT,    	 VALUE_STORE_PUB,      VALUE_STYLE_NONE,   	   (void *) &_test_motor,		(void *) onTestMotor,  { .int_range = { 0, -1, 1}} },
 	{ ID_DIDDLE_CLOCK,  	VALUE_TYPE_INT,    	 VALUE_STORE_PUB,      VALUE_STYLE_NONE,   	   (void *) &_diddle_clock,		(void *) onDiddleClock,  { .int_range = { 0, -10, 10}} },
-	{ ID_SYNC_NTP,  		VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    	(void *) onSyncNTP },
 };
 
 
@@ -222,7 +226,6 @@ float   theClock::_angle_start;
 float 	theClock::_angle_min;
 float 	theClock::_angle_max;
 
-
 int  	theClock::_power_min;
 int  	theClock::_power_pid;
 int  	theClock::_power_max;
@@ -241,10 +244,10 @@ float  	theClock::_apid_D;
 
 float  	theClock::_running_angle;
 float  	theClock::_running_error;
+int	    theClock::_min_max_ms;
 uint32_t theClock::_restart_millis;
 
-uint32_t theClock::_cur_time;
-uint32_t theClock::_time_start;
+String 	 theClock::_stat_msg0;
 String 	 theClock::_stat_msg1;
 String 	 theClock::_stat_msg2;
 String 	 theClock::_stat_msg3;
@@ -252,11 +255,11 @@ String 	 theClock::_stat_msg4;
 String 	 theClock::_stat_msg5;
 String 	 theClock::_stat_msg6;
 
+uint32_t theClock::_stat_interval;
+uint32_t theClock::_sync_interval;
 #if CLOCK_WITH_NTP
 	uint32_t theClock::_ntp_interval;
 #endif
-uint32_t theClock::_sync_interval;
-uint32_t theClock::_stat_interval;
 
 int 	 theClock::_test_motor;
 int 	 theClock::_diddle_clock;

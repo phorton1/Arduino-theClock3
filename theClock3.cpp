@@ -4,7 +4,6 @@
 #include <AS5600.h>
 #include <Wire.h>
 
-#define CLOCK_ERROR_MILLIS	  40
 
 #define MAX_INT		32767
 #define MIN_INT		-32767
@@ -104,21 +103,19 @@ void setPixel(int num, uint32_t color)
 
 static int clock_state = 0;
 
-// static bool clock_started = 0;		// the clock has been started
-// static bool clock_running = 0;		// the clock has achieved the target running_angle and running_error and so is considered 'running'
-
-
 static uint32_t last_change = 0;	// millis of last noticible pendulum movement
 static int32_t 	cur_cycle = 0;		// millis in this 'cycle' (forward zero crossing)
 static int32_t 	last_cycle = 0;		// millis at previous forward zero crossing
 static uint32_t num_beats = 0;		// number of beats (while clock_started && !initial_pulse_time)
 
+static uint32_t time_zero = 0;		// ESP32 RTC time at zero crossing
+static uint32_t time_zero_ms = 0;	// with milliseconds (from microseconds)
+static uint32_t time_start = 0;
+static uint32_t time_start_ms = 0;
+
 static float pid_angle = 0;
 static int32_t  total_millis_error = 0;	// important cumulative number of millis total error
 static int32_t  prev_millis_error = 0;
-
-
-// PIDs
 
 static float total_ang_error = 0;	// accumluated degrees of error (for "I")
 static float prev_ang_error = 0;	// the previous error (for "D")
@@ -131,34 +128,10 @@ static bool push_motor = 0;			// push the pendulum next time after it leaves dea
 static uint32_t motor_start = 0;
 static uint32_t motor_dur = 0;
 
-
 static uint32_t last_beat = 0xffffffff;
 static uint32_t last_stats = 0;
 static uint32_t last_sync = 0;
 static uint32_t last_ntp = 0;
-
-
-// NTP correction
-// We merely correct the ESP32 clock to NTP time occasionally,
-// and note the changes for debugging
-
-static int32_t  last_ntp_diff = 0;
-static uint32_t num_ntp_checks = 0;
-static uint32_t num_ntp_fails = 0;
-static uint32_t num_ntp_corrections = 0;
-static uint32_t total_abs_ntp_corrections = 0;
-static int32_t  total_ntp_corrections = 0;
-
-// Error correction
-
-static bool     in_sync = 0;
-static int 		sync_sign = 0;
-static int32_t  sync_millis = 0;
-static uint32_t num_sync_checks = 0;
-static uint32_t num_sync_changes = 0;
-static uint32_t total_sync_changes = 0;
-static uint32_t total_abs_sync_changes = 0;
-
 
 
 // Statistics
@@ -179,13 +152,6 @@ static int32_t	 stat_max_cycle;
 static int32_t   stat_min_error;
 static int32_t   stat_max_error;
 
-
-
-static uint32_t  stat_num_push;
-static uint32_t  stat_num_pull;
-static float	 stat_pull_ratio;
-static uint32_t  stat_num_push_syncs;
-static uint32_t  stat_num_pull_syncs;
 
 
 
@@ -349,6 +315,8 @@ void theClock::initMotor()
 
 void theClock::initStats()
 {
+	update_stats = false;
+
 	total_ang_error = 0;
 	prev_ang_error = 0;
 
@@ -358,30 +326,15 @@ void theClock::initStats()
 	total_millis_error = 0;
 	prev_millis_error = 0;
 
+	time_zero = 0;
+	time_zero_ms = 0;
+	time_start = 0;
+	time_start_ms = 0;
+
 	last_beat = 0xffffffff;
 	last_sync = 0;
 	last_stats = 0;
 	last_ntp = 0;
-
-	last_ntp_diff = 0;
-	num_ntp_checks = 0;
-	num_ntp_fails = 0;
-	num_ntp_corrections = 0;
-	total_abs_ntp_corrections = 0;
-	total_ntp_corrections = 0;
-
-	in_sync = 0;
-	sync_sign = 0;
-	sync_millis = 0;
-	num_sync_checks = 0;
-	num_sync_changes = 0;
-	total_sync_changes = 0;
-	total_abs_sync_changes = 0;
-
-    the_clock->_cur_time = 0;
-	the_clock->_time_start = 0;
-
-	update_stats = false;
 
 	stat_num_bad_reads = 0;
 	stat_num_restarts = 0;
@@ -397,12 +350,7 @@ void theClock::initStats()
 	stat_min_error = MAX_INT;
 	stat_max_error = MIN_INT;
 
-	stat_num_push = 0;
-	stat_num_pull = 0;
-	stat_pull_ratio = 0.5;
-	stat_num_push_syncs = 0;
-    stat_num_pull_syncs = 0;
-
+	the_clock->setString(ID_STAT_MSG0,"");
 	the_clock->setString(ID_STAT_MSG1,"");
 	the_clock->setString(ID_STAT_MSG2,"");
 	the_clock->setString(ID_STAT_MSG3,"");
@@ -413,8 +361,6 @@ void theClock::initStats()
 }
 
 
-
-
 void theClock::clearStats()
 {
 	LOGU("STATISTICS CLEARED");
@@ -422,6 +368,12 @@ void theClock::clearStats()
 	update_stats = true;
 }
 
+
+void theClock::stopClock()
+{
+	LOGU("stopClock()");
+	initMotor();
+}
 
 
 void theClock::startClock()
@@ -454,10 +406,30 @@ void theClock::startClock()
 }
 
 
-void theClock::stopClock()
+void theClock::onStartClockSynchronized()
 {
-	LOGU("stopClock()");
-	initMotor();
+	LOGU("StartClockSynchronized()");
+	// The idea here is that the user has put the second hand on zero
+	// with the other hands ready to go at the next 0 seconds crossing,
+	// and they press the button somewhat before that zero crossing
+	// and that we will do what is necessary to get the clock aligned
+	// back to that moment.
+
+	// We will need to give a starting pulse somewhat before the zero,
+	// and somehow have to deterministicly start the clock and know when
+	// the second hand moves.
+
+	// One idea is to know EXACTLY when we issued the pulse and then
+	// to know EXACTLY the difference between that and the 'time_start'
+	// as determined by pendulum zero crossings.
+
+	// The difficulty is that we don't know when the actual first tick takes place.
+
+	// It depends on the state of the hardware ... the clock may be predisposed
+	// so that the pawls grabbing starting on the actual impulse with a forward tick,
+	// or on the the next back swing, or some time later ... leading us to experiments
+	// with the optical mouse sensor to detect the wheel movements.
+
 }
 
 
@@ -510,12 +482,22 @@ void theClock::onDiddleClock(const myIOTValue *desc, int val)
 	settimeofday((const timeval*)&e_time, 0);
 }
 
-void theClock::onSyncNTP()
+
+void theClock::onSyncRTC()
 {
-	LOGU("onSyncNTP()");
-	syncNTPTime();
+	LOGU("onSyncRTC()");
+	// experiment to see what happens if I poke the time_zero_ms into the error
+	total_millis_error += time_zero_ms;
 }
 
+
+#if CLOCK_WITH_NTP
+	void theClock::onSyncNTP()
+	{
+		LOGU("onSyncNTP()");
+		syncNTPTime();
+	}
+#endif
 
 
 
@@ -530,9 +512,9 @@ float theClock::getPidAngle()
 	float this_d = prev_millis_error - this_p;;
 	prev_millis_error = this_p;
 
-	this_p = this_p / 100;
-	this_i = this_i / 100;
-	this_d = this_d / 100;
+	this_p = this_p / 1000;
+	this_i = this_i / 1000;
+	this_d = this_d / 1000;
 
 	float factor = 1 + (_apid_P * this_p) + (_apid_I * this_i) + (_apid_D * this_d);
 	float new_angle = pid_angle * factor;
@@ -683,8 +665,9 @@ void theClock::run()
 
 			// get full cycle time
 			// and add it to the accumulated error if running
+			// we use the left crossing because it lines up with the 'tock' of the clock
 
-			if (as5600_side > 0)
+			if (as5600_side < 0)
 			{
 				if (last_cycle)
 					cur_cycle = now - last_cycle;
@@ -692,8 +675,16 @@ void theClock::run()
 
 				if (cur_cycle)
 				{
+					// best guess of the actual RTC time at zero crossing
+
+					struct timeval tv_now;
+					gettimeofday(&tv_now, NULL);
+					time_zero = tv_now.tv_sec;
+                    time_zero_ms = tv_now.tv_usec / 1000L;
+
 					int err = cur_cycle;
 					err -= 1000;
+
 
 					// if sync_sign, we are in a sync and the err is
 					// added to the sync_millisuntil it changes sign,
@@ -731,10 +722,11 @@ void theClock::run()
 					// we are either on the 0th beat (starting the clock)
 					// or we start with the first beat one full cycle later ..
 
-					if (!_time_start)
+					if (!time_start)
 					{
 						update_stats = true;
-						_time_start = time(NULL);
+						time_start = time_zero;	// time(NULL);
+						time_start_ms = time_zero_ms;
 					}
 					else
 					{
@@ -829,12 +821,12 @@ void theClock::run()
 				else if (_clock_mode == CLOCK_MODE_MIN_MAX)
 				{
 					if (pid_angle == _angle_min &&
-						total_millis_error > CLOCK_ERROR_MILLIS)
+						total_millis_error > _min_max_ms)
 					{
 						pid_angle = _angle_max;
 					}
 					else if (pid_angle == _angle_max &&
-						total_millis_error < -CLOCK_ERROR_MILLIS)
+						total_millis_error < -_min_max_ms)
 					{
 						pid_angle = _angle_min;
 					}
@@ -851,8 +843,6 @@ void theClock::run()
 			motor_start = now;
 			motor_dur =_dur_pulse;
 			motor(-1,use_power);
-
-			stat_num_push++;
 
 			if (use_power > stat_max_power)
 				stat_max_power = use_power;
@@ -931,22 +921,39 @@ void theClock::run()
 // loop
 //===================================================================
 
-void theClock::syncMsg(char *buf)
+void formatTimeToBuf(char *buf, const char *label, uint32_t time_s, uint32_t time_ms)
 {
-	sprintf(buf,"SYNC%s sign(%d) millis(%d)  num(%d) chgs(%d) total(%d) abs(%d) push(%d) pull(%d)%s",
-		(num_sync_changes ? "<b>" : ""),
-		sync_sign,
-		sync_millis,
-		num_sync_checks,
-		num_sync_changes,
-		total_sync_changes,
-		total_abs_sync_changes,
-		stat_num_push_syncs,
-		stat_num_pull_syncs,
-		(num_sync_changes ? "</b>" : ""));
-	the_clock->setString(ID_STAT_MSG5,buf);
+	int at = strlen(buf);
+	char *b = &buf[at];
+    struct tm *ts = localtime((const time_t *)&time_s);
+    sprintf(b,"%s(%04d-%02d-%02d  %02d:%02d:%02d.%03d)",
+        label,
+		ts->tm_year + 1900,
+        ts->tm_mon + 1,
+        ts->tm_mday,
+        ts->tm_hour,
+        ts->tm_min,
+        ts->tm_sec,
+		time_ms);
 }
 
+#if 0
+	void theClock::syncMsg(char *buf)
+	{
+		sprintf(buf,"SYNC%s sign(%d) millis(%d)  num(%d) chgs(%d) total(%d) abs(%d) push(%d) pull(%d)%s",
+			(num_sync_changes ? "<b>" : ""),
+			sync_sign,
+			sync_millis,
+			num_sync_checks,
+			num_sync_changes,
+			total_sync_changes,
+			total_abs_sync_changes,
+			stat_num_push_syncs,
+			stat_num_pull_syncs,
+			(num_sync_changes ? "</b>" : ""));
+		the_clock->setString(ID_STAT_MSG5,buf);
+	}
+#endif
 
 
 
@@ -1098,8 +1105,8 @@ void theClock::loop()	// override
 
 	uint32_t pixel_state =
 		clock_state < CLOCK_STATE_STARTING ? MY_LED_BLACK :
-		total_millis_error > 2 * CLOCK_ERROR_MILLIS ? MY_LED_BLUE :
-		total_millis_error < -2 * CLOCK_ERROR_MILLIS ? MY_LED_RED :
+		total_millis_error > 2 * _min_max_ms ? MY_LED_BLUE :
+		total_millis_error < -2 * _min_max_ms ? MY_LED_RED :
 		total_millis_error < 0 ? MY_LED_CYAN :
 		MY_LED_GREEN;
 
@@ -1110,16 +1117,19 @@ void theClock::loop()	// override
 		show_pixels = 1;
 	}
 
-	uint32_t pixel_sync =
-			sync_sign < 0 ? MY_LED_RED :
-			sync_sign > 0 ? MY_LED_BLUE :
-			MY_LED_BLACK;
-	if (last_pixel_sync != pixel_sync)
-	{
-		last_pixel_sync = pixel_sync;
-		setPixel(PIXEL_SYNC,pixel_sync);
-		show_pixels = 1;
-	}
+	#if 0
+		uint32_t pixel_sync =
+				sync_sign < 0 ? MY_LED_RED :
+				sync_sign > 0 ? MY_LED_BLUE :
+				MY_LED_BLACK;
+		if (last_pixel_sync != pixel_sync)
+		{
+			last_pixel_sync = pixel_sync;
+			setPixel(PIXEL_SYNC,pixel_sync);
+			show_pixels = 1;
+		}
+	#endif
+
 
 	if (show_pixels)
 		pixels.show();
@@ -1140,6 +1150,7 @@ void theClock::loop()	// override
 
 		// 1. Error correction vs ESP32 clock
 
+		#if 0
 		if (!sync_sign &&
 			_time_start &&
 			clock_state == CLOCK_STATE_RUNNING &&
@@ -1175,11 +1186,13 @@ void theClock::loop()	// override
 
 			syncMsg(buf);
 		}
-
+		#endif
 
 		// 2. Sbow statistics
 
-		else if (_stat_interval &&
+		// else
+
+		if (_stat_interval &&
 				 _plot_values == PLOT_OFF &&
 				 last_stats != num_beats && (
 				 update_stats ||
@@ -1188,10 +1201,15 @@ void theClock::loop()	// override
 			update_stats = false;
 			last_stats = num_beats;
 
-			setTime(ID_CUR_TIME,time(NULL));
-			setTime(ID_TIME_START,_time_start);
-			uint32_t full_secs = _time_start ? _cur_time - _time_start : 0;
+			// show the value of the RTC at the last zero crossing
 
+			buf[0] = 0;
+			formatTimeToBuf(buf,"TIME_START",time_start,time_start_ms);
+			strcat(buf,"<br>");
+			formatTimeToBuf(buf,"CUR_TIME",time_zero,time_zero_ms);
+			setString(ID_STAT_MSG0,buf);
+
+			uint32_t full_secs = time_start ? time_zero - time_start : 0;
 			uint32_t secs = full_secs;
 			uint32_t mins = secs / 60;
 			uint32_t hours = mins / 60;
@@ -1209,15 +1227,9 @@ void theClock::loop()	// override
 
 			if (num_beats)	// to prevent annoying -32767's on 0th cycle
 			{
-				float pull_ratio = stat_num_push + stat_num_pull ?
-					((float)(stat_num_pull))/((float)(stat_num_pull + stat_num_push)) : 0;
-
-				sprintf(buf,"num_bad(%d) restarts(%d) pushes(%d) pulls(%d) pull_ratio(%0.3f)",
+				sprintf(buf,"num_bad(%d) restarts(%d)",
 						stat_num_bad_reads,
-						stat_num_restarts,
-						stat_num_push,
-						stat_num_pull,
-						pull_ratio);
+						stat_num_restarts);
 				setString(ID_STAT_MSG2,buf);
 
 				sprintf(buf,"power min(%d) max(%d)  angle left(%0.3f,%0.3f) to right(%0.3f,%0.3f)",
@@ -1235,13 +1247,10 @@ void theClock::loop()	// override
 					stat_min_error,
 					stat_max_error);
 				setString(ID_STAT_MSG4,buf);
-
-				if (num_sync_checks)
-					syncMsg(buf);
 			}
 		}
 
-	#if CLOCK_WITH_NTP
+	#if 0	// CLOCK_WITH_NTP
 
 		// 3. NTP vs ESP32 clock correction
 
@@ -1337,5 +1346,3 @@ void theClock::clockTask(void *param)
 		}
 	}
 }
-
-
