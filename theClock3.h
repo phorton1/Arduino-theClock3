@@ -44,6 +44,9 @@
 #define NUM_PIXELS		5
 
 
+
+
+
 //----------------------------------
 // available LED colors
 //----------------------------------
@@ -78,24 +81,23 @@
 //------------------------
 
 #define ID_RUNNING			"RUNNING"
-#define ID_PID_MODE			"PID_MODE"
-#define ID_PULL_MODE		"PULL_MODE"
+#define ID_CLOCK_MODE		"CLOCK_MODE"
 #define ID_PLOT_VALUES		"PLOT_VALUES"
 
 #define ID_SET_ZERO_ANGLE	"SET_ZERO_ANGLE"
 #define ID_ZERO_ANGLE		"ZERO_ANGLE"
 #define ID_ZERO_ANGLE_F		"ZERO_ANGLE_F"
 #define ID_DEAD_ZONE		"DEAD_ZONE"
-#define ID_TARGET_ANGLE		"TARGET_ANGLE"
+#define ID_ANGLE_START		"ANGLE_START"
+#define ID_ANGLE_MIN		"ANGLE_MIN"
+#define ID_ANGLE_MAX		"ANGLE_MAX"
 
 #define ID_POWER_MIN      	"POWER_MIN"
 #define ID_POWER_PID      	"POWER_PID"
 #define ID_POWER_MAX      	"POWER_MAX"
-#define ID_POWER_PULL      	"POWER_PULL"
 #define ID_POWER_START      "POWER_START"
 
-#define ID_DUR_LEFT      	"DUR_LEFT"
-#define ID_DUR_RIGHT      	"DUR_RIGHT"
+#define ID_DUR_PULSE      	"DUR_PULSE"
 #define ID_DUR_START		"DUR_START"
 
 
@@ -103,9 +105,14 @@
 #define ID_PID_I			"PID_I"
 #define ID_PID_D			"PID_D"
 
+#define ID_APID_P			"APID_P"
+#define ID_APID_I			"APID_I"
+#define ID_APID_D			"APID_D"
+
+
 #define ID_RUNNING_ANGLE	"RUNNING_ANGLE"
 #define ID_RUNNING_ERROR	"RUNNING_ERROR"
-#define ID_PUSH_PULL_MS  	"PUSH_PULL_MS"
+
 #define ID_RESTART_MILLIS	"RESTART_MILLIS"
 
 #define ID_CLEAR_STATS		"CLEAR_STATS"
@@ -143,13 +150,20 @@
 
 // enumerated type values
 
-#define PLOT_OFF		0
-#define PLOT_ON			1
-#define PLOT_PAUSE		2
+#define CLOCK_MODE_SENSOR_TEST		0
+#define CLOCK_MODE_POWER_MIN		1
+#define CLOCK_MODE_POWER_MAX        2
+#define CLOCK_MODE_ANGLE_START	    3
+#define CLOCK_MODE_ANGLE_MIN 		4
+#define CLOCK_MODE_ANGLE_MAX		5
+#define CLOCK_MODE_MIN_MAX			6
+#define CLOCK_MODE_PID              7
 
-#define PUSH_AND_PULL 	0
-#define PUSH_ONLY		1
-#define PULL_ONLY		2
+
+#define PLOT_OFF		0
+#define PLOT_WAVES		1
+#define PLOT_PAUSE		2
+#define PLOT_CLOCK		3
 
 
 // theClock declaration
@@ -169,32 +183,35 @@ private:
     static const valDescriptor m_clock_values[];
 
 	static bool _clock_running;		// user interface variable !! (as opposed to control variable)
-	static bool _pid_mode;
-	static uint32_t _pull_mode;
+	static uint32_t _clock_mode;
 	static uint32_t _plot_values;
 
 	static int _zero_angle;			// actual used value is in as5600 units
 	static float _zero_angle_f;		// displayed value is a float
 	static float _dead_zone;		// degrees dead for pushing about zero
-	static float _target_angle;		// target angle for clock
+	static float _angle_start;		// target angle for clock
+	static float _angle_min;
+	static float _angle_max;
 
 	static int _power_min;			// PID mininum power, also power for !PID and motor test
 	static int _power_pid;			// PID starting power
 	static int _power_max;      	// PID maximum power
-	static int _power_pull;			// PID power while pulling
 	static int _power_start;    	// power during startup pulse
 
-	static int _dur_left;			// duration of left power pulse for both PID and STATIC
-	static int _dur_right;			// duration of right power pulse for both PID and STATIC
+	static int _dur_pulse;			// duration of power pulse for both PID and STATIC
 	static int _dur_start;			// duration of startup pulse
 
 	static float _pid_P;			// PID controller values
 	static float _pid_I;
 	static float _pid_D;
 
+	static float _apid_P;			// PID controller values
+	static float _apid_I;
+	static float _apid_D;
+
+
 	static float _running_angle;		// minimum angle for clock to be considered "running"
 	static float _running_error;		// minimum accumulated angular error for clock to be considered running
-	static int 	 _push_pull_ms;		// number of total_error_millis that causes change from push to pull and vice-versa
 	static uint32_t _restart_millis;	// millis for automatic restart (0 == off)
 
 	static uint32_t _cur_time;		// current time of last stat message
@@ -223,7 +240,7 @@ private:
 
 	static void setZeroAngle();
     static void onClockRunningChanged(const myIOTValue *desc, bool val);
-    static void onPIDModeChanged(const myIOTValue *desc, bool val);
+    static void onClockModeChanged(const myIOTValue *desc, uint32_t val);
 	static void onPlotValuesChanged(const myIOTValue *desc, uint32_t val);
 
 	// UI test methods
@@ -234,14 +251,20 @@ private:
 
 	// low level methods
 
-	static void init(bool cold);
+	static void initAS5600();
+	static void initMotor();
+	static void initStats();
+
+
 	static void run();
 	static void clockTask(void *param);
-	static int setPidPower(float avg_angle);
+
+	static float getPidAngle();
+	static int getPidPower(float avg_angle);
 
 	static void syncMsg(char *buf);
 
-	static void debug_angle(const char *s);
+
 
 };	// class theClock
 
