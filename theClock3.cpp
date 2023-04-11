@@ -133,11 +133,13 @@ uint32_t scalePixel(int amt, int scale, uint32_t color0, uint32_t color1, uint32
 
 #define CLOCK_STATE_NONE    	0
 #define CLOCK_STATE_STATS   	1
-#define CLOCK_STATE_STARTING	2
+#define CLOCK_STATE_START		2
 #define CLOCK_STATE_STARTED		3
 #define CLOCK_STATE_RUNNING		4
 
+
 static int clock_state = 0;
+static bool start_sync = 0;			// doing a synchronized start
 
 static uint32_t last_change = 0;	// millis of last noticible pendulum movement
 static int32_t 	cur_cycle = 0;		// millis in this 'cycle' (forward zero crossing)
@@ -164,6 +166,19 @@ static int pid_power = 0;			// power adjusted by pid algorithm
 static int sync_sign = 0;
 static int sync_millis = 0;
 
+static uint32_t num_sync_checks = 0;
+static uint32_t num_sync_changes = 0;
+static  int32_t last_sync_change = 0;
+static  int32_t total_sync_changes = 0;
+static uint32_t total_sync_changes_abs = 0;
+static uint32_t num_ntp_checks = 0;
+static uint32_t num_ntp_fails = 0;
+static uint32_t num_ntp_changes = 0;
+static  int32_t last_ntp_change = 0;
+static  int32_t total_ntp_changes = 0;
+static uint32_t total_ntp_changes_abs = 0;
+
+
 
 // CONTROL
 
@@ -180,6 +195,9 @@ static uint32_t last_beat = 0xffffffff;
 static uint32_t last_stats = 0;
 static uint32_t last_sync = 0;
 static uint32_t last_ntp = 0;
+
+static char msg_buf[512];
+	// generic buffer for loop() related messages
 
 
 // Statistics
@@ -331,12 +349,22 @@ void theClock::initAS5600()
 void theClock::initMotor()
 {
 	motor(0,0);
+
 	clock_state = 0;
 	last_change = 0;
 	initial_pulse_time = 0;	// time at which we started initial clock starting pulse (push)
 	push_motor = 0;			// push the pendulum next time after it leaves deadzone (determined at zero crossing)
 	motor_start = 0;
 	motor_dur = 0;
+
+	cur_cycle = 0;
+	last_cycle = 0;
+
+	num_beats = 0;
+	time_zero = 0;
+	time_zero_ms = 0;
+	time_init = 0;
+	time_init_ms = 0;
 }
 
 
@@ -344,22 +372,32 @@ void theClock::initStats()
 {
 	update_stats = false;
 
+	// nothing reset in here should *really* affect
+	// the running of the clock ... these are only
+	// statistics and cumulative errors ... although
+	// doing this in the middle of a sync will stop
+	// the sync.
+
 	total_ang_error = 0;
 	prev_ang_error = 0;
 
-	cur_cycle = 0;
-	last_cycle = 0;
-	num_beats = 0;
 	total_millis_error = 0;
 	prev_millis_error = 0;
 
-	time_zero = 0;
-	time_zero_ms = 0;
-	time_init = 0;
-	time_init_ms = 0;
-
 	sync_sign = 0;
 	sync_millis = 0;
+
+	num_sync_checks = 0;
+	num_sync_changes = 0;
+	last_sync_change = 0;
+	total_sync_changes = 0;
+	total_sync_changes_abs = 0;
+	num_ntp_checks = 0;
+	num_ntp_fails = 0;
+	num_ntp_changes = 0;
+	last_ntp_change = 0;
+	total_ntp_changes = 0;
+	total_ntp_changes_abs = 0;
 
 	last_beat = 0xffffffff;
 	last_sync = 0;
@@ -401,6 +439,7 @@ void theClock::clearStats()
 
 void theClock::stopClock()
 {
+	start_sync = 0;
 	LOGU("stopClock()");
 	initMotor();
 }
@@ -436,7 +475,7 @@ void theClock::startClock()
 
 		motor(-1,_power_start);
 		initial_pulse_time = last_change = millis();
-		clock_state = CLOCK_STATE_STARTING;
+		clock_state = CLOCK_STATE_START;
 	}
 }
 
@@ -450,7 +489,7 @@ void theClock::onStartClockSynchronized()
 	// and that we will do what is necessary to get the clock aligned
 	// back to that moment.
 
-	// We will need to give a starting pulse somewhat before the zero.
+	// We will give a starting after crossing the next '59' seconds, plus some delay.
 	// The difficulty is that we don't know when the actual first tick takes place.
 	// We will assume it moves to the right on the pulse and will swing to the left
 	// approximately 1/2 second after we issue the pulse.
@@ -462,16 +501,10 @@ void theClock::onStartClockSynchronized()
 	// or on the the next back swing, or some time later ... leading us to experiments
 	// with the optical mouse sensor to detect the wheel movements.
 
-	for (int i=0; i<4; i++)
-	{
-		for (int j=-50; j<51; j+= 1)
-		{
-			uint32_t test_pixel = scalePixel(j,50,MY_LED_MAGENTA,0x002200,MY_LED_CYAN);
-			setPixel(PIXEL_CYCLE,test_pixel);
-			pixels.show();
-			delay(20);
-		}
-	}
+	if (clock_state != CLOCK_STATE_NONE )
+		LOGE("Attempt to call onStartClockSynchronized() while it's already running!");
+	else
+		start_sync = true;
 }
 
 
@@ -525,24 +558,116 @@ void theClock::onDiddleClock(const myIOTValue *desc, int val)
 }
 
 
+
+
 void theClock::onSyncRTC()
 {
-	sync_millis = time_zero_ms - 500;
+	if (clock_state != CLOCK_STATE_RUNNING )
+	{
+		LOGE("Attempt to call onSyncRTC() while clock is not running!");
+		return;
+	}
+
+	int32_t dif_ms = time_zero_ms - 500;
+		// we want the tock to align with 500 ms no matter what
+
+	int32_t run_secs = time_zero;		// number of seconds the clock has been running
+	run_secs -= time_init;				// is most recent zero crossing - initial zero crossing
+	int32_t dif_secs = num_beats - run_secs;
+		// the difference in whole seconds is the number of beats
+		// minus the amount of actual time the clock has been running.
+		// so it is larger than 0 if we are beating fast or less than
+		// zero if we are beeting slow.
+
+	sync_millis = (dif_secs * 1000) + dif_ms;
 	sync_sign =
 		sync_millis < 0 ? - 1 :
 		sync_millis > 0 ? 1 : 0;
 
-	LOGU("onSyncRTC(%d) amount=%d",sync_sign,sync_millis);
+	num_sync_checks++;
+	if (sync_sign)
+	{
+		num_sync_changes++;
+		last_sync_change = sync_millis;
+		total_sync_changes += sync_millis;
+		total_sync_changes_abs += abs(sync_millis);
+		LOGU("onSyncRTC(%d/%d) run_secs=%d  beats=%d  diff=%d  ms=%d  sign=%d  chg=%d",
+			num_sync_changes,
+			num_sync_checks,
+			run_secs,
+			num_beats,
+			dif_secs,
+			dif_ms,
+			sync_sign,
+			sync_millis);
+	}
+	else
+		LOGU("onSyncRTC(%d/%d) no change",num_sync_changes,num_sync_checks);
+
+	sprintf(msg_buf,"SYNC(%d/%d) last(%d) total(%d) abs(%d)",
+		num_sync_changes,
+		num_sync_checks,
+		last_sync_change,
+		total_sync_changes,
+		total_sync_changes_abs);
+	the_clock->setString(ID_STAT_MSG5,msg_buf);
 }
+
 
 
 #if CLOCK_WITH_NTP
 	void theClock::onSyncNTP()
 	{
-		LOGU("onSyncNTP()");
-		syncNTPTime();
+		if (clock_state != CLOCK_STATE_RUNNING )
+		{
+			LOGE("Attempt call onSyncRTC() while clock is not running!");
+			return;
+		}
+
+		// these stats are only approximate
+		// as the final actual time will be determined
+		// by ntp sync processes beyond our control
+
+		num_ntp_checks++;
+		int32_t ntp_time = getNtpTime();
+		if (!ntp_time)
+		{
+			num_ntp_fails++;
+			LOGE("getNtpTime() failed!!");
+		}
+		else
+		{
+			int32_t now = time(NULL);
+			int32_t secs = ntp_time - now;
+			if (secs)
+			{
+				int32_t chg = secs * 1000;
+				last_ntp_change = chg;
+				num_ntp_changes++;
+				total_ntp_changes += chg;
+				total_ntp_changes_abs += abs(chg);
+				LOGU("onSyncNTP(%d/%d)  chg=%d",
+					num_ntp_changes,
+					num_ntp_checks,
+					chg);
+
+				syncNTPTime();
+			}
+			else
+				LOGU("onSyncNTP(%d/%d) no change",num_ntp_changes,num_ntp_checks);
+		}
+
+		sprintf(msg_buf,"NTP(%d/%d) fails(%d) last(%d) total(%d) abs(%d)",
+			num_ntp_changes,
+			num_ntp_checks,
+			num_ntp_fails,
+			last_ntp_change,
+			total_ntp_changes,
+			total_ntp_changes_abs);
+		the_clock->setString(ID_STAT_MSG6,msg_buf);
 	}
-#endif
+
+#endif	// CLOCK_WITH_NTP
 
 
 
@@ -598,26 +723,34 @@ int theClock::getPidPower(float avg_angle)
 
 void theClock::run()
 	// This is called every 4 ms ...
-	// Note that there is no pixel stuff or setXXX value calls
-	// in this method EXCEPT if we start or stop the clock from the loop
+	// Try not to call setXXX stuff while clock is running.
 {
-
-	// start or stop the clock based on the UI _clock_running parameter
+	// start the clock if start_sync at at a minute crossing,
+	// or if the running variable turned on and not running
 
 	if (clock_state == CLOCK_STATE_NONE)
 	{
-		if (_clock_running)
+		if (start_sync)
+		{
+			if (time(NULL) % 60 == 59)
+			{
+				LOGU("starting synchronized delay=%d",_start_delay);
+				the_clock->setBool(ID_RUNNING,1);	    // set the UI bool
+				if (_start_delay)
+					delay(_start_delay);				// do it about 1/2 second early
+				startClock();							// and away we go
+			}
+		}
+		else if (_clock_running)
 			startClock();
-		else
-			return;
+		return;
 	}
 
-
 	// end the startup pulse if in 'starting' mode
-	// and go to 'started' or 'running'
+	// and go to 'started' (if pid) or 'running' (otherwise)
 
 	uint32_t now = millis();
-	if (clock_state == CLOCK_STATE_STARTING)
+	if (clock_state == CLOCK_STATE_START)
 	{
 		if (now - initial_pulse_time > _dur_start)
 		{
@@ -625,7 +758,8 @@ void theClock::run()
 			motor(0,0);
 
 			// non motor-pid modes start off as 'running',
-			// where as pid modes start off as 'started' and only go to running later
+			// where as pid modes start off as 'started'
+			// and only go to running later
 
 			if (_clock_mode < CLOCK_MODE_ANGLE_START)
 				clock_state = CLOCK_STATE_RUNNING;
@@ -692,8 +826,7 @@ void theClock::run()
 		as5600_temp_max = cur;
 
 	// detect direction change or zero crossing
-	// only if the posiion has changed significantly
-
+	// only if the position has changed significantly
 
 	int dif = cur - as5600_cur;
 	if (abs(dif) > AS4500_THRESHOLD)
@@ -770,9 +903,9 @@ void theClock::run()
 
 					total_millis_error += err;
 
-					// yet another attempt to get beats to match seconds
 					// we are either on the 0th beat (starting the clock)
-					// or we start with the first beat one full cycle later ..
+					// or we start with the first beat one full cycle later
+					// and subsequently increment it
 
 					if (!time_init)
 					{
@@ -798,7 +931,6 @@ void theClock::run()
 				}
 			}
 		}
-
 
 		// detect direction change
 		// if direction changed, assign min or max and clear temp variable
@@ -839,12 +971,10 @@ void theClock::run()
 			}
 		}
 
-
-		// clock_state > CLOCK_STATE_STATS continued ....
-
 		//------------------------------------------------
 		// state machine
 		//------------------------------------------------
+		// Switch to RUNNING if needed
 
 		if (clock_state == CLOCK_STATE_STARTED &&
 			as5600_max_angle >= _running_angle &&
@@ -856,6 +986,18 @@ void theClock::run()
 			clearStats();
 		}
 
+		// do initial sync if running and we have a good set of times
+
+		if (start_sync &&
+			clock_state == CLOCK_STATE_RUNNING &&
+			time_init && cur_cycle )
+		{
+			start_sync = false;
+			last_sync = num_beats;
+			onSyncRTC();
+		}
+
+		// Push the motor if asked to and out of the dead zone
 
 		if (push_motor && abs(as5600_cur_angle) > _dead_zone)
 		{
@@ -929,8 +1071,6 @@ void theClock::run()
 	}
 
 
-
-
 	//----------------------
 	// plotting
 	//----------------------
@@ -987,24 +1127,6 @@ void formatTimeToBuf(char *buf, const char *label, uint32_t time_s, uint32_t tim
 		time_ms);
 }
 
-#if 0
-	void theClock::syncMsg(char *buf)
-	{
-		sprintf(buf,"SYNC%s sign(%d) millis(%d)  num(%d) chgs(%d) total(%d) abs(%d) push(%d) pull(%d)%s",
-			(num_sync_changes ? "<b>" : ""),
-			sync_sign,
-			sync_millis,
-			num_sync_checks,
-			num_sync_changes,
-			total_sync_changes,
-			total_abs_sync_changes,
-			stat_num_push_syncs,
-			stat_num_pull_syncs,
-			(num_sync_changes ? "</b>" : ""));
-		the_clock->setString(ID_STAT_MSG5,buf);
-	}
-#endif
-
 
 
 // virtual
@@ -1012,14 +1134,13 @@ void theClock::loop()	// override
 {
 	myIOTDevice::loop();
 
-	uint32_t now = millis();
-
 	//--------------------------------------
 	// PIXELS
 	//--------------------------------------
 
+	uint32_t now = millis();
 	static uint32_t last_pixels = 0;
-	if (now - last_pixels > 1000)
+	if (now - last_pixels > 50)
 	{
 		last_pixels = now;
 
@@ -1039,14 +1160,15 @@ void theClock::loop()	// override
 		new_pixels[PIXEL_STATE] =
 			clock_state == CLOCK_STATE_RUNNING ? MY_LED_GREEN :
 			clock_state == CLOCK_STATE_STARTED ? MY_LED_MAGENTA :
-			clock_state == CLOCK_STATE_STARTING ? MY_LED_WHITE :
-			clock_state == CLOCK_STATE_STATS ? MY_LED_YELLOW :
+			clock_state == CLOCK_STATE_START ? MY_LED_WHITE :
+			start_sync ? MY_LED_YELLOW :
+			clock_state == CLOCK_STATE_STATS ? MY_LED_ORANGE :
 			MY_LED_BLACK;
 
 		// accuracy and cycle move from green to red/blue
 		// as they diverge by 2 * _min_max_ms
 
-		if (clock_state >= CLOCK_STATE_STARTING)
+		if (clock_state >= CLOCK_STATE_START)
 		{
 			new_pixels[PIXEL_ACCURACY] =
 				total_millis_error >=  _min_max_ms 	? MY_LED_BLUE      :
@@ -1111,53 +1233,21 @@ void theClock::loop()	// override
 		last_beat != num_beats)
 	{
 		last_beat = num_beats;
-		static char buf[255];
 
 		// 1. Error correction vs ESP32 clock
 
-		#if 0
 		if (!sync_sign &&
-			_time_init &&
-			clock_state == CLOCK_STATE_RUNNING &&
 			_sync_interval &&
+			clock_state == CLOCK_STATE_RUNNING &&
 			num_beats - last_sync >= _sync_interval)
 		{
 			last_sync = num_beats;
-			num_sync_checks++;
-
-			_cur_time = time(NULL);
-			int32_t num_secs = _cur_time - _time_init;
-			int32_t diff = num_secs - num_beats;
-
-			if (diff > 0)
-				sync_sign = 1;
-			else if (diff < 0)
-				sync_sign = -1;
-
-			if (sync_sign)
-			{
-				sync_millis = diff  * 1000;
-				num_sync_changes++;
-				total_sync_changes += sync_millis;
-				total_abs_sync_changes += abs(sync_millis);
-				LOGU("SYNC CHANGE!!  BEATS(%d) SECS(%d) diff(%d) sign=%d  millis=%d",
-						num_beats,
-						num_secs,
-						diff,
-						sync_sign,
-						sync_millis);
-
-			}
-
-			syncMsg(buf);
+			onSyncRTC();
 		}
-		#endif
 
 		// 2. Sbow statistics
 
-		// else
-
-		if (_stat_interval &&
+		else if (_stat_interval &&
 				 _plot_values == PLOT_OFF &&
 				 last_stats != num_beats && (
 				 update_stats ||
@@ -1168,13 +1258,13 @@ void theClock::loop()	// override
 
 			// show the value of the RTC at the last zero crossing
 
-			buf[0] = 0;
-			formatTimeToBuf(buf,"TIME_START",time_start,time_start_ms);
-			strcat(buf,"<br>");
-			formatTimeToBuf(buf,"TIME_INIT",time_init,time_init_ms);
-			strcat(buf,"<br>");
-			formatTimeToBuf(buf,"CUR_TIME",time_zero,time_zero_ms);
-			setString(ID_STAT_MSG0,buf);
+			msg_buf[0] = 0;
+			formatTimeToBuf(msg_buf,"TIME_START",time_start,time_start_ms);
+			strcat(msg_buf,"<br>");
+			formatTimeToBuf(msg_buf,"TIME_INIT",time_init,time_init_ms);
+			strcat(msg_buf,"<br>");
+			formatTimeToBuf(msg_buf,"CUR_TIME",time_zero,time_zero_ms);
+			setString(ID_STAT_MSG0,msg_buf);
 
 			uint32_t full_secs = time_init ? time_zero - time_init : 0;
 			uint32_t secs = full_secs;
@@ -1183,91 +1273,52 @@ void theClock::loop()	// override
 			secs = secs - mins * 60;
 			mins = mins - hours * 60;
 
-			sprintf(buf,"%s %02d:%02d:%02d  == %d SECS %d BEATS",
+			sprintf(msg_buf,"%s %02d:%02d:%02d  == %d SECS %d BEATS",
 				(clock_state == CLOCK_STATE_RUNNING ?"RUNNING":"STARTING"),
 				hours,
 				mins,
 				secs,
 				full_secs,
 				num_beats);
-			setString(ID_STAT_MSG1,buf);
+			setString(ID_STAT_MSG1,msg_buf);
 
 			if (num_beats)	// to prevent annoying -32767's on 0th cycle
 			{
-				sprintf(buf,"num_bad(%d) restarts(%d)",
+				sprintf(msg_buf,"num_bad(%d) restarts(%d)",
 						stat_num_bad_reads,
 						stat_num_restarts);
-				setString(ID_STAT_MSG2,buf);
+				setString(ID_STAT_MSG2,msg_buf);
 
-				sprintf(buf,"power min(%d) max(%d)  angle left(%0.3f,%0.3f) to right(%0.3f,%0.3f)",
+				sprintf(msg_buf,"power min(%d) max(%d)  angle left(%0.3f,%0.3f) to right(%0.3f,%0.3f)",
 					stat_min_power,
 					stat_max_power,
 					stat_max_left,
 					stat_min_left,
 					stat_min_right,
 					stat_max_right);
-				setString(ID_STAT_MSG3,buf);
+				setString(ID_STAT_MSG3,msg_buf);
 
-				sprintf(buf,"cycle(%d,%d)  error(%d,%d)",
+				sprintf(msg_buf,"cycle(%d,%d)  error(%d,%d)",
 					stat_min_cycle,
 					stat_max_cycle,
 					stat_min_error,
 					stat_max_error);
-				setString(ID_STAT_MSG4,buf);
+				setString(ID_STAT_MSG4,msg_buf);
 			}
 		}
-
-	#if 0	// CLOCK_WITH_NTP
 
 		// 3. NTP vs ESP32 clock correction
 
-		else if (clock_state == CLOCK_STATE_RUNNING &&
-				_ntp_interval &&
-				num_beats - last_ntp >= _ntp_interval)
-		{
-			last_ntp = num_beats;
-			num_ntp_checks++;
-			uint32_t ntp_time = getNtpTime();
-			if (ntp_time)
+		#if CLOCK_WITH_NTP
+			else if (_ntp_interval &&
+					clock_state == CLOCK_STATE_RUNNING &&
+					num_beats - last_ntp >= _ntp_interval)
 			{
-				uint32_t this_time = time(NULL);
-				int32_t diff_time = this_time - ntp_time;
-				const char *msg = "NTP_OK";
-
-				if (diff_time)
-				{
-					msg = "NTP_DIF";
-					LOGW("NTP TIME CHECK DIFFERENCE == %d",diff_time);
-					num_ntp_corrections ++;
-					last_ntp_diff = diff_time;
-					total_ntp_corrections += diff_time;
-					total_abs_ntp_corrections += abs(diff_time);
-					syncNTPTime();
-				}
-				else
-				{
-					LOGU("NTP TIME CHECK - NTP and local time() are the same");
-				}
-
-				sprintf(buf,"NTP num(%d) fails(%d)%s CORRECTIONS(%d)%s last(%d) total(%d) total_abs(%d)",
-					num_ntp_checks,
-					num_ntp_fails,
-					(num_ntp_corrections ? "<b>" : ""),
-					num_ntp_corrections,
-					(num_ntp_corrections ? "</b>" : ""),
-					last_ntp_diff,
-					total_ntp_corrections,
-					total_abs_ntp_corrections);
-				setString(ID_STAT_MSG6,buf);
+				last_ntp = num_beats;
+				onSyncNTP();
 			}
-			else
-			{
-				num_ntp_fails++;
-				LOGE("NTP TIME CHECK FAILURE");
-			}
-		}
 
-	#endif
+		#endif	// CLOCK_WITH_NTP
 
 	}	// things based on beat changing
 

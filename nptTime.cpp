@@ -93,20 +93,18 @@ uint32_t getNtpTime()
 		int size = udp.parsePacket();
 		if (size >= NTP_PACKET_SIZE)
 		{
-			LOGD("Receive NTP Response");
+			// LOGD("Receive NTP Response");
 			udp.read(packetBuffer, NTP_PACKET_SIZE);  // read packet into the buffer
-			unsigned long secsSince1900;
 
 			// convert four bytes starting at location 40 to a long integer
-			secsSince1900 =  (unsigned long)packetBuffer[40] << 24;
-			secsSince1900 |= (unsigned long)packetBuffer[41] << 16;
-			secsSince1900 |= (unsigned long)packetBuffer[42] << 8;
-			secsSince1900 |= (unsigned long)packetBuffer[43];
-			secsSince1900 -= 2208988800UL + gmtOffset_sec + daylightOffset_sec;
+			int secs =  (unsigned long)packetBuffer[40] << 24;
+			secs |= (unsigned long)packetBuffer[41] << 16;
+			secs |= (unsigned long)packetBuffer[42] << 8;
+			secs |= (unsigned long)packetBuffer[43];
+			secs -= 2208988800UL + gmtOffset_sec + daylightOffset_sec;
 
-			LOGD("secsSince1900=%d",secsSince1900);
-			return secsSince1900;
-
+			LOGU("NTP_RESPONSE secs=%d",secs);
+			return secs;
 		}
 	}
 

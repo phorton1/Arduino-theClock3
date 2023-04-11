@@ -114,6 +114,7 @@
 #define ID_RUNNING_ERROR	"RUNNING_ERROR"
 #define ID_MIN_MAX_MS		"MIN_MAX_MS"
 #define ID_RESTART_MILLIS	"RESTART_MILLIS"
+#define ID_START_DELAY		"START_DELAY"
 
 #define ID_CLEAR_STATS		"CLEAR_STATS"
 
@@ -212,6 +213,7 @@ private:
 	static float _running_error;		// minimum accumulated angular error for clock to be considered running
 	static int 	 _min_max_ms;			// ms threshold for min/max algorithm
 	static uint32_t _restart_millis;	// millis for automatic restart (0 == off)
+	static uint32_t _start_delay;
 
 	static String 	_stat_msg0;		// messages
 	static String 	_stat_msg1;

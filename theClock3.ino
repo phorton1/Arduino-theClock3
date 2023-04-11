@@ -47,6 +47,7 @@
 
 #define DEFAULT_MIN_MAX_MS		50
 #define DEFAULT_RESTART_MILLIS  5000
+#define DEFAULT_START_DELAY     700
 
 #define DEFAULT_NTP_INTERVAL	14400L	// four hours
 #define DEFAULT_SYNC_INTERVAL	7200L	// two hours
@@ -105,6 +106,7 @@ static valueIdType device_items[] = {
 	ID_RUNNING_ERROR,
 	ID_MIN_MAX_MS,
 	ID_RESTART_MILLIS,
+	ID_START_DELAY,
 	ID_STAT_INTERVAL,
 	ID_SYNC_INTERVAL,
 #if CLOCK_WITH_NTP
@@ -185,7 +187,8 @@ const valDescriptor theClock::m_clock_values[] =
 	{ ID_RUNNING_ANGLE,  	VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_running_angle, NULL, { .float_range = { DEFAULT_RUNNING_ANGLE, 0, 12}} },
 	{ ID_RUNNING_ERROR,  	VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_running_error, NULL, { .float_range = { DEFAULT_RUNNING_ERROR, 1.0, 100}} },
 	{ ID_MIN_MAX_MS,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,   	   (void *) &_min_max_ms,	 NULL, { .int_range = { DEFAULT_MIN_MAX_MS,   	    10,  1000}} },
-	{ ID_RESTART_MILLIS,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_restart_millis,NULL, { .int_range = { DEFAULT_RESTART_MILLIS,   	0,  60000}} },
+	{ ID_RESTART_MILLIS,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_start_delay,	 NULL, { .int_range = { DEFAULT_RESTART_MILLIS,   	0,  60000}} },
+	{ ID_START_DELAY,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,  	   (void *) &_restart_millis,NULL, { .int_range = { DEFAULT_START_DELAY,   		0,  5000}} },
 
 	{ ID_CLEAR_STATS,       VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    (void *) clearStats },
 
@@ -247,6 +250,7 @@ float  	theClock::_running_angle;
 float  	theClock::_running_error;
 int	    theClock::_min_max_ms;
 uint32_t theClock::_restart_millis;
+uint32_t theClock::_start_delay;
 
 String 	 theClock::_stat_msg0;
 String 	 theClock::_stat_msg1;
