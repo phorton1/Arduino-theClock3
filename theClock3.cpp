@@ -91,6 +91,42 @@ void setPixel(int num, uint32_t color)
 }
 
 
+uint32_t scalePixel(int amt, int scale, uint32_t color0, uint32_t color1, uint32_t color2)
+{
+	// LOGU("scalePixel(%d,%d,0x%06x,0x%06x,0x%06x)",amt,scale,color0,color1,color2);
+
+	float fdif = amt;
+	fdif /= ((float)scale);
+	if (fdif < -1) fdif = -1;
+	else if (fdif > 1) fdif = 1;
+	// LOGU("   fdif=%0.3f",fdif);
+
+	uint32_t retval = 0;
+	uint8_t *ca = (uint8_t *)&color1;
+	uint8_t *cb = (uint8_t *)&color2;
+
+	if (fdif < 0)
+	{
+		fdif = -fdif;
+		ca = (uint8_t *)&color1;
+		cb = (uint8_t *)&color0;
+	}
+
+	for (int i=0; i<3; i++)
+	{
+		int base = ca[i];			// assume base is the middle
+		int val = cb[i] - ca[i];    // and that it increaes as we move outward
+		uint8_t byte =  base + (fdif * val);
+		// LOGU("base=0x%02x  val=0x%02x   byte=0x%02x",base,val,byte);
+		retval |= (byte << 8 * i);
+	}
+	// LOGU("    retval=0x%08x",retval);
+	return retval;
+}
+
+
+
+
 //--------------------------------------------
 // vars
 //--------------------------------------------
@@ -108,20 +144,32 @@ static int32_t 	cur_cycle = 0;		// millis in this 'cycle' (forward zero crossing
 static int32_t 	last_cycle = 0;		// millis at previous forward zero crossing
 static uint32_t num_beats = 0;		// number of beats (while clock_started && !initial_pulse_time)
 
-static uint32_t time_zero = 0;		// ESP32 RTC time at zero crossing
-static uint32_t time_zero_ms = 0;	// with milliseconds (from microseconds)
 static uint32_t time_start = 0;
 static uint32_t time_start_ms = 0;
+static uint32_t time_zero = 0;		// ESP32 RTC time at zero crossing
+static uint32_t time_zero_ms = 0;	// with milliseconds (from microseconds)
+static uint32_t time_init = 0;
+static uint32_t time_init_ms = 0;
 
-static float pid_angle = 0;
 static int32_t  total_millis_error = 0;	// important cumulative number of millis total error
 static int32_t  prev_millis_error = 0;
+static float pid_angle = 0;				// angle determined by second PID controller or other parameters
 
 static float total_ang_error = 0;	// accumluated degrees of error (for "I")
 static float prev_ang_error = 0;	// the previous error (for "D")
 static int pid_power = 0;			// power adjusted by pid algorithm
 
+// SYNC
+
+static int sync_sign = 0;
+static int sync_millis = 0;
+
+
 // CONTROL
+
+volatile bool the_semaphore = 0;
+	// semaphore between showPixels() and as5600.readAngle()
+	// dont read the angle while writing pixels or vice-versa!
 
 static uint32_t initial_pulse_time = 0;	// time at which we started initial clock starting pulse (push)
 static bool push_motor = 0;			// push the pendulum next time after it leaves deadzone (determined at zero crossing)
@@ -154,26 +202,6 @@ static int32_t   stat_max_error;
 
 
 
-
-#if 0
-	// Buttons and pixel flashing
-	#define FUNCTION_NONE  			0
-	#define FUNCTION_STOPPED		1	// white		state
-	#define FUNCTION_STOPPING		2	// white		short press
-	#define FUNCTION_STARTING       3	// green		short press
-	#define FUNCTION_WIFI_ON        4	// blue			long press (over 2 seconds)
-	#define FUNCTION_WIFI_OFF       5	// magenta		long press (over 2 seconds)
-	#define FUNCTION_RESET			6	// red			super long press (over 8 seconds)
-	static int flash_fxn = FUNCTION_NONE;
-	static bool flash_on = 0;
-	static int flash_count = 0;
-	static uint32_t flash_dur = 0;
-	static uint32_t flash_time = 0;
-	static uint32_t button_chk = 0;
-	static uint32_t button_down = 0;
-#endif
-
-
 // virtual
 void theClock::setup()	// override
 {
@@ -186,7 +214,7 @@ void theClock::setup()	// override
 	{
 		pixels.setPixelColor(i,MY_LED_CYAN);
 		pixels.show();
-		delay(500);
+		delay(300);
 	}
 	pixels.clear();
 	pixels.show();
@@ -203,7 +231,7 @@ void theClock::setup()	// override
 	digitalWrite(PIN_IN1,0);
 	digitalWrite(PIN_IN2,0);
 
-	pixels.setPixelColor(PIXEL_MAIN,MY_LED_BLUE);
+	pixels.setPixelColor(PIXEL_MAIN,MY_LED_ORANGE);
 	pixels.show();
 	delay(500);
 
@@ -251,14 +279,14 @@ void theClock::setup()	// override
 	// clearValueById(ID_ZERO_ANGLE_F);
 	// setInt(ID_ZERO_ANGLE,0);
 
-	pixels.setPixelColor(PIXEL_MAIN,MY_LED_GREEN);
-	pixels.show();
 	if (_zero_angle == 0)
 	{
+		pixels.setPixelColor(PIXEL_MAIN,MY_LED_PURPLE);
+		pixels.show();
 		setZeroAngle();
+		delay(500);
 	}
 	LOGU("_zero_angle=%d == %0.3f degrees",_zero_angle,angle(_zero_angle));
-	delay(500);
 
 	// debug_angle("in theClock::setup() before starting clockTask");
 
@@ -274,7 +302,6 @@ void theClock::setup()	// override
 		10,  	        // note that the priority is higher than one
 		NULL,           // returned task handle
 		ESP32_CORE_OTHER);
-
 
 	LOGU("theClock::setup() finished");
 	pixels.clear();
@@ -328,8 +355,11 @@ void theClock::initStats()
 
 	time_zero = 0;
 	time_zero_ms = 0;
-	time_start = 0;
-	time_start_ms = 0;
+	time_init = 0;
+	time_init_ms = 0;
+
+	sync_sign = 0;
+	sync_millis = 0;
 
 	last_beat = 0xffffffff;
 	last_sync = 0;
@@ -399,6 +429,11 @@ void theClock::startClock()
 			_clock_mode == CLOCK_MODE_MIN_MAX ? _angle_min :
 			_angle_start;
 
+		struct timeval tv_now;
+		gettimeofday(&tv_now, NULL);
+		time_start = tv_now.tv_sec;
+		time_start_ms = tv_now.tv_usec / 1000L;
+
 		motor(-1,_power_start);
 		initial_pulse_time = last_change = millis();
 		clock_state = CLOCK_STATE_STARTING;
@@ -415,21 +450,28 @@ void theClock::onStartClockSynchronized()
 	// and that we will do what is necessary to get the clock aligned
 	// back to that moment.
 
-	// We will need to give a starting pulse somewhat before the zero,
-	// and somehow have to deterministicly start the clock and know when
-	// the second hand moves.
-
-	// One idea is to know EXACTLY when we issued the pulse and then
-	// to know EXACTLY the difference between that and the 'time_start'
-	// as determined by pendulum zero crossings.
-
+	// We will need to give a starting pulse somewhat before the zero.
 	// The difficulty is that we don't know when the actual first tick takes place.
+	// We will assume it moves to the right on the pulse and will swing to the left
+	// approximately 1/2 second after we issue the pulse.
+
+	// We are using left crossing to determine cycle time.
 
 	// It depends on the state of the hardware ... the clock may be predisposed
 	// so that the pawls grabbing starting on the actual impulse with a forward tick,
 	// or on the the next back swing, or some time later ... leading us to experiments
 	// with the optical mouse sensor to detect the wheel movements.
 
+	for (int i=0; i<4; i++)
+	{
+		for (int j=-50; j<51; j+= 1)
+		{
+			uint32_t test_pixel = scalePixel(j,50,MY_LED_MAGENTA,0x002200,MY_LED_CYAN);
+			setPixel(PIXEL_CYCLE,test_pixel);
+			pixels.show();
+			delay(20);
+		}
+	}
 }
 
 
@@ -485,9 +527,12 @@ void theClock::onDiddleClock(const myIOTValue *desc, int val)
 
 void theClock::onSyncRTC()
 {
-	LOGU("onSyncRTC()");
-	// experiment to see what happens if I poke the time_zero_ms into the error
-	total_millis_error += time_zero_ms;
+	sync_millis = time_zero_ms - 500;
+	sync_sign =
+		sync_millis < 0 ? - 1 :
+		sync_millis > 0 ? 1 : 0;
+
+	LOGU("onSyncRTC(%d) amount=%d",sync_sign,sync_millis);
 }
 
 
@@ -508,7 +553,7 @@ void theClock::onSyncRTC()
 float theClock::getPidAngle()
 {
 	float this_p = cur_cycle - 1000;
-	float this_i = total_millis_error;
+	float this_i = total_millis_error + sync_millis;
 	float this_d = prev_millis_error - this_p;;
 	prev_millis_error = this_p;
 
@@ -549,7 +594,6 @@ int theClock::getPidPower(float avg_angle)
 
 	return pid_power;
 }
-
 
 
 void theClock::run()
@@ -620,7 +664,14 @@ void theClock::run()
 
 	#define MAX_ANGLE  14.0
 
+	volatile int count = 0;
+	while (the_semaphore) {count++;}
+	the_semaphore = 1;
+
 	int raw = as5600.readAngle();
+
+	the_semaphore = 0;
+
 	int cur = raw - _zero_angle;
 	float cur_angle = angle(cur);
 	if (abs(cur_angle) > MAX_ANGLE)
@@ -665,7 +716,9 @@ void theClock::run()
 
 			// get full cycle time
 			// and add it to the accumulated error if running
-			// we use the left crossing because it lines up with the 'tock' of the clock
+			// we use the left crossing, which is the tick to 1/2 second
+			// so that when we synchronize to 500ms, the tock will fall on the
+			// exact second
 
 			if (as5600_side < 0)
 			{
@@ -685,34 +738,33 @@ void theClock::run()
 					int err = cur_cycle;
 					err -= 1000;
 
-
 					// if sync_sign, we are in a sync and the err is
 					// added to the sync_millisuntil it changes sign,
 					// at which point the sync is "turned off" and the
 					// remaining error falls through to the 'total_millis_error'
 
-					//	if (sync_sign)
-					//	{
-					//		sync_millis += err;
-					//		int new_sign =
-					//			sync_millis > 0 ? 1 :
-					//			sync_millis < 0 ? -1 : 0;
-                    //
-					//		if (new_sign != sync_sign)
-					//		{
-					//			LOGU("SYNC_DONE - remainder=%d",sync_millis);
-					//			err = sync_millis;
-					//			sync_sign = 0;
-					//			sync_millis = 0;
-					//		}
-                    //
-					//		// if the sync is not turned off, it ate all the error millis
-                    //
-					//		else
-					//		{
-					//			err = 0;
-					//		}
-					//	}
+					if (sync_sign)
+					{
+						sync_millis += err;
+						int new_sign =
+							sync_millis > 0 ? 1 :
+							sync_millis < 0 ? -1 : 0;
+
+						if (new_sign != sync_sign)
+						{
+							LOGU("SYNC_DONE - remainder=%d",sync_millis);
+							err = sync_millis;
+							sync_sign = 0;
+							sync_millis = 0;
+						}
+
+						// if the sync is not turned off, it ate all the error millis
+
+						else
+						{
+							err = 0;
+						}
+					}
 
 					// might be zero contribution while syncing ...
 
@@ -722,11 +774,11 @@ void theClock::run()
 					// we are either on the 0th beat (starting the clock)
 					// or we start with the first beat one full cycle later ..
 
-					if (!time_start)
+					if (!time_init)
 					{
 						update_stats = true;
-						time_start = time_zero;	// time(NULL);
-						time_start_ms = time_zero_ms;
+						time_init = time_zero;	// time(NULL);
+						time_init_ms = time_zero_ms;
 					}
 					else
 					{
@@ -821,12 +873,12 @@ void theClock::run()
 				else if (_clock_mode == CLOCK_MODE_MIN_MAX)
 				{
 					if (pid_angle == _angle_min &&
-						total_millis_error > _min_max_ms)
+						total_millis_error + sync_millis > _min_max_ms)
 					{
 						pid_angle = _angle_max;
 					}
 					else if (pid_angle == _angle_max &&
-						total_millis_error < -_min_max_ms)
+						total_millis_error + sync_millis < -_min_max_ms)
 					{
 						pid_angle = _angle_min;
 					}
@@ -851,20 +903,18 @@ void theClock::run()
 
 			if (_plot_values == PLOT_OFF)
 			{
-				LOGI("%-6s(%-2d) %-4d %3.3f/%3.3f=%3.3f  target=%3.3f  accum=%3.3f  power=%d  err=%d",			// p=%3.3f i=%3.3f d=%3.3f
-					 clock_state == CLOCK_STATE_RUNNING ? "run" : "start",
+				LOGI("%-6s(%-2d) %-4d %3.3f/%3.3f=%3.3f  target=%3.3f  accum=%3.3f  power=%d  err=%d  sync=%d",
+					 sync_sign ? "SYNC" : clock_state == CLOCK_STATE_RUNNING ? "run" : "start",
 					 as5600_direction,
 					 cur_cycle,
 					 as5600_min_angle,
 					 as5600_max_angle,
 					 avg_angle,
 					 pid_angle,
-					 // this_p,
-					 // this_i,
-					 // this_d,
 					 total_ang_error,
 					 use_power,
-					 total_millis_error);
+					 total_millis_error,
+					 sync_millis);
 			}
 		}
 	}
@@ -962,177 +1012,92 @@ void theClock::loop()	// override
 {
 	myIOTDevice::loop();
 
-	bool show_pixels = 0;
+	uint32_t now = millis();
 
-	#if 0
+	//--------------------------------------
+	// PIXELS
+	//--------------------------------------
 
-		//-----------------------------
-		// BUTTONS
-		//-----------------------------
+	static uint32_t last_pixels = 0;
+	if (now - last_pixels > 1000)
+	{
+		last_pixels = now;
 
-		uint32_t now = millis();
-		if (now - button_chk > 33)	// 30 times per second
+		// MAIN_PIXEL is green if connected as STATION,
+		// purple if AP, yellow if ALL, and red if NONE
+
+		uint32_t new_pixels[NUM_PIXELS];
+		memset(new_pixels,0,NUM_PIXELS * sizeof(uint32_t));
+
+		iotConnectStatus_t status = getConnectStatus();
+		new_pixels[PIXEL_MAIN] =
+			status == IOT_CONNECT_ALL ? MY_LED_YELLOW :
+			status == IOT_CONNECT_AP ? MY_LED_PURPLE :
+			status == IOT_CONNECT_STA ? MY_LED_GREEN :
+			/* status == IOT_CONNECT_NONE ? */ MY_LED_RED;
+
+		new_pixels[PIXEL_STATE] =
+			clock_state == CLOCK_STATE_RUNNING ? MY_LED_GREEN :
+			clock_state == CLOCK_STATE_STARTED ? MY_LED_MAGENTA :
+			clock_state == CLOCK_STATE_STARTING ? MY_LED_WHITE :
+			clock_state == CLOCK_STATE_STATS ? MY_LED_YELLOW :
+			MY_LED_BLACK;
+
+		// accuracy and cycle move from green to red/blue
+		// as they diverge by 2 * _min_max_ms
+
+		if (clock_state >= CLOCK_STATE_STARTING)
 		{
-			button_chk = now;
-			static int last_press = 0;
-			bool val = !digitalRead(PIN_BUTTON1);
-			if (button_down)
-			{
-				uint32_t dur = now - button_down;
-				int press =
-					dur > 8000 ? 3 :			// long press
-					dur > 2000 ? 2 : 1;			// medium, short press
-				int fxn =
-					press == 3 ? FUNCTION_RESET :
-					press == 2 ? getBool(ID_DEVICE_WIFI) ?
-						FUNCTION_WIFI_OFF :
-						FUNCTION_WIFI_ON :
-					getBool(ID_RUNNING) ?
-						FUNCTION_STOPPING :
-						FUNCTION_STARTING;
+			new_pixels[PIXEL_ACCURACY] =
+				total_millis_error >=  _min_max_ms 	? MY_LED_BLUE      :
+				total_millis_error <= -_min_max_ms 	? MY_LED_RED   :
+				scalePixel(total_millis_error,_min_max_ms,
+					MY_LED_RED,
+					MY_LED_GREEN,
+					MY_LED_BLUE);
 
-				if (!val)
-				{
-					LOGD("button_up dur(%d) press(%d) fxn(%d)",dur,press,fxn);
-
-					flash_fxn = fxn;
-					button_down = 0;
-					setPixel(PIXEL_MAIN,MY_LED_BLACK);
-					show_pixels = 1;
-				}
-				else if (last_press != press)
-				{
-					LOGD("button_down dur(%d) press(%d) fxn(%d)",dur,press,fxn);
-
-					last_press = press;
-					setPixel(PIXEL_MAIN,
-						fxn == FUNCTION_RESET ? MY_LED_RED :
-						fxn == FUNCTION_WIFI_OFF ? MY_LED_MAGENTA :
-						fxn == FUNCTION_WIFI_ON ? MY_LED_BLUE :
-						fxn == FUNCTION_STARTING ? MY_LED_GREEN :
-						MY_LED_WHITE);
-					show_pixels = 1;
-				}
-			}
-			else if (val && !button_down)
-			{
-				LOGD("button_down",0);
-				button_down = now;
-				flash_fxn = 0;
-				flash_count = 0;
-				flash_time = 0;
-				last_press = 0;
-			}
-		}
-
-		//------------------------
-		// PIXELS
-		//------------------------
-
-		if (flash_fxn && now - flash_time > flash_dur)
-		{
-			uint32_t color;
-			if (flash_on)
-			{
-				flash_on = 0;
-				flash_dur = 400;
-				flash_count++;
-				color = MY_LED_BLACK;
-			}
+			int dif = cur_cycle - 1000;
+			if (dif >= _min_max_ms)
+				new_pixels[PIXEL_CYCLE] = MY_LED_BLUE;
+			else if (dif <= -_min_max_ms)
+				new_pixels[PIXEL_CYCLE] = MY_LED_RED;
 			else
-			{
-				flash_on = 1;
-				flash_dur = 100;
-				color =
-					flash_fxn == FUNCTION_STARTING ? MY_LED_GREEN :
-					flash_fxn == FUNCTION_WIFI_ON ? MY_LED_BLUE :
-					flash_fxn == FUNCTION_WIFI_OFF ? MY_LED_MAGENTA :
-					flash_fxn == FUNCTION_RESET ? MY_LED_RED :
-					MY_LED_WHITE;	// STOPPED or STOPPING
-					MY_LED_YELLOW;	// unknown function
+				new_pixels[PIXEL_CYCLE] = scalePixel(dif,_min_max_ms,
+					MY_LED_RED,
+					MY_LED_GREEN,
+					MY_LED_BLUE);
 
-			}
-			flash_time = now;
-			setPixel(PIXEL_MAIN,color);
-			show_pixels = 1;
-			if (flash_count == 5)
-			{
-				int fxn = flash_fxn;
-				flash_fxn = FUNCTION_NONE;
-
-				if (fxn == FUNCTION_RESET)
-					the_clock->factoryReset();
-				else if (fxn == FUNCTION_WIFI_OFF)
-					the_clock->setBool(ID_DEVICE_WIFI,0);
-				else if (fxn == FUNCTION_WIFI_ON)
-					the_clock->setBool(ID_DEVICE_WIFI,1);
-				else if (fxn == FUNCTION_STARTING)
-					the_clock->setBool(ID_RUNNING,1);
-				else if (fxn == FUNCTION_STOPPING && clock_started)
-				{
-					the_clock->setBool(ID_RUNNING,0);
-					flash_fxn = FUNCTION_STOPPED;
-				}
-				else if (fxn == FUNCTION_STOPPED)
-					flash_fxn = FUNCTION_STOPPED;
-
-				flash_dur = 5000;
-				flash_count = 0;
-			}
+			new_pixels[PIXEL_SYNC] =
+					!sync_sign ? MY_LED_BLACK :
+					scalePixel(sync_millis,_min_max_ms,
+						MY_LED_RED,
+						MY_LED_GREEN,
+						MY_LED_BLUE);
 		}
-	#endif // 0
 
 
-	// static pixels
+		// set pixels and show if changed
 
-	static uint32_t last_pixel_main = 0;
-	static uint32_t last_pixel_state = 0;
-	static uint32_t last_pixel_sync = 0;
-
-	uint32_t pixel_main =
-		clock_state == CLOCK_STATE_RUNNING ? MY_LED_GREEN :
-		clock_state == CLOCK_STATE_STARTED ? MY_LED_MAGENTA :
-		clock_state == CLOCK_STATE_STARTING ? MY_LED_WHITE :
-		clock_state == CLOCK_STATE_STATS ? MY_LED_YELLOW :
-		MY_LED_RED;
-
-	if (last_pixel_main != pixel_main)
-	{
-		last_pixel_main = pixel_main;
-		setPixel(PIXEL_MAIN,pixel_main);
-		show_pixels = 1;
-	}
-
-	uint32_t pixel_state =
-		clock_state < CLOCK_STATE_STARTING ? MY_LED_BLACK :
-		total_millis_error > 2 * _min_max_ms ? MY_LED_BLUE :
-		total_millis_error < -2 * _min_max_ms ? MY_LED_RED :
-		total_millis_error < 0 ? MY_LED_CYAN :
-		MY_LED_GREEN;
-
-	if (last_pixel_state != pixel_state)
-	{
-		last_pixel_state = pixel_state;
-		setPixel(PIXEL_STATE,pixel_state);
-		show_pixels = 1;
-	}
-
-	#if 0
-		uint32_t pixel_sync =
-				sync_sign < 0 ? MY_LED_RED :
-				sync_sign > 0 ? MY_LED_BLUE :
-				MY_LED_BLACK;
-		if (last_pixel_sync != pixel_sync)
+		bool show_pixels = 0;
+		static uint32_t old_pixels[NUM_PIXELS];
+		for (int i=0; i<=NUM_PIXELS; i++)
 		{
-			last_pixel_sync = pixel_sync;
-			setPixel(PIXEL_SYNC,pixel_sync);
-			show_pixels = 1;
+			if (old_pixels[i] != new_pixels[i])
+			{
+				old_pixels[i] = new_pixels[i];
+				setPixel(i,new_pixels[i]);
+				show_pixels = 1;
+			}
 		}
-	#endif
-
-
-	if (show_pixels)
-		pixels.show();
+		if (show_pixels)
+		{
+			volatile int count = 0;
+			while (the_semaphore) {count++;}
+			the_semaphore = 1;
+			pixels.show();
+			the_semaphore = 0;
+		}
+	}
 
 
 	//------------------------------------------
@@ -1152,7 +1117,7 @@ void theClock::loop()	// override
 
 		#if 0
 		if (!sync_sign &&
-			_time_start &&
+			_time_init &&
 			clock_state == CLOCK_STATE_RUNNING &&
 			_sync_interval &&
 			num_beats - last_sync >= _sync_interval)
@@ -1161,7 +1126,7 @@ void theClock::loop()	// override
 			num_sync_checks++;
 
 			_cur_time = time(NULL);
-			int32_t num_secs = _cur_time - _time_start;
+			int32_t num_secs = _cur_time - _time_init;
 			int32_t diff = num_secs - num_beats;
 
 			if (diff > 0)
@@ -1206,10 +1171,12 @@ void theClock::loop()	// override
 			buf[0] = 0;
 			formatTimeToBuf(buf,"TIME_START",time_start,time_start_ms);
 			strcat(buf,"<br>");
+			formatTimeToBuf(buf,"TIME_INIT",time_init,time_init_ms);
+			strcat(buf,"<br>");
 			formatTimeToBuf(buf,"CUR_TIME",time_zero,time_zero_ms);
 			setString(ID_STAT_MSG0,buf);
 
-			uint32_t full_secs = time_start ? time_zero - time_start : 0;
+			uint32_t full_secs = time_init ? time_zero - time_init : 0;
 			uint32_t secs = full_secs;
 			uint32_t mins = secs / 60;
 			uint32_t hours = mins / 60;

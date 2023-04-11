@@ -39,12 +39,11 @@
 
 #define PIXEL_MAIN		4
 #define PIXEL_STATE     3
-#define PIXEL_SYNC      2
+#define PIXEL_ACCURACY  2
+#define PIXEL_CYCLE     1
+#define PIXEL_SYNC      0
 
 #define NUM_PIXELS		5
-
-
-
 
 
 //----------------------------------
@@ -61,6 +60,7 @@
 #define MY_LED_WHITE    0x444444
 #define MY_LED_ORANGE   0x402200
 #define MY_LED_REDMAG   0x400022
+#define MY_LED_PURPLE   0x220033
 #define MY_LED_BLUECYAN 0x002240
 
 

@@ -45,7 +45,7 @@
 #define DEFAULT_RUNNING_ANGLE   4.0
 #define DEFAULT_RUNNING_ERROR   2.0
 
-#define DEFAULT_MIN_MAX_MS		40
+#define DEFAULT_MIN_MAX_MS		50
 #define DEFAULT_RESTART_MILLIS  5000
 
 #define DEFAULT_NTP_INTERVAL	14400L	// four hours
@@ -57,6 +57,7 @@
 // what shows up on the "dashboard" UI tab
 
 static valueIdType dash_items[] = {
+	ID_START_CLOCK,
 	ID_RUNNING,
 	ID_CLOCK_MODE,
 	ID_PLOT_VALUES,
