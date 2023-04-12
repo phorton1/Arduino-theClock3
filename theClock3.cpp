@@ -49,6 +49,7 @@ static float as5600_min_angle = 0;
 static float as5600_max_angle = 0;
 
 AS5600 as5600;   //  uses default Wire
+volatile int the_semaphore = 0;
 
 
 static float angle(int units)
@@ -84,10 +85,21 @@ void motor(int state, int power)
 //----------------------------
 
 static Adafruit_NeoPixel pixels(NUM_PIXELS,PIN_LEDS);
+static bool show_pixels = 0;
 
 void setPixel(int num, uint32_t color)
 {
 	pixels.setPixelColor(num,color);
+	show_pixels = 1;
+}
+
+void showPixels(bool force=0)
+{
+	if (show_pixels || force)
+	{
+		pixels.show();
+		show_pixels = 0;
+	}
 }
 
 
@@ -182,10 +194,6 @@ static uint32_t total_ntp_changes_abs = 0;
 
 // CONTROL
 
-volatile bool the_semaphore = 0;
-	// semaphore between showPixels() and as5600.readAngle()
-	// dont read the angle while writing pixels or vice-versa!
-
 static uint32_t initial_pulse_time = 0;	// time at which we started initial clock starting pulse (push)
 static bool push_motor = 0;			// push the pendulum next time after it leaves deadzone (determined at zero crossing)
 static uint32_t motor_start = 0;
@@ -220,6 +228,49 @@ static int32_t   stat_max_error;
 
 
 
+//-----------------------------------------------
+// utilities
+//-----------------------------------------------
+
+int32_t timeDeltaMS(int32_t secs1, int32_t ms1, int32_t secs2, int32_t ms2)
+{
+	int32_t diff_secs = secs1 - secs2;
+	int32_t diff_ms = ms1 - ms2;
+	while (diff_ms < 0)
+	{
+		diff_secs--;
+		diff_ms += 1000L;
+	}
+	while (diff_ms >= 1000L)
+	{
+		diff_secs++;
+		diff_ms -= 1000L;
+	}
+	diff_ms += diff_secs * 1000L;
+	return diff_ms;
+}
+
+int32_t timeAddMS(int32_t *secs, int32_t *ms, int32_t ms_delta)
+{
+	*ms += ms_delta;
+	while (*ms < 0)
+	{
+		*secs--;
+		*ms += 1000L;
+	}
+	while (*ms >= 1000L)
+	{
+		*secs++;
+		*ms -= 1000L;
+	}
+}
+
+
+
+//-----------------------------------------------
+// setup
+//-----------------------------------------------
+
 // virtual
 void theClock::setup()	// override
 {
@@ -230,12 +281,12 @@ void theClock::setup()	// override
 
 	for (int i=NUM_PIXELS-1; i>=0; i--)
 	{
-		pixels.setPixelColor(i,MY_LED_CYAN);
-		pixels.show();
+		setPixel(i,MY_LED_CYAN);
+		showPixels(1);
 		delay(300);
 	}
 	pixels.clear();
-	pixels.show();
+	showPixels(1);
 	delay(500);
 
 	pinMode(PIN_BUTTON1,INPUT_PULLUP);
@@ -249,8 +300,8 @@ void theClock::setup()	// override
 	digitalWrite(PIN_IN1,0);
 	digitalWrite(PIN_IN2,0);
 
-	pixels.setPixelColor(PIXEL_MAIN,MY_LED_ORANGE);
-	pixels.show();
+	setPixel(PIXEL_MAIN,MY_LED_ORANGE);
+	showPixels(1);
 	delay(500);
 
 	//--------------------------------------------------
@@ -270,8 +321,8 @@ void theClock::setup()	// override
 			LOGE("Could not connect to AS5600");
 			for (int i=0; i<11; i++)
 			{
-				pixels.setPixelColor(PIXEL_MAIN,i&1?MY_LED_RED:MY_LED_BLACK);
-				pixels.show();
+				setPixel(PIXEL_MAIN,i&1?MY_LED_RED:MY_LED_BLACK);
+				showPixels(1);
 				delay(300);
 			}
 		}
@@ -283,8 +334,8 @@ void theClock::setup()	// override
 	// call myIOTDevice::setup()
 	//------------------------------
 
-	pixels.setPixelColor(PIXEL_MAIN,MY_LED_CYAN);
-	pixels.show();
+	setPixel(PIXEL_MAIN,MY_LED_CYAN);
+	showPixels(1);
 	myIOTDevice::setup();
 
 	//-------------------------------
@@ -299,8 +350,8 @@ void theClock::setup()	// override
 
 	if (_zero_angle == 0)
 	{
-		pixels.setPixelColor(PIXEL_MAIN,MY_LED_PURPLE);
-		pixels.show();
+		setPixel(PIXEL_MAIN,MY_LED_PURPLE);
+		showPixels(1);
 		setZeroAngle();
 		delay(500);
 	}
@@ -323,7 +374,7 @@ void theClock::setup()	// override
 
 	LOGU("theClock::setup() finished");
 	pixels.clear();
-	pixels.show();
+	showPixels();
 
 }	// theClock::setup()
 
@@ -368,7 +419,7 @@ void theClock::initMotor()
 }
 
 
-void theClock::initStats()
+void theClock::initStats(bool restart)
 {
 	update_stats = false;
 
@@ -404,8 +455,11 @@ void theClock::initStats()
 	last_stats = 0;
 	last_ntp = 0;
 
-	stat_num_bad_reads = 0;
-	stat_num_restarts = 0;
+	if (!restart)
+	{
+		stat_num_bad_reads = 0;
+		stat_num_restarts = 0;
+	}
 
 	stat_min_power = 255;
 	stat_max_power = 0;
@@ -432,7 +486,7 @@ void theClock::initStats()
 void theClock::clearStats()
 {
 	LOGU("STATISTICS CLEARED");
-	initStats();
+	initStats(0);
 	update_stats = true;
 }
 
@@ -445,13 +499,13 @@ void theClock::stopClock()
 }
 
 
-void theClock::startClock()
+void theClock::startClock(bool restart /*=0*/)
 {
-	LOGU("startClock()");
+	LOGU("startClock(%d)",restart);
 
 	initMotor();
 	initAS5600();
-	initStats();
+	initStats(restart);
 
 	if (_clock_mode == CLOCK_MODE_SENSOR_TEST)
 	{
@@ -551,10 +605,24 @@ void theClock::onTestMotor(const myIOTValue *desc, int val)
 #include <sys/time.h>
 void theClock::onDiddleClock(const myIOTValue *desc, int val)
 {
-	LOGU("onDiddleClock %d",val);
-	int32_t a_time = time(NULL) + val;
-	timeval e_time = {a_time, 0};
-	settimeofday((const timeval*)&e_time, 0);
+	struct timeval tv_now;
+	gettimeofday(&tv_now, NULL);
+	int orig_secs = tv_now.tv_sec;
+	int orig_ms = tv_now.tv_usec / 1000L;
+
+	if (!val)
+	{
+		LOGU("onDiddleClock(%d) orig=%d.03d  NO CHANGE",val,orig_secs,orig_ms);
+	}
+	else
+	{
+		int new_ms = orig_ms;
+		int new_secs = orig_secs;
+		timeAddMS(&new_secs,&new_ms,val);
+		LOGU("onDiddleClock(%d) orig=%d.%03d  new=%d.%0.3d",val,orig_secs,orig_ms,new_secs,new_ms);
+		timeval e_time = {new_secs, new_ms * 1000};
+		settimeofday((const timeval*)&e_time, 0);
+	}
 }
 
 
@@ -568,8 +636,11 @@ void theClock::onSyncRTC()
 		return;
 	}
 
-	int32_t dif_ms = time_zero_ms - 500;
+	// move all pending error millis over to the diff
+
+	int32_t dif_ms = total_millis_error + time_zero_ms - 500;
 		// we want the tock to align with 500 ms no matter what
+	total_millis_error = 0;
 
 	int32_t run_secs = time_zero;		// number of seconds the clock has been running
 	run_secs -= time_init;				// is most recent zero crossing - initial zero crossing
@@ -618,39 +689,40 @@ void theClock::onSyncRTC()
 #if CLOCK_WITH_NTP
 	void theClock::onSyncNTP()
 	{
-		if (clock_state != CLOCK_STATE_RUNNING )
-		{
-			LOGE("Attempt call onSyncRTC() while clock is not running!");
-			return;
-		}
-
 		// these stats are only approximate
 		// as the final actual time will be determined
 		// by ntp sync processes beyond our control
 
 		num_ntp_checks++;
-		int32_t ntp_time = getNtpTime();
-		if (!ntp_time)
+		int32_t ntp_secs;
+		int32_t ntp_ms;
+
+		if (!getNtpTime(&ntp_secs,&ntp_ms))
 		{
 			num_ntp_fails++;
 			LOGE("getNtpTime() failed!!");
 		}
 		else
 		{
-			int32_t now = time(NULL);
-			int32_t secs = ntp_time - now;
-			if (secs)
+			struct timeval tv_now;
+			gettimeofday(&tv_now, NULL);
+			int32_t now_secs = tv_now.tv_sec;
+            int32_t now_ms = tv_now.tv_usec / 1000L;
+			int32_t delta_ms = timeDeltaMS(now_secs,now_ms,ntp_secs,ntp_ms);
+			if (delta_ms)
 			{
-				int32_t chg = secs * 1000;
-				last_ntp_change = chg;
+				last_ntp_change = delta_ms;
 				num_ntp_changes++;
-				total_ntp_changes += chg;
-				total_ntp_changes_abs += abs(chg);
-				LOGU("onSyncNTP(%d/%d)  chg=%d",
+				total_ntp_changes += delta_ms;
+				total_ntp_changes_abs += abs(delta_ms);
+				LOGU("onSyncNTP(%d/%d) now(%d.%03d) ntp(%d.%03d) delta=%d",
 					num_ntp_changes,
 					num_ntp_checks,
-					chg);
-
+					now_secs,
+					now_ms,
+					ntp_secs,
+					ntp_ms,
+					delta_ms);
 				syncNTPTime();
 			}
 			else
@@ -735,14 +807,20 @@ void theClock::run()
 			if (time(NULL) % 60 == 59)
 			{
 				LOGU("starting synchronized delay=%d",_start_delay);
-				the_clock->setBool(ID_RUNNING,1);	    // set the UI bool
 				if (_start_delay)
 					delay(_start_delay);				// do it about 1/2 second early
+				the_clock->setBool(ID_RUNNING,1);	    // set the UI bool
 				startClock();							// and away we go
 			}
 		}
 		else if (_clock_running)
 			startClock();
+
+		// yet another attempt to keep readAngle() working.
+		// we only call showPixels() from CLOCK_STATE_NONE,
+		// or CLOCK_STATE_START or AFTER we call readAngle()
+
+		showPixels();
 		return;
 	}
 
@@ -768,19 +846,24 @@ void theClock::run()
 		}
 		else
 		{
+			// yet another attempt to keep readAngle() working.
+			// we only call showPixels() from CLOCK_STATE_NONE,
+			// or CLOCK_STATE_START or AFTER we call readAngle()
+			showPixels();
 			return;
 		}
 	}
 
 	// Restart if necessary
 
+	int res_millis = now - last_change;
 	if (_clock_mode > CLOCK_MODE_SENSOR_TEST &&
 		clock_state >= CLOCK_STATE_STARTED &&
-		now - last_change > _restart_millis)
+		res_millis > _restart_millis)
 	{
-		LOGW("RESTARTING CLOCK!!");
+		LOGW("RESTARTING CLOCK!! now=%d last_change=%d  diff=%d  constant=%d",now,last_change,res_millis,_restart_millis);
 		stat_num_restarts++;
-		startClock();
+		startClock(1);
 		return;
 	}
 
@@ -796,14 +879,12 @@ void theClock::run()
 	// Current solution is compare the angle to some arbitrary value (14 degrees)
 	// and bail on this time through the loop if it's larger than that.
 
-	#define MAX_ANGLE  14.0
+	#define MAX_ANGLE  15.0
 
 	volatile int count = 0;
 	while (the_semaphore) {count++;}
 	the_semaphore = 1;
-
 	int raw = as5600.readAngle();
-
 	the_semaphore = 0;
 
 	int cur = raw - _zero_angle;
@@ -836,7 +917,7 @@ void theClock::run()
 
 		if (clock_state == CLOCK_STATE_STATS && _plot_values == PLOT_OFF)
 		{
-			LOGD("as5600=%d  angle=0.3f",cur,as5600_cur_angle);
+			LOGU("as5600=%-4d  angle=%0.3f",cur,as5600_cur_angle);
 		}
 
 		// detect zero crossing
@@ -983,7 +1064,7 @@ void theClock::run()
 		{
 			clock_state = CLOCK_STATE_RUNNING;
 			LOGU("Clock running!");
-			clearStats();
+			// clearStats();
 		}
 
 		// do initial sync if running and we have a good set of times
@@ -1070,6 +1151,12 @@ void theClock::run()
 		motor(0,0);
 	}
 
+	// yet another attempt to keep readAngle() working.
+	// we only call showPixels() from CLOCK_STATE_NONE,
+	// or CLOCK_STATE_START or AFTER we call readAngle()
+	//
+	// showPixels();
+
 
 	//----------------------
 	// plotting
@@ -1134,13 +1221,29 @@ void theClock::loop()	// override
 {
 	myIOTDevice::loop();
 
+	// show the realtime clock
+
+	if (clock_state == CLOCK_STATE_STATS)
+	{
+		static uint32_t last_seconds = 0;
+		struct timeval tv_now;
+		gettimeofday(&tv_now, NULL);
+		uint32_t seconds = tv_now.tv_sec;
+		if (last_seconds != seconds)
+		{
+			last_seconds = seconds;
+			uint32_t ms = tv_now.tv_usec / 1000L;
+			LOGU("tick ms=%03d",ms);
+		}
+	}
+
 	//--------------------------------------
 	// PIXELS
 	//--------------------------------------
 
 	uint32_t now = millis();
 	static uint32_t last_pixels = 0;
-	if (now - last_pixels > 50)
+	if (now - last_pixels > 100)
 	{
 		last_pixels = now;
 
@@ -1160,8 +1263,8 @@ void theClock::loop()	// override
 		new_pixels[PIXEL_STATE] =
 			clock_state == CLOCK_STATE_RUNNING ? MY_LED_GREEN :
 			clock_state == CLOCK_STATE_STARTED ? MY_LED_MAGENTA :
-			clock_state == CLOCK_STATE_START ? MY_LED_WHITE :
-			start_sync ? MY_LED_YELLOW :
+			clock_state == CLOCK_STATE_START ?   MY_LED_YELLOW :
+			start_sync ? MY_LED_WHITE :
 			clock_state == CLOCK_STATE_STATS ? MY_LED_ORANGE :
 			MY_LED_BLACK;
 
@@ -1200,7 +1303,7 @@ void theClock::loop()	// override
 
 		// set pixels and show if changed
 
-		bool show_pixels = 0;
+		// bool show_pixels = 0;
 		static uint32_t old_pixels[NUM_PIXELS];
 		for (int i=0; i<=NUM_PIXELS; i++)
 		{
@@ -1208,7 +1311,7 @@ void theClock::loop()	// override
 			{
 				old_pixels[i] = new_pixels[i];
 				setPixel(i,new_pixels[i]);
-				show_pixels = 1;
+				//show_pixels = 1;
 			}
 		}
 		if (show_pixels)
@@ -1216,7 +1319,7 @@ void theClock::loop()	// override
 			volatile int count = 0;
 			while (the_semaphore) {count++;}
 			the_semaphore = 1;
-			pixels.show();
+			showPixels();
 			the_semaphore = 0;
 		}
 	}
@@ -1255,6 +1358,7 @@ void theClock::loop()	// override
 		{
 			update_stats = false;
 			last_stats = num_beats;
+			LOGU("--> stats");
 
 			// show the value of the RTC at the last zero crossing
 

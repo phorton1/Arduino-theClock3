@@ -12,7 +12,7 @@
 //------------------------
 
 #define THE_CLOCK             "theClock3"
-#define THE_CLOCK_VERSION     "3.0"
+#define THE_CLOCK_VERSION     "3.1"
 
 #define OVER_MAX_ANGLE  		15			// over design maximum degrees
 
@@ -39,15 +39,15 @@
 #define DEFAULT_PID_D			-9.0
 
 #define DEFAULT_APID_P			1.0
-#define DEFAULT_APID_I			0.20
-#define DEFAULT_APID_D			0.00
+#define DEFAULT_APID_I			0.10
+#define DEFAULT_APID_D			0.01
 
 #define DEFAULT_RUNNING_ANGLE   4.0
 #define DEFAULT_RUNNING_ERROR   2.0
 
 #define DEFAULT_MIN_MAX_MS		50
 #define DEFAULT_RESTART_MILLIS  5000
-#define DEFAULT_START_DELAY     700
+#define DEFAULT_START_DELAY     900
 
 #define DEFAULT_NTP_INTERVAL	14400L	// four hours
 #define DEFAULT_SYNC_INTERVAL	7200L	// two hours
@@ -86,6 +86,7 @@ static valueIdType dash_items[] = {
 // what shows up on the "device" UI tab
 
 static valueIdType device_items[] = {
+	ID_START_DELAY,
 	ID_ANGLE_START,
 	ID_ANGLE_MIN,
 	ID_ANGLE_MAX,
@@ -106,7 +107,6 @@ static valueIdType device_items[] = {
 	ID_RUNNING_ERROR,
 	ID_MIN_MAX_MS,
 	ID_RESTART_MILLIS,
-	ID_START_DELAY,
 	ID_STAT_INTERVAL,
 	ID_SYNC_INTERVAL,
 #if CLOCK_WITH_NTP
@@ -186,9 +186,9 @@ const valDescriptor theClock::m_clock_values[] =
 
 	{ ID_RUNNING_ANGLE,  	VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_running_angle, NULL, { .float_range = { DEFAULT_RUNNING_ANGLE, 0, 12}} },
 	{ ID_RUNNING_ERROR,  	VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_running_error, NULL, { .float_range = { DEFAULT_RUNNING_ERROR, 1.0, 100}} },
-	{ ID_MIN_MAX_MS,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,   	   (void *) &_min_max_ms,	 NULL, { .int_range = { DEFAULT_MIN_MAX_MS,   	    10,  1000}} },
-	{ ID_RESTART_MILLIS,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_start_delay,	 NULL, { .int_range = { DEFAULT_RESTART_MILLIS,   	0,  60000}} },
-	{ ID_START_DELAY,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,  	   (void *) &_restart_millis,NULL, { .int_range = { DEFAULT_START_DELAY,   		0,  5000}} },
+	{ ID_MIN_MAX_MS,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,   	   (void *) &_min_max_ms,	 NULL, { .int_range = { DEFAULT_MIN_MAX_MS,   	    10, 1000}} },
+	{ ID_RESTART_MILLIS,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_restart_millis,NULL, { .int_range = { DEFAULT_RESTART_MILLIS,   	0,  60000}} },
+	{ ID_START_DELAY,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,  	   (void *) &_start_delay,	 NULL, { .int_range = { DEFAULT_START_DELAY,   		0,  5000}} },
 
 	{ ID_CLEAR_STATS,       VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    (void *) clearStats },
 
@@ -210,7 +210,7 @@ const valDescriptor theClock::m_clock_values[] =
 #endif
 
 	{ ID_TEST_MOTOR,  		VALUE_TYPE_INT,    	 VALUE_STORE_PUB,      VALUE_STYLE_NONE,   	   (void *) &_test_motor,		(void *) onTestMotor,  { .int_range = { 0, -1, 1}} },
-	{ ID_DIDDLE_CLOCK,  	VALUE_TYPE_INT,    	 VALUE_STORE_PUB,      VALUE_STYLE_NONE,   	   (void *) &_diddle_clock,		(void *) onDiddleClock,  { .int_range = { 0, -10, 10}} },
+	{ ID_DIDDLE_CLOCK,  	VALUE_TYPE_INT,    	 VALUE_STORE_PUB,      VALUE_STYLE_NONE,   	   (void *) &_diddle_clock,		(void *) onDiddleClock,  { .int_range = { 0, -10000, 10000}} },
 };
 
 

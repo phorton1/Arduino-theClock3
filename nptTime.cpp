@@ -9,7 +9,6 @@
 
 
 static unsigned int localPort = 2390;      // local port to listen for UDP packets
-static const char* ntpServer = "pool.ntp.org";
 
 // modified, theirs was 3600,3600
 // so with DST turned on, this gave 7200.
@@ -60,7 +59,7 @@ static void sendNTPpacket(IPAddress &address)
 
 
 
-uint32_t getNtpTime()
+bool getNtpTime(int32_t *secs, int32_t *ms)
 {
 	if (WiFi.status() != WL_CONNECTED)
 		return 0;
@@ -71,8 +70,15 @@ uint32_t getNtpTime()
 	{
 		udp_started = -1;
 		LOGD("starting UDP");
-		WiFi.hostByName(ntpServer, timeServer);
-		LOGD("%s = %s",ntpServer,timeServer.toString().c_str());
+
+		#if WITH_NTP	// myIOT version
+			String ntpServer = my_iot_device->getString(ID_NTP_SERVER);
+		#else
+			String ntpServer = "pool.ntp.org";
+		#endif
+
+		WiFi.hostByName(ntpServer.c_str(), timeServer);
+		LOGD("%s = %s",ntpServer.c_str(),timeServer.toString().c_str());
 		if (!udp.begin(localPort))
 		{
 			LOGE("Could not start UDP on localPort(%d)",localPort);
@@ -97,13 +103,30 @@ uint32_t getNtpTime()
 			udp.read(packetBuffer, NTP_PACKET_SIZE);  // read packet into the buffer
 
 			// convert four bytes starting at location 40 to a long integer
-			int secs =  (unsigned long)packetBuffer[40] << 24;
-			secs |= (unsigned long)packetBuffer[41] << 16;
-			secs |= (unsigned long)packetBuffer[42] << 8;
-			secs |= (unsigned long)packetBuffer[43];
-			secs -= 2208988800UL + gmtOffset_sec + daylightOffset_sec;
+			uint32_t usecs =  (unsigned long)packetBuffer[40] << 24;
+			usecs |= (unsigned long)packetBuffer[41] << 16;
+			usecs |= (unsigned long)packetBuffer[42] << 8;
+			usecs |= (unsigned long)packetBuffer[43];
+			usecs -= 2208988800UL + gmtOffset_sec + daylightOffset_sec;
+			*secs = usecs;
 
-			LOGU("NTP_RESPONSE secs=%d",secs);
+			#define NTP_MAX_INT_AS_DOUBLE  (4294967295.0)  // Max value of frac
+
+			uint32_t int_fraction =(unsigned long)packetBuffer[44] << 24;
+			int_fraction |= (unsigned long)packetBuffer[45] << 16;
+			int_fraction |= (unsigned long)packetBuffer[46] << 8;
+			int_fraction |= (unsigned long)packetBuffer[47];
+			float f_fraction = int_fraction;
+			f_fraction /= NTP_MAX_INT_AS_DOUBLE;
+			float f_millis = f_fraction * 1000L;
+			*ms = f_millis;
+
+			LOGU("NTP_RESPONSE secs=%d  i_frac=0x%08x f_frac=%03f f_millis=%03f ms=%03d",
+				 *secs,
+				 int_fraction,
+				 f_fraction,
+				 f_millis,
+				 *ms);
 			return secs;
 		}
 	}

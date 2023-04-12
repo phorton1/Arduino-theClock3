@@ -71,7 +71,7 @@
 #define CLOCK_WITH_NTP   1
 
 #if CLOCK_WITH_NTP
-	extern uint32_t getNtpTime();
+	extern bool getNtpTime(int32_t *secs, int32_t *ms);
 	extern void syncNTPTime();
 #endif
 
@@ -256,12 +256,12 @@ private:
 
 	static void initAS5600();
 	static void initMotor();
-	static void initStats();
+	static void initStats(bool restart);
 
 	static void run();
 	static void clockTask(void *param);
 
-	static void startClock();
+	static void startClock(bool restart=0);
 	static void stopClock();
 
 	static float getPidAngle();
