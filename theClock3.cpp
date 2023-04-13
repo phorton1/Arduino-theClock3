@@ -5,6 +5,7 @@
 #include <Wire.h>
 
 
+
 #define MAX_INT		32767
 #define MIN_INT		-32767
 
@@ -33,23 +34,22 @@
 
 #define AS4500_THRESHOLD    4		// 5 required for change == about 0.5 degrees
 
-static int as5600_cur = 0;			// bits, not degrees
-static int as5600_side = 0;			// trying zero crossing
-static int as5600_direction = 0;	// on detection of THRESHOLD AS4500_THRESHOLD
+static volatile int as5600_cur = 0;			// bits, not degrees
+static volatile int as5600_side = 0;			// trying zero crossing
+static volatile int as5600_direction = 0;	// on detection of THRESHOLD AS4500_THRESHOLD
 
-static int as5600_min = 0;			// min and max are assigned on direction changes
-static int as5600_max = 0;
-static int as5600_temp_min = 10240;	// and the temps are reset to zero for next go round
-static int as5600_temp_max = -10240;
+static volatile int as5600_min = 0;			// min and max are assigned on direction changes
+static volatile int as5600_max = 0;
+static volatile int as5600_temp_min = 10240;	// and the temps are reset to zero for next go round
+static volatile int as5600_temp_max = -10240;
 
 // angles are calculated from integers when they change
 
-static float as5600_cur_angle = 0;
-static float as5600_min_angle = 0;
-static float as5600_max_angle = 0;
+static volatile float as5600_cur_angle = 0;
+static volatile float as5600_min_angle = 0;
+static volatile float as5600_max_angle = 0;
 
 AS5600 as5600;   //  uses default Wire
-volatile int the_semaphore = 0;
 
 
 static float angle(int units)
@@ -67,7 +67,7 @@ static float angle(int units)
 #define PWM_FREQUENCY	5000
 #define PWM_RESOLUTION	8
 
-int motor_state = 0;
+static int motor_state = 0;
 
 void motor(int state, int power)
 	// note output to channel B for backward compatibility with V1 circuit board
@@ -83,23 +83,49 @@ void motor(int state, int power)
 //----------------------------
 // pixel(s)
 //----------------------------
+// pixel brightness is weird.
+// 0==max, 1=min, 255=max-1
 
+// WHOA!!! - I had to add IRAM_ATTR to a static loop() timer variable!
+// and this show_pixels variable or else I got very bad behavior,
+// like the variables would not get set.  Now I wonder (a) why, and
+// (b) are there other lurking problems in this (and all my esp32 code)
+// because I naively assumed that loop() has NOTHING to do with interrupt?
+
+// One reason I wonder is that the stupid pixels.setBrightness() call
+// only seems to work intermitently .. something I would expect to
+// be very simple and straight forward.  I toy with the idea of using
+// a different ws2812 library (i.e. FastLed) but what if the problem
+// is systemic and in (all) my other code?
+
+// Rational:  I have to use the 'volatile' keyword to ensure that
+// the compiler reloads the variable from memory and does not assume
+// it is in the last (optimized) register, because some interrupt
+// someplace is diddling the register.  So where do I draw the line?
+
+
+static volatile uint32_t last_pixels = 0;
+static volatile int show_pixels = 0;
+static volatile int sem_count = 0;
+static volatile int the_semaphore = 0;
 static Adafruit_NeoPixel pixels(NUM_PIXELS,PIN_LEDS);
-static bool show_pixels = 0;
+
+
+void WAIT_SEMAPHORE()
+{
+	while (the_semaphore) {sem_count++;}
+	the_semaphore = 1;
+}
+
+void RELEASE_SEMAPHORE()
+{
+	the_semaphore = 0;
+}
+
 
 void setPixel(int num, uint32_t color)
 {
 	pixels.setPixelColor(num,color);
-	show_pixels = 1;
-}
-
-void showPixels(bool force=0)
-{
-	if (show_pixels || force)
-	{
-		pixels.show();
-		show_pixels = 0;
-	}
 }
 
 
@@ -149,82 +175,102 @@ uint32_t scalePixel(int amt, int scale, uint32_t color0, uint32_t color1, uint32
 #define CLOCK_STATE_STARTED		3
 #define CLOCK_STATE_RUNNING		4
 
+// all of these global variables, nay, any variable, including a stack variable
+// could be optimized by the compiler to be in a register ... and some interrupt
+// (that is not properly written?) could then be using, but not restoring that
+// register.
 
-static int clock_state = 0;
-static bool start_sync = 0;			// doing a synchronized start
+static volatile int 	 clock_state = 0;
+static volatile bool 	 start_sync = 0;			// doing a synchronized start
+static volatile uint32_t last_change = 0;			// millis of last noticable pendulum movement
+static volatile int32_t  cur_cycle = 0;				// millis in this 'cycle' (forward zero crossing)
+static volatile int32_t  last_cycle = 0;			// millis at previous forward zero crossing
+static volatile uint32_t num_beats = 0;				// number of beats (while clock_started && !initial_pulse_time)
 
-static uint32_t last_change = 0;	// millis of last noticible pendulum movement
-static int32_t 	cur_cycle = 0;		// millis in this 'cycle' (forward zero crossing)
-static int32_t 	last_cycle = 0;		// millis at previous forward zero crossing
-static uint32_t num_beats = 0;		// number of beats (while clock_started && !initial_pulse_time)
+static volatile uint32_t time_start = 0;
+static volatile uint32_t time_start_ms = 0;
+static volatile uint32_t time_zero = 0;				// ESP32 RTC time at zero crossing
+static volatile uint32_t time_zero_ms = 0;			// with milliseconds (from microseconds)
+static volatile uint32_t time_init = 0;
+static volatile uint32_t time_init_ms = 0;
 
-static uint32_t time_start = 0;
-static uint32_t time_start_ms = 0;
-static uint32_t time_zero = 0;		// ESP32 RTC time at zero crossing
-static uint32_t time_zero_ms = 0;	// with milliseconds (from microseconds)
-static uint32_t time_init = 0;
-static uint32_t time_init_ms = 0;
+static volatile int32_t  total_millis_error = 0;	// cumulative number of millis total error
+static volatile int32_t  prev_millis_error = 0;
+static volatile float    pid_angle = 0;				// angle determined by second PID controller or other parameters
 
-static int32_t  total_millis_error = 0;	// important cumulative number of millis total error
-static int32_t  prev_millis_error = 0;
-static float pid_angle = 0;				// angle determined by second PID controller or other parameters
-
-static float total_ang_error = 0;	// accumluated degrees of error (for "I")
-static float prev_ang_error = 0;	// the previous error (for "D")
-static int pid_power = 0;			// power adjusted by pid algorithm
+static volatile float 	 total_ang_error = 0;		// accumluated degrees of error (for "I")
+static volatile float 	 prev_ang_error = 0;		// the previous error (for "D")
+static volatile int 	 pid_power = 0;				// power adjusted by pid algorithm
 
 // SYNC
 
-static int sync_sign = 0;
-static int sync_millis = 0;
-
-static uint32_t num_sync_checks = 0;
-static uint32_t num_sync_changes = 0;
-static  int32_t last_sync_change = 0;
-static  int32_t total_sync_changes = 0;
-static uint32_t total_sync_changes_abs = 0;
-static uint32_t num_ntp_checks = 0;
-static uint32_t num_ntp_fails = 0;
-static uint32_t num_ntp_changes = 0;
-static  int32_t last_ntp_change = 0;
-static  int32_t total_ntp_changes = 0;
-static uint32_t total_ntp_changes_abs = 0;
-
-
+static volatile int sync_sign = 0;
+static volatile int sync_millis = 0;
 
 // CONTROL
 
-static uint32_t initial_pulse_time = 0;	// time at which we started initial clock starting pulse (push)
-static bool push_motor = 0;			// push the pendulum next time after it leaves deadzone (determined at zero crossing)
-static uint32_t motor_start = 0;
-static uint32_t motor_dur = 0;
-
-static uint32_t last_beat = 0xffffffff;
-static uint32_t last_stats = 0;
-static uint32_t last_sync = 0;
-static uint32_t last_ntp = 0;
-
-static char msg_buf[512];
-	// generic buffer for loop() related messages
+static volatile uint32_t initial_pulse_time = 0;	// time at which we started initial clock starting pulse (push)
+static volatile bool push_motor = 0;				// push the pendulum next time after it leaves deadzone (determined at zero crossing)
+static volatile uint32_t motor_start = 0;
+static volatile uint32_t motor_dur = 0;
+static volatile uint32_t last_beat = 0xffffffff;
+static volatile uint32_t last_stats = 0;
+static volatile uint32_t last_sync = 0;
+static volatile uint32_t last_ntp = 0;
 
 
 // Statistics
 
-static bool update_stats = false;
+static char msg_buf[512];
+	// generic buffer for loop() related messages
 
-static uint32_t  stat_num_bad_reads;
-static uint32_t  stat_num_restarts;
+static volatile bool 	update_stats = false;
 
-static uint32_t  stat_min_power;
-static uint32_t  stat_max_power;
-static float	 stat_min_left;
-static float	 stat_max_left;
-static float	 stat_min_right;
-static float	 stat_max_right;
-static int32_t	 stat_min_cycle;
-static int32_t	 stat_max_cycle;
-static int32_t   stat_min_error;
-static int32_t   stat_max_error;
+static uint32_t stat_num_bad_reads;
+static uint32_t stat_num_restarts;
+
+static int 		stat_min_cycle;
+static int 		stat_max_cycle;
+static int  	stat_min_error;
+static int  	stat_max_error;
+static int  	stat_max_power;
+static int  	stat_min_power;
+static float	stat_min_left;
+static float	stat_max_left;
+static float	stat_min_right;
+static float	stat_max_right;
+static float	stat_min_target;
+static float	stat_max_target;
+static float	stat_min_total_ang_err;
+static float	stat_max_total_ang_err;
+
+static int 		stat_recent_min_cycle;
+static int 		stat_recent_max_cycle;
+static int  	stat_recent_min_error;
+static int  	stat_recent_max_error;
+static int  	stat_recent_max_power;
+static int  	stat_recent_min_power;
+static float	stat_recent_min_left;
+static float	stat_recent_max_left;
+static float	stat_recent_min_right;
+static float	stat_recent_max_right;
+static float	stat_recent_min_target;
+static float	stat_recent_max_target;
+static float	stat_recent_min_total_ang_err;
+static float	stat_recent_max_total_ang_err;
+
+
+static uint32_t stat_num_sync_checks = 0;
+static uint32_t stat_num_sync_changes = 0;
+static  int32_t stat_last_sync_change = 0;
+static  int32_t stat_total_sync_changes = 0;
+static uint32_t stat_total_sync_changes_abs = 0;
+static uint32_t stat_num_ntp_checks = 0;
+static uint32_t stat_num_ntp_fails = 0;
+static uint32_t stat_num_ntp_changes = 0;
+static  int32_t stat_last_ntp_change = 0;
+static  int32_t stat_total_ntp_changes = 0;
+static uint32_t stat_total_ntp_changes_abs = 0;
 
 
 
@@ -282,11 +328,11 @@ void theClock::setup()	// override
 	for (int i=NUM_PIXELS-1; i>=0; i--)
 	{
 		setPixel(i,MY_LED_CYAN);
-		showPixels(1);
+		pixels.show();
 		delay(300);
 	}
 	pixels.clear();
-	showPixels(1);
+	pixels.show();
 	delay(500);
 
 	pinMode(PIN_BUTTON1,INPUT_PULLUP);
@@ -301,7 +347,7 @@ void theClock::setup()	// override
 	digitalWrite(PIN_IN2,0);
 
 	setPixel(PIXEL_MAIN,MY_LED_ORANGE);
-	showPixels(1);
+	pixels.show();
 	delay(500);
 
 	//--------------------------------------------------
@@ -322,20 +368,20 @@ void theClock::setup()	// override
 			for (int i=0; i<11; i++)
 			{
 				setPixel(PIXEL_MAIN,i&1?MY_LED_RED:MY_LED_BLACK);
-				showPixels(1);
+				pixels.show();
 				delay(300);
 			}
 		}
 	}
 
-	LOGD("AS5600 connected=%d",connected);
+	LOGI("AS5600 connected=%d",connected);
 
 	//------------------------------
 	// call myIOTDevice::setup()
 	//------------------------------
 
 	setPixel(PIXEL_MAIN,MY_LED_CYAN);
-	showPixels(1);
+	pixels.show();
 	myIOTDevice::setup();
 
 	//-------------------------------
@@ -351,13 +397,16 @@ void theClock::setup()	// override
 	if (_zero_angle == 0)
 	{
 		setPixel(PIXEL_MAIN,MY_LED_PURPLE);
-		showPixels(1);
+		pixels.show();
 		setZeroAngle();
 		delay(500);
 	}
 	LOGU("_zero_angle=%d == %0.3f degrees",_zero_angle,angle(_zero_angle));
 
 	// debug_angle("in theClock::setup() before starting clockTask");
+
+	pixels.setBrightness(_led_brightness);
+	pixels.show();
 
 	//------------------------------------------------
 	// Start the clock task and away we go ...
@@ -374,7 +423,9 @@ void theClock::setup()	// override
 
 	LOGU("theClock::setup() finished");
 	pixels.clear();
-	showPixels();
+	pixels.show();
+
+	show_pixels = 2;
 
 }	// theClock::setup()
 
@@ -423,11 +474,11 @@ void theClock::initStats(bool restart)
 {
 	update_stats = false;
 
-	// nothing reset in here should *really* affect
-	// the running of the clock ... these are only
-	// statistics and cumulative errors ... although
-	// doing this in the middle of a sync will stop
-	// the sync.
+	if (!restart)
+	{
+		stat_num_bad_reads = 0;
+		stat_num_restarts = 0;
+	}
 
 	total_ang_error = 0;
 	prev_ang_error = 0;
@@ -438,39 +489,52 @@ void theClock::initStats(bool restart)
 	sync_sign = 0;
 	sync_millis = 0;
 
-	num_sync_checks = 0;
-	num_sync_changes = 0;
-	last_sync_change = 0;
-	total_sync_changes = 0;
-	total_sync_changes_abs = 0;
-	num_ntp_checks = 0;
-	num_ntp_fails = 0;
-	num_ntp_changes = 0;
-	last_ntp_change = 0;
-	total_ntp_changes = 0;
-	total_ntp_changes_abs = 0;
-
 	last_beat = 0xffffffff;
 	last_sync = 0;
 	last_stats = 0;
 	last_ntp = 0;
 
-	if (!restart)
-	{
-		stat_num_bad_reads = 0;
-		stat_num_restarts = 0;
-	}
-
+	stat_min_cycle = MAX_INT;
+	stat_max_cycle = MIN_INT;
+	stat_min_error = MAX_INT;
+	stat_max_error = MIN_INT;
 	stat_min_power = 255;
 	stat_max_power = 0;
 	stat_min_left = MIN_INT;
 	stat_max_left = MAX_INT;
 	stat_min_right = MAX_INT;
 	stat_max_right = MIN_INT;
-	stat_min_cycle = MAX_INT;
-	stat_max_cycle = MIN_INT;
-	stat_min_error = MAX_INT;
-	stat_max_error = MIN_INT;
+	stat_min_target = MAX_INT;
+	stat_max_target = MIN_INT;
+	stat_min_total_ang_err = MAX_INT;
+	stat_max_total_ang_err = MIN_INT;
+
+	stat_recent_min_cycle = MAX_INT;
+	stat_recent_max_cycle = MIN_INT;
+	stat_recent_min_error = MAX_INT;
+	stat_recent_max_error = MIN_INT;
+	stat_recent_min_power = 255;
+	stat_recent_max_power = 0;
+	stat_recent_min_left = MIN_INT;
+	stat_recent_max_left = MAX_INT;
+	stat_recent_min_right = MAX_INT;
+	stat_recent_max_right = MIN_INT;
+	stat_recent_min_target = MAX_INT;
+	stat_recent_max_target = MIN_INT;
+	stat_recent_min_total_ang_err = MAX_INT;
+	stat_recent_max_total_ang_err = MIN_INT;
+
+	stat_num_sync_checks = 0;
+	stat_num_sync_changes = 0;
+	stat_last_sync_change = 0;
+	stat_total_sync_changes = 0;
+	stat_total_sync_changes_abs = 0;
+	stat_num_ntp_checks = 0;
+	stat_num_ntp_fails = 0;
+	stat_num_ntp_changes = 0;
+	stat_last_ntp_change = 0;
+	stat_total_ntp_changes = 0;
+	stat_total_ntp_changes_abs = 0;
 
 	the_clock->setString(ID_STAT_MSG0,"");
 	the_clock->setString(ID_STAT_MSG1,"");
@@ -583,6 +647,18 @@ void theClock::onPlotValuesChanged(const myIOTValue *desc, uint32_t val)
 		Serial.println("dir,side,angle,min,max,err,motor");
 }
 
+void theClock::onPixelModeChanged(const myIOTValue *desc, uint32_t val)
+{
+	LOGU("onPixelModeChanged(%d)",val);
+	show_pixels = 2;
+}
+
+void theClock::onBrightnessChanged(const myIOTValue *desc, uint32_t val)
+{
+	LOGU("onBrightnessChanged(%d)",val);
+	show_pixels = 2;
+}
+
 
 void theClock::setZeroAngle()
 {
@@ -655,16 +731,16 @@ void theClock::onSyncRTC()
 		sync_millis < 0 ? - 1 :
 		sync_millis > 0 ? 1 : 0;
 
-	num_sync_checks++;
+	stat_num_sync_checks++;
 	if (sync_sign)
 	{
-		num_sync_changes++;
-		last_sync_change = sync_millis;
-		total_sync_changes += sync_millis;
-		total_sync_changes_abs += abs(sync_millis);
+		stat_num_sync_changes++;
+		stat_last_sync_change = sync_millis;
+		stat_total_sync_changes += sync_millis;
+		stat_total_sync_changes_abs += abs(sync_millis);
 		LOGU("onSyncRTC(%d/%d) run_secs=%d  beats=%d  diff=%d  ms=%d  sign=%d  chg=%d",
-			num_sync_changes,
-			num_sync_checks,
+			stat_num_sync_changes,
+			stat_num_sync_checks,
 			run_secs,
 			num_beats,
 			dif_secs,
@@ -673,14 +749,14 @@ void theClock::onSyncRTC()
 			sync_millis);
 	}
 	else
-		LOGU("onSyncRTC(%d/%d) no change",num_sync_changes,num_sync_checks);
+		LOGU("onSyncRTC(%d/%d) no change",stat_num_sync_changes,stat_num_sync_checks);
 
 	sprintf(msg_buf,"SYNC(%d/%d) last(%d) total(%d) abs(%d)",
-		num_sync_changes,
-		num_sync_checks,
-		last_sync_change,
-		total_sync_changes,
-		total_sync_changes_abs);
+		stat_num_sync_changes,
+		stat_num_sync_checks,
+		stat_last_sync_change,
+		stat_total_sync_changes,
+		stat_total_sync_changes_abs);
 	the_clock->setString(ID_STAT_MSG5,msg_buf);
 }
 
@@ -693,13 +769,13 @@ void theClock::onSyncRTC()
 		// as the final actual time will be determined
 		// by ntp sync processes beyond our control
 
-		num_ntp_checks++;
+		stat_num_ntp_checks++;
 		int32_t ntp_secs;
 		int32_t ntp_ms;
 
 		if (!getNtpTime(&ntp_secs,&ntp_ms))
 		{
-			num_ntp_fails++;
+			stat_num_ntp_fails++;
 			LOGE("getNtpTime() failed!!");
 		}
 		else
@@ -711,13 +787,13 @@ void theClock::onSyncRTC()
 			int32_t delta_ms = timeDeltaMS(now_secs,now_ms,ntp_secs,ntp_ms);
 			if (delta_ms)
 			{
-				last_ntp_change = delta_ms;
-				num_ntp_changes++;
-				total_ntp_changes += delta_ms;
-				total_ntp_changes_abs += abs(delta_ms);
+				stat_last_ntp_change = delta_ms;
+				stat_num_ntp_changes++;
+				stat_total_ntp_changes += delta_ms;
+				stat_total_ntp_changes_abs += abs(delta_ms);
 				LOGU("onSyncNTP(%d/%d) now(%d.%03d) ntp(%d.%03d) delta=%d",
-					num_ntp_changes,
-					num_ntp_checks,
+					stat_num_ntp_changes,
+					stat_num_ntp_checks,
 					now_secs,
 					now_ms,
 					ntp_secs,
@@ -726,16 +802,16 @@ void theClock::onSyncRTC()
 				syncNTPTime();
 			}
 			else
-				LOGU("onSyncNTP(%d/%d) no change",num_ntp_changes,num_ntp_checks);
+				LOGU("onSyncNTP(%d/%d) no change",stat_num_ntp_changes,stat_num_ntp_checks);
 		}
 
 		sprintf(msg_buf,"NTP(%d/%d) fails(%d) last(%d) total(%d) abs(%d)",
-			num_ntp_changes,
-			num_ntp_checks,
-			num_ntp_fails,
-			last_ntp_change,
-			total_ntp_changes,
-			total_ntp_changes_abs);
+			stat_num_ntp_changes,
+			stat_num_ntp_checks,
+			stat_num_ntp_fails,
+			stat_last_ntp_change,
+			stat_total_ntp_changes,
+			stat_total_ntp_changes_abs);
 		the_clock->setString(ID_STAT_MSG6,msg_buf);
 	}
 
@@ -764,8 +840,18 @@ float theClock::getPidAngle()
 	if (new_angle  < _angle_min) new_angle = _angle_min;
 	pid_angle = new_angle;
 
+	if (pid_angle < stat_min_target)
+		stat_min_target = pid_angle;
+	if (pid_angle > stat_max_target)
+		stat_max_target = pid_angle;
+	if (pid_angle < stat_recent_min_target)
+		stat_recent_min_target = pid_angle;
+	if (pid_angle > stat_recent_max_target)
+		stat_recent_max_target = pid_angle;
+
 	return pid_angle;
 }
+
 
 int theClock::getPidPower(float avg_angle)
 {
@@ -815,12 +901,6 @@ void theClock::run()
 		}
 		else if (_clock_running)
 			startClock();
-
-		// yet another attempt to keep readAngle() working.
-		// we only call showPixels() from CLOCK_STATE_NONE,
-		// or CLOCK_STATE_START or AFTER we call readAngle()
-
-		showPixels();
 		return;
 	}
 
@@ -846,10 +926,6 @@ void theClock::run()
 		}
 		else
 		{
-			// yet another attempt to keep readAngle() working.
-			// we only call showPixels() from CLOCK_STATE_NONE,
-			// or CLOCK_STATE_START or AFTER we call readAngle()
-			showPixels();
 			return;
 		}
 	}
@@ -873,19 +949,20 @@ void theClock::run()
 	//-------------------------------------------------
 	// Read, but don't necessariy use the as5600 angle
 	// Note that sometimes, particularly when first starting, I get bogus readings here.
-	// I think they *may* be related to neopixels disabling interrupts
+	//
+	// I think the bogus readings *may* be related to neopixels disabling interrupts
 	// or something going on in Wifi etc.
-	// Using a semaphore around readAngle() and showPixels() did not seem to help.
-	// Current solution is compare the angle to some arbitrary value (14 degrees)
-	// and bail on this time through the loop if it's larger than that.
+	//
+	// Using a semaphore around readAngle() and showPixels() seems to help,
+	// but does not eliminate the problem, so we also compare the angle to
+	// some arbitrary value (15 degrees) and bail on this time through
+	// the loop if it's larger than that.
 
 	#define MAX_ANGLE  15.0
 
-	volatile int count = 0;
-	while (the_semaphore) {count++;}
-	the_semaphore = 1;
+	WAIT_SEMAPHORE();
 	int raw = as5600.readAngle();
-	the_semaphore = 0;
+	RELEASE_SEMAPHORE();
 
 	int cur = raw - _zero_angle;
 	float cur_angle = angle(cur);
@@ -1009,6 +1086,16 @@ void theClock::run()
 						stat_min_error = total_millis_error;
 					if (total_millis_error > stat_max_error)
 						stat_max_error = total_millis_error;
+
+					if (cur_cycle < stat_recent_min_cycle)
+						stat_recent_min_cycle = cur_cycle;
+					if (cur_cycle > stat_recent_max_cycle)
+						stat_recent_max_cycle = cur_cycle;
+					if (total_millis_error < stat_recent_min_error)
+						stat_recent_min_error = total_millis_error;
+					if (total_millis_error > stat_recent_max_error)
+						stat_recent_max_error = total_millis_error;
+
 				}
 			}
 		}
@@ -1037,6 +1124,11 @@ void theClock::run()
 						stat_max_left = as5600_min_angle;
 					if (as5600_min_angle > stat_min_left)
 						stat_min_left = as5600_min_angle;
+
+					if (as5600_min_angle < stat_recent_max_left)
+						stat_recent_max_left = as5600_min_angle;
+					if (as5600_min_angle > stat_recent_min_left)
+						stat_recent_min_left = as5600_min_angle;
 				}
 				else
 				{
@@ -1048,6 +1140,11 @@ void theClock::run()
 						stat_max_right = as5600_max_angle;
 					if (as5600_max_angle < stat_min_right)
 						stat_min_right = as5600_max_angle;
+
+					if (as5600_max_angle > stat_recent_max_right)
+						stat_recent_max_right = as5600_max_angle;
+					if (as5600_max_angle < stat_recent_min_right)
+						stat_recent_min_right = as5600_max_angle;
 				}
 			}
 		}
@@ -1124,6 +1221,20 @@ void theClock::run()
 			if (use_power < stat_min_power)
 				stat_min_power = use_power;
 
+			if (use_power > stat_recent_max_power)
+				stat_recent_max_power = use_power;
+			if (use_power < stat_recent_min_power)
+				stat_recent_min_power = use_power;
+
+			if (total_ang_error < stat_min_total_ang_err)
+				stat_min_total_ang_err = total_ang_error;
+			if (total_ang_error > stat_max_total_ang_err)
+				stat_max_total_ang_err = total_ang_error;
+			if (total_ang_error < stat_recent_min_total_ang_err)
+				stat_recent_min_total_ang_err = total_ang_error;
+			if (total_ang_error > stat_recent_max_total_ang_err)
+				stat_recent_max_total_ang_err = total_ang_error;
+
 			if (_plot_values == PLOT_OFF)
 			{
 				LOGI("%-6s(%-2d) %-4d %3.3f/%3.3f=%3.3f  target=%3.3f  accum=%3.3f  power=%d  err=%d  sync=%d",
@@ -1150,13 +1261,6 @@ void theClock::run()
 		motor_dur = 0;
 		motor(0,0);
 	}
-
-	// yet another attempt to keep readAngle() working.
-	// we only call showPixels() from CLOCK_STATE_NONE,
-	// or CLOCK_STATE_START or AFTER we call readAngle()
-	//
-	// showPixels();
-
 
 	//----------------------
 	// plotting
@@ -1242,87 +1346,104 @@ void theClock::loop()	// override
 	//--------------------------------------
 
 	uint32_t now = millis();
-	static uint32_t last_pixels = 0;
 	if (now - last_pixels > 100)
 	{
-		last_pixels = now;
+		// LOGU("now=%d last_pixels=%d",now,last_pixels);
 
-		// MAIN_PIXEL is green if connected as STATION,
-		// purple if AP, yellow if ALL, and red if NONE
+		last_pixels = now;
 
 		uint32_t new_pixels[NUM_PIXELS];
 		memset(new_pixels,0,NUM_PIXELS * sizeof(uint32_t));
 
-		iotConnectStatus_t status = getConnectStatus();
-		new_pixels[PIXEL_MAIN] =
-			status == IOT_CONNECT_ALL ? MY_LED_YELLOW :
-			status == IOT_CONNECT_AP ? MY_LED_PURPLE :
-			status == IOT_CONNECT_STA ? MY_LED_GREEN :
-			/* status == IOT_CONNECT_NONE ? */ MY_LED_RED;
-
-		new_pixels[PIXEL_STATE] =
-			clock_state == CLOCK_STATE_RUNNING ? MY_LED_GREEN :
-			clock_state == CLOCK_STATE_STARTED ? MY_LED_MAGENTA :
-			clock_state == CLOCK_STATE_START ?   MY_LED_YELLOW :
-			start_sync ? MY_LED_WHITE :
-			clock_state == CLOCK_STATE_STATS ? MY_LED_ORANGE :
-			MY_LED_BLACK;
-
-		// accuracy and cycle move from green to red/blue
-		// as they diverge by 2 * _min_max_ms
-
-		if (clock_state >= CLOCK_STATE_START)
+		if (_pixel_mode == PIXEL_MODE_DIAG)
 		{
-			new_pixels[PIXEL_ACCURACY] =
-				total_millis_error >=  _min_max_ms 	? MY_LED_BLUE      :
-				total_millis_error <= -_min_max_ms 	? MY_LED_RED   :
-				scalePixel(total_millis_error,_min_max_ms,
-					MY_LED_RED,
-					MY_LED_GREEN,
-					MY_LED_BLUE);
+			iotConnectStatus_t status = getConnectStatus();
+			new_pixels[PIXEL_MAIN] =
+				status == IOT_CONNECT_ALL ? MY_LED_YELLOW :
+				status == IOT_CONNECT_AP ? MY_LED_PURPLE :
+				status == IOT_CONNECT_STA ? MY_LED_GREEN :
+				/* status == IOT_CONNECT_NONE ? */ MY_LED_RED;
 
-			int dif = cur_cycle - 1000;
-			if (dif >= _min_max_ms)
-				new_pixels[PIXEL_CYCLE] = MY_LED_BLUE;
-			else if (dif <= -_min_max_ms)
-				new_pixels[PIXEL_CYCLE] = MY_LED_RED;
-			else
-				new_pixels[PIXEL_CYCLE] = scalePixel(dif,_min_max_ms,
-					MY_LED_RED,
-					MY_LED_GREEN,
-					MY_LED_BLUE);
+			new_pixels[PIXEL_STATE] =
+				clock_state == CLOCK_STATE_RUNNING ? MY_LED_GREEN :
+				clock_state == CLOCK_STATE_STARTED ? MY_LED_MAGENTA :
+				clock_state == CLOCK_STATE_START ?   MY_LED_YELLOW :
+				start_sync ? MY_LED_WHITE :
+				clock_state == CLOCK_STATE_STATS ? MY_LED_ORANGE :
+				MY_LED_BLACK;
 
-			new_pixels[PIXEL_SYNC] =
-					!sync_sign ? MY_LED_BLACK :
-					scalePixel(sync_millis,_min_max_ms,
+			// accuracy and cycle move from green to red/blue
+			// as they diverge by 2 * _min_max_ms
+
+			if (clock_state >= CLOCK_STATE_START)
+			{
+				new_pixels[PIXEL_ACCURACY] =
+					total_millis_error >=  _min_max_ms 	? MY_LED_BLUE      :
+					total_millis_error <= -_min_max_ms 	? MY_LED_RED   :
+					scalePixel(total_millis_error,_min_max_ms,
 						MY_LED_RED,
 						MY_LED_GREEN,
 						MY_LED_BLUE);
-		}
 
+				int dif = cur_cycle - 1000;
+				if (dif >= _min_max_ms)
+					new_pixels[PIXEL_CYCLE] = MY_LED_BLUE;
+				else if (dif <= -_min_max_ms)
+					new_pixels[PIXEL_CYCLE] = MY_LED_RED;
+				else
+					new_pixels[PIXEL_CYCLE] = scalePixel(dif,_min_max_ms,
+						MY_LED_RED,
+						MY_LED_GREEN,
+						MY_LED_BLUE);
+
+				new_pixels[PIXEL_SYNC] =
+						!sync_sign ? MY_LED_BLACK :
+						scalePixel(sync_millis,_min_max_ms,
+							MY_LED_RED,
+							MY_LED_GREEN,
+							MY_LED_BLUE);
+			}
+		}	// PIXEL_MODE_DIAG
 
 		// set pixels and show if changed
 
-		// bool show_pixels = 0;
 		static uint32_t old_pixels[NUM_PIXELS];
+		if (show_pixels == 2)
+		{
+			LOGU("clearing old pixels  brightness=%d",_led_brightness);
+			memset(old_pixels,0,NUM_PIXELS * sizeof(uint32_t));
+			pixels.clear();
+			pixels.setBrightness(_led_brightness + 1);
+		}
+
 		for (int i=0; i<=NUM_PIXELS; i++)
 		{
-			if (old_pixels[i] != new_pixels[i])
+			if (show_pixels == 2 || old_pixels[i] != new_pixels[i])
 			{
 				old_pixels[i] = new_pixels[i];
 				setPixel(i,new_pixels[i]);
-				//show_pixels = 1;
+				if (!show_pixels)
+					show_pixels = 1;
 			}
 		}
-		if (show_pixels)
+
+		// perhaps the use of pixels.canShow() will help a bit
+		// as there can be upto a 300 us delay at the top of pixels.show()
+		// BEFORE the interrupts are disabled.
+
+		// THERE MUST BE A WAY TO SEND THESE BYTES TO THE PIXELS WITH
+		// THE CORRECT TIMING WITHOUT DISABLING INTERRUPTS!!!
+
+		if (show_pixels && pixels.canShow())
 		{
-			volatile int count = 0;
-			while (the_semaphore) {count++;}
-			the_semaphore = 1;
-			showPixels();
-			the_semaphore = 0;
+			LOGU("showPixels(%d)",show_pixels);
+			show_pixels = 0;
+			WAIT_SEMAPHORE();
+			pixels.show();
+			RELEASE_SEMAPHORE();
 		}
-	}
+
+	}	// now - 100 > last_pixels
 
 
 	//------------------------------------------
@@ -1377,38 +1498,72 @@ void theClock::loop()	// override
 			secs = secs - mins * 60;
 			mins = mins - hours * 60;
 
-			sprintf(msg_buf,"%s %02d:%02d:%02d  == %d SECS %d BEATS",
+			sprintf(msg_buf,"%s %02d:%02d:%02d  == %d SECS %d BEATS  num_bad(%d)  restarts(%d)",
 				(clock_state == CLOCK_STATE_RUNNING ?"RUNNING":"STARTING"),
 				hours,
 				mins,
 				secs,
 				full_secs,
-				num_beats);
+				num_beats,
+				stat_num_bad_reads,
+				stat_num_restarts);
 			setString(ID_STAT_MSG1,msg_buf);
 
-			if (num_beats)	// to prevent annoying -32767's on 0th cycle
+			if (cur_cycle)	// to prevent annoying -32767's on 0th cycle
 			{
-				sprintf(msg_buf,"num_bad(%d) restarts(%d)",
-						stat_num_bad_reads,
-						stat_num_restarts);
-				setString(ID_STAT_MSG2,msg_buf);
-
-				sprintf(msg_buf,"power min(%d) max(%d)  angle left(%0.3f,%0.3f) to right(%0.3f,%0.3f)",
+				sprintf(msg_buf,"ALL cycle(%d,%d) error(%d,%d) power(%d,%d) ang_error(%0.3f,%0.3f)<br>ANGLE target(%0.3f,%0.3f) left(%0.3f,%0.3f) right(%0.3f,%0.3f)",
+					stat_min_cycle,
+					stat_max_cycle,
+					stat_min_error,
+					stat_max_error,
 					stat_min_power,
 					stat_max_power,
+					stat_min_total_ang_err,
+					stat_max_total_ang_err,
+					stat_min_target,
+					stat_max_target,
 					stat_max_left,
 					stat_min_left,
 					stat_min_right,
 					stat_max_right);
+				setString(ID_STAT_MSG2,msg_buf);
+
+				sprintf(msg_buf,"RECENT cycle(%d,%d) error(%d,%d) power(%d,%d) ang_error(%0.3f,%0.3f)<br>ANGLE target(%0.3f,%0.3f) left(%0.3f,%0.3f) right(%0.3f,%0.3f)",
+					stat_recent_min_cycle,
+					stat_recent_max_cycle,
+					stat_recent_min_error,
+					stat_recent_max_error,
+					stat_recent_min_power,
+					stat_recent_max_power,
+					stat_recent_min_total_ang_err,
+					stat_recent_max_total_ang_err,
+					stat_recent_min_target,
+					stat_recent_max_target,
+					stat_recent_max_left,
+					stat_recent_min_left,
+					stat_recent_min_right,
+					stat_recent_max_right);
 				setString(ID_STAT_MSG3,msg_buf);
 
-				sprintf(msg_buf,"cycle(%d,%d)  error(%d,%d)",
-					stat_min_cycle,
-					stat_max_cycle,
-					stat_min_error,
-					stat_max_error);
-				setString(ID_STAT_MSG4,msg_buf);
+				// sprintf(msg_buf,"");
+				// setString(ID_STAT_MSG4,msg_buf);
 			}
+
+			stat_recent_min_cycle = MAX_INT;
+			stat_recent_max_cycle = MIN_INT;
+			stat_recent_min_error = MAX_INT;
+			stat_recent_max_error = MIN_INT;
+			stat_recent_min_power = 255;
+			stat_recent_max_power = 0;
+			stat_recent_min_left = MIN_INT;
+			stat_recent_max_left = MAX_INT;
+			stat_recent_min_right = MAX_INT;
+			stat_recent_max_right = MIN_INT;
+			stat_recent_min_target = MAX_INT;
+			stat_recent_max_target = MIN_INT;
+			stat_recent_min_total_ang_err = MAX_INT;
+			stat_recent_max_total_ang_err = MIN_INT;
+
 		}
 
 		// 3. NTP vs ESP32 clock correction
@@ -1425,6 +1580,7 @@ void theClock::loop()	// override
 		#endif	// CLOCK_WITH_NTP
 
 	}	// things based on beat changing
+
 
 }	// theClock::loop()
 

@@ -18,6 +18,9 @@
 
 #define DEFAULT_RUNNING			0				// factory reset == clock not running
 #define DEFAULT_CLOCK_MODE		CLOCK_MODE_MIN_MAX	// factory reset == PID mode turned on
+#define DEFAULT_PIXEL_MODE		PIXEL_MODE_DIAG
+#define DEFAULT_LED_BRIGHTNESS  40
+
 
 #define DEFAULT_ZERO_ANGLE		0			// 0 means it's not yet set
 #define DEFAULT_ZERO_ANGLE_F	0.00		// 0 means it's not yet set
@@ -62,7 +65,12 @@ static valueIdType dash_items[] = {
 	ID_RUNNING,
 	ID_CLOCK_MODE,
 	ID_PLOT_VALUES,
+	ID_PIXEL_MODE,
+	ID_LED_BRIGHTNESS,
 	ID_CLEAR_STATS,
+	ID_SYNC_RTC,
+#if CLOCK_WITH_NTP
+	ID_SYNC_NTP,
 	ID_STAT_MSG0,
 	ID_STAT_MSG1,
 	ID_STAT_MSG2,
@@ -73,9 +81,7 @@ static valueIdType dash_items[] = {
 	ID_SET_ZERO_ANGLE,
 	ID_ZERO_ANGLE,
 	ID_ZERO_ANGLE_F,
-	ID_SYNC_RTC,
-#if CLOCK_WITH_NTP
-	ID_SYNC_NTP,
+
 #endif
 	ID_TEST_MOTOR,
 	ID_DIDDLE_CLOCK,
@@ -143,6 +149,11 @@ static enumValue plotAllowed[] = {
 	"Clock",
     0};
 
+static enumValue pixelsAllowed[] = {
+    "Off",
+    "Diag",
+    "Time",
+    0};
 
 
 
@@ -159,6 +170,8 @@ const valDescriptor theClock::m_clock_values[] =
 	{ ID_RUNNING,      		VALUE_TYPE_BOOL,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_clock_running,(void *) onClockRunningChanged, { .int_range = { DEFAULT_RUNNING }} },
 	{ ID_CLOCK_MODE,      	VALUE_TYPE_ENUM,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_clock_mode, 	(void *) onClockModeChanged, 	{ .enum_range = { 0, clockAllowed }} },
 	{ ID_PLOT_VALUES,      	VALUE_TYPE_ENUM,     VALUE_STORE_PUB,      VALUE_STYLE_NONE,       (void *) &_plot_values, 	(void *) onPlotValuesChanged,   { .enum_range = { 0, plotAllowed }} },
+	{ ID_PIXEL_MODE,      	VALUE_TYPE_ENUM,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_pixel_mode, 	(void *) onPixelModeChanged,    { .enum_range = { DEFAULT_PIXEL_MODE, pixelsAllowed }} },
+	{ ID_LED_BRIGHTNESS,  	VALUE_TYPE_INT,    	 VALUE_STORE_PREF,     VALUE_STYLE_NONE,   	   (void *) &_led_brightness,(void *) onBrightnessChanged, 	{ .int_range = { DEFAULT_LED_BRIGHTNESS,  	0,  254}} },
 
 	{ ID_SET_ZERO_ANGLE,  	VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    (void *) setZeroAngle },
 	{ ID_ZERO_ANGLE,  		VALUE_TYPE_INT,    	 VALUE_STORE_PREF,     VALUE_STYLE_READONLY,   (void *) &_zero_angle,	NULL,  { .int_range = { DEFAULT_ZERO_ANGLE,  	0,  4095}} },
@@ -222,6 +235,8 @@ const valDescriptor theClock::m_clock_values[] =
 bool 	theClock::_clock_running;
 uint32_t theClock::_clock_mode;
 uint32_t theClock::_plot_values;
+uint32_t theClock::_pixel_mode;
+int  	theClock::_led_brightness;
 
 int  	theClock::_zero_angle;
 float  	theClock::_zero_angle_f;

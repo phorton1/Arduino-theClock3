@@ -85,6 +85,8 @@
 #define ID_RUNNING			"RUNNING"
 #define ID_CLOCK_MODE		"CLOCK_MODE"
 #define ID_PLOT_VALUES		"PLOT_VALUES"
+#define ID_PIXEL_MODE		"PIXEL_MODE"
+#define ID_LED_BRIGHTNESS	"LED_BRIGHTNESS"
 
 #define ID_SET_ZERO_ANGLE	"SET_ZERO_ANGLE"
 #define ID_ZERO_ANGLE		"ZERO_ANGLE"
@@ -165,6 +167,10 @@
 #define PLOT_PAUSE		2
 #define PLOT_CLOCK		3
 
+#define PIXEL_MODE_OFF			0
+#define PIXEL_MODE_DIAG		1
+#define PIXEL_MODE_TIME		2
+
 
 // theClock declaration
 
@@ -185,6 +191,8 @@ private:
 	static bool _clock_running;		// user interface variable !! (as opposed to control variable)
 	static uint32_t _clock_mode;
 	static uint32_t _plot_values;
+	static uint32_t _pixel_mode;
+	static int _led_brightness;
 
 	static int _zero_angle;			// actual used value is in as5600 units
 	static float _zero_angle_f;		// displayed value is a float
@@ -239,6 +247,8 @@ private:
     static void onClockRunningChanged(const myIOTValue *desc, bool val);
     static void onClockModeChanged(const myIOTValue *desc, uint32_t val);
 	static void onPlotValuesChanged(const myIOTValue *desc, uint32_t val);
+	static void onPixelModeChanged(const myIOTValue *desc, uint32_t val);
+	static void onBrightnessChanged(const myIOTValue *desc, uint32_t val);
 
 	static void clearStats();
 	static void setZeroAngle();
