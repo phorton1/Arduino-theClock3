@@ -3,7 +3,7 @@
 #include <Adafruit_NeoPixel.h>
 #include <AS5600.h>
 #include <Wire.h>
-
+// #include <sys/time.h>
 
 
 #define MAX_INT		32767
@@ -23,41 +23,27 @@
 // as I read that would yield without delay.  No joy.  I set the priority
 // of the task down to 1, no joy.  Finally I disabled the Watch Dog Timer,
 // (see code below) and that seems to work.
-
-
-//----------------------------
-// AS5600 Sensor
-//----------------------------
-// With the AS5600, the return values are 0..4095 where 4096 is 360 degrees (i.e. 0).
-// so each bit is 0.087890625 degrees.  For direction determination, we require a
-// threshold change > AS4500_THRESHOLD.
-
-#define AS4500_THRESHOLD    4		// 5 required for change == about 0.5 degrees
-
-static volatile int as5600_cur = 0;			// bits, not degrees
-static volatile int as5600_side = 0;			// trying zero crossing
-static volatile int as5600_direction = 0;	// on detection of THRESHOLD AS4500_THRESHOLD
-
-static volatile int as5600_min = 0;			// min and max are assigned on direction changes
-static volatile int as5600_max = 0;
-static volatile int as5600_temp_min = 10240;	// and the temps are reset to zero for next go round
-static volatile int as5600_temp_max = -10240;
-
-// angles are calculated from integers when they change
-
-static volatile float as5600_cur_angle = 0;
-static volatile float as5600_min_angle = 0;
-static volatile float as5600_max_angle = 0;
-
-AS5600 as5600;   //  uses default Wire
-
-
-static float angle(int units)
-{
-	float retval = units * 3600;
-	retval /= 4096;
-	return floor(retval + 0.5) / 10;
-}
+//
+// USE OF VOLATILE ALL OVER THE PLACE
+//
+// I got some really weird behavior with static int show_pixels and
+// static uint32_t last_pixels (last pixel update time). Assignments to
+// these variables were not working (at all), even in loop(), which is
+// clearly NOT an ISR routine
+//
+// After much messing around with IRAM_ATTR, DRAM_ATTR, etc, I finally
+// concluded that I needed to use the volatile keyword on these variables.
+//
+// My rational is/was as follows:  I have to use the 'volatile' keyword to
+// ensure that the compiler reloads the variable from memory and does not use
+// register optimizations on these variables, because some improperly written
+// interrupt handler (AS5600? Pixels? myIOT? Wifi?) is using, but not restoring
+// registers properly.
+//
+// Without knowing exactly what is going on I added the volatile keyword liberally.
+//
+// There is also a heap problem somewhere in the code (myIOT?) that caused at
+// least one heap corruption crash and/or it could be a buffer overflow somewhere.
 
 
 //----------------------------
@@ -70,7 +56,6 @@ static float angle(int units)
 static int motor_state = 0;
 
 void motor(int state, int power)
-	// note output to channel B for backward compatibility with V1 circuit board
 {
 	motor_state = state;
 	int use_power = state ? power : 0;
@@ -81,34 +66,46 @@ void motor(int state, int power)
 
 
 //----------------------------
-// pixel(s)
+// AS5600 Sensor
 //----------------------------
-// pixel brightness is weird.
-// 0==max, 1=min, 255=max-1
+// With the AS5600, the return values are 0..4095 where 4096 is 360 degrees (i.e. 0).
+// so each bit is 0.087890625 degrees.  For hysterisis (debouncing) we only take new
+// values when the change exceeds AS4500_THRESHOLD.
 
-// WHOA!!! - I had to add IRAM_ATTR to a static loop() timer variable!
-// and this show_pixels variable or else I got very bad behavior,
-// like the variables would not get set.  Now I wonder (a) why, and
-// (b) are there other lurking problems in this (and all my esp32 code)
-// because I naively assumed that loop() has NOTHING to do with interrupt?
+#define AS4500_THRESHOLD    4			// 5 required for change == about 0.5 degrees
 
-// One reason I wonder is that the stupid pixels.setBrightness() call
-// only seems to work intermitently .. something I would expect to
-// be very simple and straight forward.  I toy with the idea of using
-// a different ws2812 library (i.e. FastLed) but what if the problem
-// is systemic and in (all) my other code?
+static volatile int as5600_cur;			// bits, not degrees
+static volatile int as5600_side;		// which side of zero is the pendulum on?
+static volatile int as5600_direction;	// which direction is it moving?
 
-// Rational:  I have to use the 'volatile' keyword to ensure that
-// the compiler reloads the variable from memory and does not assume
-// it is in the last (optimized) register, because some interrupt
-// someplace is diddling the register.  So where do I draw the line?
+static volatile int as5600_min;			// min and max are assigned on direction changes
+static volatile int as5600_max;
+static volatile int as5600_temp_min;	// and the temps are reset to zero for next go round
+static volatile int as5600_temp_max;
+
+// angles are calculated from integers when they change
+
+static volatile float as5600_cur_angle;
+static volatile float as5600_min_angle;
+static volatile float as5600_max_angle;
+
+AS5600 as5600;   //  uses default Wire
 
 
-static volatile uint32_t last_pixels = 0;
-static volatile int show_pixels = 0;
+static float angle(int units)
+{
+	float retval = units * 3600;
+	retval /= 4096;
+	return floor(retval + 0.5) / 10;
+}
+
+
+//------------------------------------------
+// Semaphore between AS5600 and pixels.show()
+//------------------------------------------
+
 static volatile int sem_count = 0;
 static volatile int the_semaphore = 0;
-static Adafruit_NeoPixel pixels(NUM_PIXELS,PIN_LEDS);
 
 
 void WAIT_SEMAPHORE()
@@ -121,6 +118,19 @@ void RELEASE_SEMAPHORE()
 {
 	the_semaphore = 0;
 }
+
+
+//----------------------------
+// pixel(s)
+//----------------------------
+// Native pixel brightness is weird!!  0==max, 1=min, 255=max-1
+// I change it so that 0=min, and 254=max-1 and never send 0
+
+
+static volatile uint32_t last_pixels = 0;
+static volatile int show_pixels = 0;
+
+static Adafruit_NeoPixel pixels(NUM_PIXELS,PIN_LEDS);
 
 
 void setPixel(int num, uint32_t color)
@@ -164,7 +174,6 @@ uint32_t scalePixel(int amt, int scale, uint32_t color0, uint32_t color1, uint32
 
 
 
-
 //--------------------------------------------
 // vars
 //--------------------------------------------
@@ -174,11 +183,6 @@ uint32_t scalePixel(int amt, int scale, uint32_t color0, uint32_t color1, uint32
 #define CLOCK_STATE_START		2
 #define CLOCK_STATE_STARTED		3
 #define CLOCK_STATE_RUNNING		4
-
-// all of these global variables, nay, any variable, including a stack variable
-// could be optimized by the compiler to be in a register ... and some interrupt
-// (that is not properly written?) could then be using, but not restoring that
-// register.
 
 static volatile int 	 clock_state = 0;
 static volatile bool 	 start_sync = 0;			// doing a synchronized start
@@ -374,7 +378,7 @@ void theClock::setup()	// override
 		}
 	}
 
-	LOGI("AS5600 connected=%d",connected);
+	LOGU("AS5600 connected=%d",connected);
 
 	//------------------------------
 	// call myIOTDevice::setup()
@@ -401,7 +405,7 @@ void theClock::setup()	// override
 		setZeroAngle();
 		delay(500);
 	}
-	LOGU("_zero_angle=%d == %0.3f degrees",_zero_angle,angle(_zero_angle));
+	LOGI("_zero_angle=%d == %0.3f degrees",_zero_angle,angle(_zero_angle));
 
 	// debug_angle("in theClock::setup() before starting clockTask");
 
@@ -454,8 +458,8 @@ void theClock::initMotor()
 
 	clock_state = 0;
 	last_change = 0;
-	initial_pulse_time = 0;	// time at which we started initial clock starting pulse (push)
-	push_motor = 0;			// push the pendulum next time after it leaves deadzone (determined at zero crossing)
+	initial_pulse_time = 0;
+	push_motor = 0;
 	motor_start = 0;
 	motor_dur = 0;
 
@@ -563,6 +567,16 @@ void theClock::stopClock()
 }
 
 
+void theClock::onStartClockSynchronized()
+{
+	LOGU("StartClockSynchronized()");
+	if (clock_state != CLOCK_STATE_NONE )
+		LOGE("Attempt to call onStartClockSynchronized() while it's already running!");
+	else
+		start_sync = true;
+}
+
+
 void theClock::startClock(bool restart /*=0*/)
 {
 	LOGU("startClock(%d)",restart);
@@ -598,35 +612,6 @@ void theClock::startClock(bool restart /*=0*/)
 }
 
 
-void theClock::onStartClockSynchronized()
-{
-	LOGU("StartClockSynchronized()");
-	// The idea here is that the user has put the second hand on zero
-	// with the other hands ready to go at the next 0 seconds crossing,
-	// and they press the button somewhat before that zero crossing
-	// and that we will do what is necessary to get the clock aligned
-	// back to that moment.
-
-	// We will give a starting after crossing the next '59' seconds, plus some delay.
-	// The difficulty is that we don't know when the actual first tick takes place.
-	// We will assume it moves to the right on the pulse and will swing to the left
-	// approximately 1/2 second after we issue the pulse.
-
-	// We are using left crossing to determine cycle time.
-
-	// It depends on the state of the hardware ... the clock may be predisposed
-	// so that the pawls grabbing starting on the actual impulse with a forward tick,
-	// or on the the next back swing, or some time later ... leading us to experiments
-	// with the optical mouse sensor to detect the wheel movements.
-
-	if (clock_state != CLOCK_STATE_NONE )
-		LOGE("Attempt to call onStartClockSynchronized() while it's already running!");
-	else
-		start_sync = true;
-}
-
-
-
 void theClock::onClockRunningChanged(const myIOTValue *desc, bool val)
 {
 	LOGU("onClockRunningChanged(%d)",val);
@@ -646,6 +631,7 @@ void theClock::onPlotValuesChanged(const myIOTValue *desc, uint32_t val)
 	if (val)
 		Serial.println("dir,side,angle,min,max,err,motor");
 }
+
 
 void theClock::onPixelModeChanged(const myIOTValue *desc, uint32_t val)
 {
@@ -678,7 +664,6 @@ void theClock::onTestMotor(const myIOTValue *desc, int val)
 }
 
 
-#include <sys/time.h>
 void theClock::onDiddleClock(const myIOTValue *desc, int val)
 {
 	struct timeval tv_now;
@@ -703,7 +688,6 @@ void theClock::onDiddleClock(const myIOTValue *desc, int val)
 
 
 
-
 void theClock::onSyncRTC()
 {
 	if (clock_state != CLOCK_STATE_RUNNING )
@@ -712,21 +696,20 @@ void theClock::onSyncRTC()
 		return;
 	}
 
-	// move all pending error millis over to the diff
+	// we no longer care about total_millis_error
 
-	int32_t dif_ms = total_millis_error + time_zero_ms - 500;
-		// we want the tock to align with 500 ms no matter what
 	total_millis_error = 0;
 
-	int32_t run_secs = time_zero;		// number of seconds the clock has been running
-	run_secs -= time_init;				// is most recent zero crossing - initial zero crossing
-	int32_t dif_secs = num_beats - run_secs;
-		// the difference in whole seconds is the number of beats
-		// minus the amount of actual time the clock has been running.
-		// so it is larger than 0 if we are beating fast or less than
-		// zero if we are beeting slow.
+	// time_init and time_init_ms was the 0th zero crossing
+	// num_beats is the number of full ticks that have taken place to time_zero.
+	// and we want the clock time to be num_beats + 500 ms
 
-	sync_millis = (dif_secs * 1000) + dif_ms;
+	int32_t clock_time = time_init + num_beats;
+	int32_t clock_time_ms = 500;
+	sync_millis = timeDeltaMS(clock_time,clock_time_ms,time_zero,time_zero_ms);
+
+	// sync_millis is positive if the clock is running fast and negative if running slow
+
 	sync_sign =
 		sync_millis < 0 ? - 1 :
 		sync_millis > 0 ? 1 : 0;
@@ -738,15 +721,16 @@ void theClock::onSyncRTC()
 		stat_last_sync_change = sync_millis;
 		stat_total_sync_changes += sync_millis;
 		stat_total_sync_changes_abs += abs(sync_millis);
-		LOGU("onSyncRTC(%d/%d) run_secs=%d  beats=%d  diff=%d  ms=%d  sign=%d  chg=%d",
+		LOGU("onSyncRTC(%d/%d) beats=%d clock_time=%d.%03d time_zero=%d.%03d  sync_millis=%d sign=%d",
 			stat_num_sync_changes,
 			stat_num_sync_checks,
-			run_secs,
 			num_beats,
-			dif_secs,
-			dif_ms,
-			sync_sign,
-			sync_millis);
+			clock_time,
+			clock_time_ms,
+			time_zero,
+			time_zero_ms,
+			sync_millis,
+			sync_sign);
 	}
 	else
 		LOGU("onSyncRTC(%d/%d) no change",stat_num_sync_changes,stat_num_sync_checks);
@@ -784,7 +768,11 @@ void theClock::onSyncRTC()
 			gettimeofday(&tv_now, NULL);
 			int32_t now_secs = tv_now.tv_sec;
             int32_t now_ms = tv_now.tv_usec / 1000L;
-			int32_t delta_ms = timeDeltaMS(now_secs,now_ms,ntp_secs,ntp_ms);
+			int32_t delta_ms = timeDeltaMS(ntp_secs,ntp_ms,now_secs,now_ms);
+				// The delta is negative if our clock is faster, or positive if our clock is slower,
+				// in keeping with the convention that these are CORRECTIONS to be made, so if our
+				// clock is faster, and delta is negative, we will increase the cycle time to make
+				// up for the difference.
 			if (delta_ms)
 			{
 				stat_last_ntp_change = delta_ms;
@@ -820,11 +808,15 @@ void theClock::onSyncRTC()
 
 
 //===================================================================
-// run()
+// PID CONTROLLERS
 //===================================================================
 
-float theClock::getPidAngle()
+float theClock::getPidAngle()  // APID parameters
 {
+	// this_p == current ms error
+	// this_i == total ms error (including sync_millis)
+	// this_d == delta ms error this cycle
+
 	float this_p = cur_cycle - 1000;
 	float this_i = total_millis_error + sync_millis;
 	float this_d = prev_millis_error - this_p;;
@@ -853,7 +845,7 @@ float theClock::getPidAngle()
 }
 
 
-int theClock::getPidPower(float avg_angle)
+int theClock::getPidPower(float avg_angle)	// PID parameters
 {
 	// this_p == current angular error
 	// this_i == total running angular error
@@ -879,8 +871,14 @@ int theClock::getPidPower(float avg_angle)
 }
 
 
+
+
+//===================================================================
+// run()
+//===================================================================
+
 void theClock::run()
-	// This is called every 4 ms ...
+	// This is called every 4 ms or so ...
 	// Try not to call setXXX stuff while clock is running.
 {
 	// start the clock if start_sync at at a minute crossing,
@@ -1096,9 +1094,9 @@ void theClock::run()
 					if (total_millis_error > stat_recent_max_error)
 						stat_recent_max_error = total_millis_error;
 
-				}
-			}
-		}
+				}	// cycle has been established
+			}	// left zero crossing
+		}	// zero crossing
 
 		// detect direction change
 		// if direction changed, assign min or max and clear temp variable
@@ -1146,8 +1144,9 @@ void theClock::run()
 					if (as5600_max_angle < stat_recent_min_right)
 						stat_recent_min_right = as5600_max_angle;
 				}
-			}
-		}
+
+			}	// direction changed
+		}	// clock started
 
 		//------------------------------------------------
 		// state machine
@@ -1184,7 +1183,7 @@ void theClock::run()
 			if (clock_state == CLOCK_STATE_RUNNING)
 			{
 				// in full PID_MODE get the pid angle or
-				// FLIP the angle in MIN_MAX mode
+				// possibly change the target angle in MIN_MAX mode
 
 				if (_clock_mode == CLOCK_MODE_PID)
 				{
@@ -1205,16 +1204,24 @@ void theClock::run()
 				}
 			}
 
+			// calculate the average angle even if we only use it in PID modes
+
 			float avg_angle = (abs(as5600_min_angle) + abs(as5600_max_angle)) / 2;
+
+			// calculate the power to use
 
 			int use_power =
 				_clock_mode == CLOCK_MODE_POWER_MIN ? _power_min :
 				_clock_mode == CLOCK_MODE_POWER_MAX ? _power_max :
 				getPidPower(avg_angle);
 
+			// PULSE THE MOTOR!
+
 			motor_start = now;
 			motor_dur =_dur_pulse;
 			motor(-1,use_power);
+
+			// statistics
 
 			if (use_power > stat_max_power)
 				stat_max_power = use_power;
@@ -1250,8 +1257,9 @@ void theClock::run()
 					 total_millis_error,
 					 sync_millis);
 			}
-		}
-	}
+
+		}	// push motor
+	}	// angle threshold change exceeded
 
 	// Stop the motor as needed based on duration,
 
