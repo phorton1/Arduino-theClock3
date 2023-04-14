@@ -1,151 +1,334 @@
-The pendulum has a magnet in it.  There is a coil in the box that can
-**attract** (*pull*) the pendulum towards the center, or **repulse** (*push*)
-it away.
+# Accurate Wooden Geared Clock with Electromagnetic Pendulum
 
-The clock works by using a *PID controller* to target the ANGLE by using
-"pushes" after crossing zero, or "pulls" after turning around at the extremes.
+This clock uses wooden gears and a simple electromagnetically driven pendulum
+with the goal of keeping accurate time.
 
-Pushes tend to slow the clock down a bit, and pulls tend to speed it up,
-and we try to keep the angle consistent.
+It uses an **angle sensor** to detect the position of the
+pendulum, an **electromagnet and coil** to provide pulses of energy
+to the pendulum to keep it moving, and a **magnetic spring** to
+allow us to speed up, or slow down the pendulum.
 
+It has a computer (an **ESP32**) in it, with a *Real Time Clock* (**RTC**)
+that is fairly accurate (to within about 1 second per day).  Furthermore
+the computer can connect to the internet to use Network Time Protocol (**NTP**)
+to synchronize it's RTC within a few milliseconds of the *correct* international
+**standard time**.
 
-## Why pushes and pulls
-
-To understand why pushes slow the clock down and pulls speed it up, one perpective
-is that it is a bit like as if we are changing gravity for the pendulum,
-making it lighter when pushing, or heavier when pulling.
-
-From the basic formulas for a pendulum, increasing the gravity will decrease
-the period, causing it to swing faster, or vice versa, decreasing the gravitational
-component will cause the pendulum to swing slower,
-
-Using the electromagnet, when we pull on it, it is similar to increasing the gravitational
-field the pendulum is moving through, as there is more force acting on to return it to the
-center.  So it swings a bit quicker.
-
-Likewise, when we push on it, we are making it a bit "lighter" with respect to earth's
-gravity. It is not in as much of a hurry to get back to center (while the magnet is on),
-so the cycle is slightly lengthened and the pendulum swings a bit slower.
-
-It's a fairly fine balance, and the pendulum, and paraemters of the program, must
-be tuned fairly carefully in order to work reliably.
+Roughly stated, the goal of this project is to produce a **wooden geared clock**
+that will be accurate to within one second per day, or, when connected to the
+internet, within one second at any given time over it's working lifetime.
 
 
-## Initial Tuning
+## Basics
 
-ZERO_ANGLE must be set before anything else. And the coils (motor) direction
-and basic strength can verified using the TEST_MOTOR (-1,0, or 1) UI.
+There is an **angle sensor** on the pendulum.  By comparing successive
+measurments we can determine the pendulum's *direction*, when it *crosses zero*,
+and the extreme *minumum and maximum* angle during any given swing.
 
-Assuming the basic sensor and coil are working:
+The pendulum has a **magnet** in it that aligns with an **electromagnetic coil** in the
+box that can *repulse* (push) the pendulum a little on each swing, providing the energy
+to keep it moving.  By increasing the power provided to the coil we can make
+the pendulum swing further, and by decreasing it, we can make it swing less.
 
-(1) The first order of business is to tune the clock so that it basically ticks
-somewhere in a valid range.  This is done by turning PID_MODE off and setting
-the "pull_mode" to PUSH_ONLY and then starting the clock.
+There another **pair of magnets**, one in the stem of the pendulum, and one
+that is affixed to the clock, that is adjustable, that together, via magnetic
+repulsion, act as a **spring** when the pendulum swings sufficiently far.
+Because of this spring, the pendulum swings *faster* when it swings further
+*and slower* when it swings less.
 
-This combination will cause a push of POWER_MIN on every push, and the clock
-should be set so that POWER_MIN barely keeps it running (POWER_MAX is generally
-left at 255).
+We establish a working **minumum and maximum angle** at which the clock
+functions, by which we mean that it *ticks* and *tocks* reliably within
+design constraints.
 
-*in other words, you can run the clock with the pid turned off and it will
-just put constant impulses into the pendulum on each swing so that you can
-get it basically working*
+We adjust the weight on the pendulum so that the pendulum swings a little
+slower than one second (about 1010 milliseconds) at the minimum angle.
+We then adjust the spring so that it swings a little faster than one
+second (about 990 ms) when it swings at the maximum angle.
 
-Of course the ZERO_ANGLE must be set, and an appropriate DEAD_ZONE must exist,
-Other possible parameters at this stage include DUR_LEFT and DUR_RIGHT to balance
-out the pendulum.  I found a dead zone of 0.7 degrees and durations of 140ms to
-work in practice.
+The clock works by using a *PID controller* to swing at a given ANGLE by
+increasing or decreasing the amount of power fed to the coil during
+each swing.  We call this angle the **target angle**, and when working
+correctly, the clock will reliably swing within a few tenths of a degree
+of the given target angle.
 
-(2) Then the PID controller is turned on and tuned so that pushing homes in on an angle.
-An appropriate operating angle (i.e. 9 degrees) is determined and set into TARGET_ANGLE.
-Turn on PID_MODE and diddle	with the PID_D, PID_I, and PID_P, values as needed.
+We then use a second PID controller to adjust the target angle to minimize
+the clock's **ERROR** (in milliseconds).  On each swing, there is an instantaneous
+error, which is how many ms faster, or slower, than 1000ms (one second) a particular
+swing took.  These errors can accumulate, causing the clock to run slower,
+or faster, overall, than the correct time.  The PID controller is tuned to minimize
+both the intantaneous, and the cumulative errors, so that the clock beats
+at very close to 1000ms per beat with a time very close to the 'correct' time
+(as given by the RTC).
 
-(3) Once the clock reliabily ticks to a given angle, then we need to adjust the lead weight
-so that the clock is running a little bit slow when pushing (i.e. typically 5-10ms slow per beat).
+This two stage PID controller was an evolution. At first I merely tried to
+use a single PID controller to directly minimize the instantaneous and
+cumulative ms errors, but I found that it was better, both mechanically,
+and aesthetically in engineering terms and in the experience of the 'tick-tock'
+to try to get the clock to first swing at a relatively constant angle, and
+THEN to adjust that angle subtly to correct the time.  The single PID
+controller approach resulted in much more noticable changes in the speed
+and swing of the pendulum, and adding the second PID controller significantly
+smoothed out the behavior of the clock.
 
-(4) Can then try PULL_ONLY mode with PID_MODE off.  As with PUSH_ONLY, you can tune
-PULL_POWER to ensure that the pendulum swings.  Then turn PID_MODE on PULL_ONLY should result
-in the pendulum homing in on the target angle, with average cycles that are a little shorter
-than one second.
 
-Those are the basics.  We tune the clock so that it reliabily beats at a certain angle,
-and so that if we **pull** it, it goes a little *faster* than 1 beat per second, and if we
-**push** it, it goes a little *slower*.
 
-**NOTE: THIS HAS TO BE DOABLE FROM THE BUTTONS AND LEDS**
 
-Tuning the pid controller is beyond the capability of end-users with the buttons and leds.
+## Initial Setup
+
+After building the clock one must verify that the angle sensor and coils are
+working correctly, and then setup the pendulum and test the clock.
+
+### Basic connectivity
+
+The initial setup is best done with the ESP32 connected to a computer with
+a serial port monitor as well as connecting to it via WiFi to use the WebUI
+to adjust parameters.
+
+At this point of the documentation project, it is beyond scope to provide
+much detail about the basic process of hooking up the ESP32 and WebUI.
+However, here is a rough step by step description of the process.
+
+1. Program a stand alone ESP32 (and the SPIFFS file system) with the Arduino IDE.
+2. Use a serial port monitor with ANSI colors (like Putty) to see the serial output from the ESP32.
+3. Using the captive portal Access Point, or by typing commands in the serial monitor, get
+   the ESP32 connected to the same Wifi network as your main computer (laptop).
+4. Bring up the webUI in a browser by going to it's IP address.  I usually
+   establish a fixed IP address on my Wifi network for the MAC address of the ESP32.
+
+After that, you can plug the ESP32 into the circuit board and boot it up, and
+should see the LEDs flash their characteristic startup sequence.
+
+
+### Fundamental Testing
+
+1. Use the WebUI TEST_MOTOR (-1 == repulse, 0 == off, or 1 == attract) function
+   to make sure the coil is wired correctly vis-a-vis the orientation of the
+   magnet in the pendulum.
+
+2. With the pendulum hanging straight down, and not moving, with the clock
+   on a level flat surface, press the ZERO_ANGLE button to calibrate the
+   angle sensor.   THE MAGNET ON THE PENDULUM MUST BE ORIENTED SUCH THAT
+   IT IS APPROXIMATELY 180 degrees (well away from zero) WHEN HANGING
+   STRAIGHT DOWN.    This *should* result in setting the zero angle to
+   some value (like 123 degrees).  THE RAW ANGLE SENSOR CANNOT CROSS ZERO
+   DURING NORMAL OPERATION!!!
+
+3. Once the angle sensor is zeroed, you *should* be able to set the CLOCK_MODE
+   to "Stats". toggle the CLOCK_RUNNING boolean to 'on' and move the pendulum
+   with your hands and see reasonable angles, moving from -15 to 15 degrees or
+   so at the extremes, displayed in the serial port.  Moving the pendulum to
+   the right should increase the angle, and moving it to the left decreases
+   the angle.
+
+
+### POWER and ANGLE settings and WEIGHT and SPRING adjustments
+
+The defaults for DEAD_ZONE, POWER_MIN, POWER_MAX, ANGLE_MIN, and ANGLE_MAX
+should be pretty good, but each can, in turn, be tested and adjusted with
+the UI.
+
+POWER_MIN (tested with CLOCK_MODE = Power_Min) should be set so that the
+clock reliably ticks and tocks at a minimum angle (about 5 degrees to
+either side).
+
+POWER_MAX is probably ok at the default of 255, and can be tested with
+CLOCK_MODE=Power_Max.  The pendulum should swing increasingly widely
+until it starts hitting the clock at the extremes, and the test terminated
+as soon as it does.
+
+The default ANGLE_MIN is 9.0 degrees.  Using CLOCK_MODE=Angle_Min should
+cause the clock swing at roughly 9 degrees to either side.  The spring
+should not come into play at the minimum angle. The weight
+and should be adjusted so that the clock ticks slighly slower than
+one second, on average, about 1010ms, at ANGLE_MIN.
+
+The default ANGLE_MAX is 11.0 degrees.  Using CLOCK_MODE=Angle_Max should
+cause the clock swing at roughly 11 degrees to either side.  The spring should
+be adjusted so that the clock ticks slighly faster than one second, on average,
+about 990ms, at ANGLE_MAX.
+
+This process is repeated until the clock reliably ticks slower than 1 second
+(on average) at ANGLE_MIN and faster than 1 second at ANGLE_MAX.
+
+The default DEAD_ZONE (angle away from zero at which pulses begin) of 0.7 degrees,
+and DUR_PULSE (pulse duration) of 150ms should work, but can be messed with to
+get more or less power into the pendulum or to address jerkiness.
+
+ONE MAY NEED TO SET THE ZERO ANGLE OCCASIONALLY as the sensor may *drift* over time.
+
 
 
 ## PID Controller
 
 The PID controller that controls the angle of the pendulum is pretty simple.
 
-We measure the angle of the pendulum about every 3 milliseconds. We use a
+We measure the angle of the pendulum every few  milliseconds. We use a
 minimum movement threshold to avoid hysterisis (about 1/10 of a degree) and
 only take new values when the pendulum has moved significantly.
 
 The pushes start just after each **zero crossing** as determined by the *DEAD_ZONE*,
-and go on for the parameterized DUR_LEFT and DUR_RIGHT millisecond durations.
-Pulls, on the other hand, start at **the extreme** of the pendulum swing (or
-just after the extreme, as the pendulum starts to fall back towards the center),
-and the electromagnetic pulse from pulls last until the pendulum is (two times)
-the *DEAD_ZONE* away from zero.
-
-Otherwise, the two impulses use the same PID controller, and we just swtich
-between pushing and pulling as described below in the next section.
-
-Because we are trying to control two numbers with one PID controller ...
-the pendulum extreme angle to both the left and the right ... we sum
-and average the two and try to get the controller to make the AVERAGE OF
-THE LEFT AND RIGHT SWINGS equal to the parameterized TARGET_ANGLE.
+and go on for the parameterized DUR_PULSE millisecond duration.
 
 On each impulse the PID controller adds and averages the most recent maxium
 left and right angles into the **average angle**, and compares that to
 the TARGET_ANGLE, to get an *angle_error*.   The *angle_error* is the
 first (Proportional) input to the PID controller.  We keep a running
-sum *total_error* of the accumulated angle errors which is used as the
+sum *total_angle_error* of the accumulated angle errors which is used as the
 second (Integral) input to the PID controller.   We use a simple delta
 between the previous angle error and the current angle error as the
 third (Derivative) input to the PID controller.
 
-The PID controller spits out the power (0.225) that we should apply
-to the coil and the (pull or push) impulse is delivered for the duration
+The PID controller spits out the power (between POWER_MIN and POWER_MAX)
+that we should apply to the coil and the impulse is delivered for the duration
 as described above.
 
-Without changing from push to pull, the PID controller regularly
-achieves +/- 0.1 degree control.  With the changes from push to
-pull, the range is more like +/- 1 full degree.  So with a TARGET_ANGLE
-of 9 degrees, we see the pendulum swinging from 8-10 degrees on each
-side, or 16-20 degrees of total arc.
+The PID controller *should* regularly
+achieve +/- 0.1 degree control.
 
 
-## Algorithm - When to push or pull?
+## Algorithm1 - MIN_MAX
 
 We keep a lot of statistics about the clock, but one of the most important is the
-**cumulative millisecond error** ... called **millis_error**, which is running sum
-of the errors on each clock cyle.
+**total_millis_error** ... which is running sum of the millisecond errors on each
+clock cyle.
 
 When the clock ticks faster than 1 second, cycle times will measure like 992, 979, and 998,
 and when it clicks slower than 1 second, you get get values like 1003, 1021, 1013 ms.
 
 We subtract 1000 from the cycle time to get the *instantaneous error* which is
 positive if the clock is running slow, or negative if the clock is running fast,
-and add it to the running total **millis_error** ... which is the most basic measure
+and add it to the running **total_millis_error** ... which is the most basic measure
 of how far off the clock is from the correct time.
 
-Very simply, we switch from pushing to pulling or vice-versa when the *millies_error*
-exceeds some threshold.   I started by just changing based on the sign of the millis
-error, but that caused the pendulum to swing widely, and I determined it was best
-to let it swing with "pushes" for a while, then with "pulls" for a while, as a natural
-way to smooth out the overall movement of the pendulum.
+MIN_MAX_MS defaults to 50 milliseconds, and is also used for the colors of the LEDs.
 
-So the threshold is currently set to 40ms.  When the cumulative error exceeds +/-
-40 ms, we switch from pushing to pulling.   It takes 20-40 or so cycles for the
-change to accumulate enough in the other direction to perform another switch.
+Very simply, if the total millis error is more than MIN_MAX_MS, we set the
+target angle to MAX_ANGLE to speed the clock up, and if the total_millis_error is
+less than negative MIN_MAX_MS, we set the target angle to MIN_ANGLE to slow it down,
+so the clock cyclicly goes from plus 50 milliseconds to minus 50 milliscond from the
+correct RTC time over and over.  The speed of the pendulum change is audibly noticable.
 
-Overall, this gives pretty smooth behavior and (unlike with clock #1) you don't
-really perceive the change in the speed of the pendulum.   For a human it seems
-to beat pretty regularly, with a pretty constant amplitude.
+
+## Algorithm3 - PID_MODE
+
+
+
+
+## Starting the Clock (onStartClockSynchronized)
+
+	// Tick == the right pawl falling into the seconds wheel (pendulum moving left)
+	// Tock == the left pawl falling into the seconds wheel  (pendulum moving right)
+
+	// The second hand is attached such that the Tock is zero, and the Ticks are
+	// in the middle of seconds.
+
+	// The user has put the second hand on zero (in a just completed 'tock" position)
+	// with the other hands ready to go at the next minute, and they press
+	// the button sometime during the minute before that.
+	//
+	// At 1 second before the crossing (59) plus the START_DELAY millis we issue
+	// the initial starting pulse, which we duly record (but don't reallly use)
+	// as the 'start_time' and 'start_time_ms'.
+
+	// My first clock3 moves to the right on the initial pulse and the default
+	// START_DELAY is 900ms.
+
+	// What is important is that the initial left crossing occurs at about 500ms
+	// after the starting second. This *should* move the seoncd hand to the
+	// middle of the first second. We record this time as 'time_init' and 'time_init_ms'.
+	//
+	// The pendulum swings all the way to the left, and then swings back to the right (tocks)
+	// moving the second hand to the first second at about 1000ms (one second).
+	//
+	// So, note that we are actually syncrhonizing to the MIDDLE of the seconds, not to
+	// exact seconds crossings!!
+	//
+	// After that swing to the right (tock), the pendulum swings to the left again,
+	// for it's second left crossing (and possibly it's first audible 'tick').
+	// This second left crossing establishes BEAT NUMBER ONE at about 1500ms after
+	// the desired start time, and henceforth we keep 'time_zero' and 'time_zero_ms'
+	//
+	// So, in proper operation,
+
+	econd #1
+
+
+	// so the first 'tick' is about 500 ms.
+	// What is important is that the pendulum does left zero crossings (ticks) in the middle of seconds,
+	// and right crossings (tocks) very close to the exact second.
+
+	// So, in my example, after the starting pulse, the pendulum moves to the right, and does the first
+	// tick (left zero crossing) at about 500ms. It should not actually 'tick' due to the position of the pawls.
+	// but the first right crossing SHOULD "Tock", moving the
+
+
+	, so that the first tickpendulum moves
+	// to the right very close to the exact starting minute crossing.
+
+	// The START_DELAY *should* be adjustable for a clock that typically
+	// starts to the left but the worst case is that the clock is physicaly
+	// 1 second off.
+
+	// What is important is that the left crossings (tocks) occur in the middle
+	// of the RTC clock seconds, around 500 ms
+
+
+
+	It should not tick, but it may tock if the left pawl
+	// was poised to fall.
+
+	not already in first left crossing
+	// occurs at about 500ms after the minute, and with luck, the
+	// second left crossing, which establishes the 'time_init' and
+	// 'time_init_ms' variables, corresponding to beat zero (0), will
+	// occur about 1500ms after the minute.
+
+	// What is important is that the left crossings occur at an even
+	// second plus approximately 500ms ... well in the middle of the
+	// RTC clock's 'second'.
+
+	// Thereafter we keep track of the number of beats (num_beats) and
+	// the time of each left zero crossing in the values 'time_zero' and
+	// 'time_zero_ms' and are careful to only start RTC synchronization
+	// very near that time (well in the middle of a second, close to 500ms).
+
+	//
+	(right after the num_beats changes)
+
+	, because the pendulum has a frequency
+	// of about 1/2 second, the.
+	// The idea is that it will swing back, doing the first left
+	// crossing approximatly 500ms after the minute, so that the
+	// right crossing will be at about 1 second after the given minute,
+	// and the second left crossing, which establishes the time_init
+	// will occur at 1500 ms after
+
+	// and that we will do what is necessary to get the clock aligned
+	// back to that moment.
+
+	// We are using left crossing to determine cycle time, and on
+	// my initial clock, the starting pulse typically pushes the
+	// pendulum to the right.  We set the START_DELAY parameter
+	// such that the first left crossing occurs at about 500ms
+	// after the minute, and the second one at about 1500ms,
+	// establishing a 'init_time' of the minute crossing + 1
+	// second.
+
+	// What is important is that
+
+
+	// We will give a starting after crossing the next '59' seconds, plus
+	// some parameterized delay.
+
+	// The difficulty is that we don't know when the actual first tick takes place.
+	// We will assume it moves to the right on the pulse and will swing to the left
+	// approximately 1/2 second after we issue the pulse.
+
+
+	// It depends on the state of the hardware ... the clock may be predisposed
+	// so that the pawls grabbing starting on the actual impulse with a forward tick,
+	// or on the the next back swing, or some time later ... leading us to experiments
+	// with the optical mouse sensor to detect the wheel movements.
 
 
 
