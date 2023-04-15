@@ -1,6 +1,9 @@
 // theClock3.ino
 //
 // contains the myIOT device definition, setup() and loop()
+// as well as definitions of all static parameters (members
+// that start with underscore).
+//
 // Note that the default factory_reset turns WIFI off.
 // See /base/bat/platform.pm for compile time defines to the myIOT layer
 
@@ -52,8 +55,8 @@
 #define DEFAULT_RESTART_MILLIS  5000
 #define DEFAULT_START_DELAY     900
 
-#define DEFAULT_NTP_INTERVAL	14400L	// four hours
-#define DEFAULT_SYNC_INTERVAL	7200L	// two hours
+#define DEFAULT_NTP_INTERVAL	86400L	// one day
+#define DEFAULT_SYNC_INTERVAL	3600L	// one hour
 #define DEFAULT_STAT_INTERVAL	0
 
 

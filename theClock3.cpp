@@ -3,7 +3,31 @@
 #include <Adafruit_NeoPixel.h>
 #include <AS5600.h>
 #include <Wire.h>
-// #include <sys/time.h>
+
+// What happens if the Wifi goes offline during normal operation?
+
+// TODO:
+//
+// Need to implement at least basic buttons.
+// Should be able to do basic setup via buttons and leds.
+// Would like to implement other pixel modes.
+//
+// POSSIBLE CHANGES:
+//
+// I'd like to refactor the code to separate out the AS5600, pixels,
+// buttons, and make this file smaller and easier to understand.
+// But there are a ton of incestuous static global variables.
+//
+// It may be preferable to adjust the RTC clock when it has drifted a certain amount.
+// Same with NTP.
+//
+// It might be better to base the cycle time directly on the RTC and eliminate
+// the notion of separately syncing to it.
+//
+// It still might be possible (and/or better) to have a single PID controller
+// that directly corrects for the erorr.  However, that complicates the setup
+// process that currently allows me to test power, and angles, separately
+// from the 2nd 'time' PID controller.
 
 
 #define MAX_INT		32767
@@ -118,13 +142,13 @@ void setPixel(int num, uint32_t color)
 
 uint32_t scalePixel(int amt, int scale, uint32_t color0, uint32_t color1, uint32_t color2)
 {
-	// LOGU("scalePixel(%d,%d,0x%06x,0x%06x,0x%06x)",amt,scale,color0,color1,color2);
+	// LOGV("scalePixel(%d,%d,0x%06x,0x%06x,0x%06x)",amt,scale,color0,color1,color2);
 
 	float fdif = amt;
 	fdif /= ((float)scale);
 	if (fdif < -1) fdif = -1;
 	else if (fdif > 1) fdif = 1;
-	// LOGU("   fdif=%0.3f",fdif);
+	// LOGV("   fdif=%0.3f",fdif);
 
 	uint32_t retval = 0;
 	uint8_t *ca = (uint8_t *)&color1;
@@ -142,10 +166,10 @@ uint32_t scalePixel(int amt, int scale, uint32_t color0, uint32_t color1, uint32
 		int base = ca[i];			// assume base is the middle
 		int val = cb[i] - ca[i];    // and that it increaes as we move outward
 		uint8_t byte =  base + (fdif * val);
-		// LOGU("base=0x%02x  val=0x%02x   byte=0x%02x",base,val,byte);
+		// LOGV("base=0x%02x  val=0x%02x   byte=0x%02x",base,val,byte);
 		retval |= (byte << 8 * i);
 	}
-	// LOGU("    retval=0x%08x",retval);
+	// LOGV("    retval=0x%08x",retval);
 	return retval;
 }
 
@@ -154,6 +178,9 @@ uint32_t scalePixel(int amt, int scale, uint32_t color0, uint32_t color1, uint32
 //--------------------------------------------
 // vars
 //--------------------------------------------
+// All times are stored and manipulated as UTC times so
+// changes in daylight savings time do not affect the clock.
+// This can be tested by changing timezones on a running clock.
 
 
 #define CLOCK_STATE_NONE    	0
@@ -165,8 +192,8 @@ uint32_t scalePixel(int amt, int scale, uint32_t color0, uint32_t color1, uint32
 static int 	 	clock_state = 0;
 static bool 	start_sync = 0;				// doing a synchronized start
 static uint32_t last_change = 0;			// millis of last noticable pendulum movement
-static int32_t  cur_cycle = 0;				// millis in this 'cycle' (forward zero crossing)
-static int32_t  last_cycle = 0;				// millis at previous forward zero crossing
+static uint32_t cur_cycle = 0;				// millis in this 'cycle' (forward zero crossing)
+static uint32_t last_cycle = 0;				// millis at previous forward zero crossing
 static uint32_t num_beats = 0;				// number of beats (while clock_started && !initial_pulse_time)
 
 static uint32_t time_start = 0;
@@ -195,6 +222,8 @@ static uint32_t initial_pulse_time = 0;	// time at which we started initial cloc
 static bool push_motor = 0;				// push the pendulum next time after it leaves deadzone (determined at zero crossing)
 static uint32_t motor_start = 0;
 static uint32_t motor_dur = 0;
+
+
 static uint32_t last_beat = 0xffffffff;
 static uint32_t last_stats = 0;
 static uint32_t last_sync = 0;
@@ -552,6 +581,26 @@ void theClock::stopClock()
 void theClock::onStartClockSynchronized()
 {
 	LOGU("StartClockSynchronized()");
+
+	// The seconds hand is attached such that a tock falls on an even second:
+	//
+	// tick = left crossing = 1/2 second
+	// tock = right crossing = even second
+	//
+	// The user positions the hands on the tock (after a right crossing) with the second hand
+	// on zero and the minute/hour set to the next minute that will cross, and presses
+	// the button during the minute before the next minute.
+	//
+	// We issue the initial pulse at 1 second before the minute crossing (59) plus
+	// the START_DELAY parameter in MS.
+	//
+	// The first left crossing should take place about 500 ms after zero, establishing
+	// the init_time, and the second left crossing about 1500ms after zero, establishing
+	// beat #1
+	//
+	// Regardless of the clocks left/right starting bias, the START_DELAY *should*
+	// be adjustable so that the first left crossing occurs about 500ms after zero.
+
 	if (clock_state != CLOCK_STATE_NONE )
 		LOGE("Attempt to call onStartClockSynchronized() while it's already running!");
 	else
@@ -883,7 +932,7 @@ void theClock::run()
 		{
 			if (time(NULL) % 60 == 59)
 			{
-				LOGU("starting synchronized delay=%d",_start_delay);
+				LOGI("starting synchronized delay=%d",_start_delay);
 				if (_start_delay)
 					delay(_start_delay);				// do it about 1/2 second early
 				the_clock->setBool(ID_RUNNING,1);	    // set the UI bool
@@ -996,11 +1045,14 @@ void theClock::run()
 			as5600_side = cur < 0 ? -1 : 1;
 			push_motor = true;
 
-			// get full cycle time
-			// and add it to the accumulated error if running
-			// we use the left crossing, which is the tick to 1/2 second
-			// so that when we synchronize to 500ms, the tock will fall on the
-			// exact second
+			// Get full cycle time using uint32_t subtract to work at millis() overflow crossing.
+			// Calculate signed error using int32_t and add it to the accumulated error if running
+			// We use the left crossing, which is the tick to 1/2 second so that when we synchronize
+			// to 500ms, the tock will fall more or less on the exact second
+			//
+			// We use millis() and a separate syncRTC() method rather than just using the RTC clock time
+			// so that changes due to drift from the RTC clock time will not all get lumped into the
+			// instantaneous error and allow us to keep track of the millis() vs RTC drift.
 
 			if (as5600_side < 0)
 			{
@@ -1237,7 +1289,7 @@ void theClock::run()
 
 			if (_plot_values == PLOT_OFF)
 			{
-				LOGI("%-6s(%-2d) %-4d %3.3f/%3.3f=%3.3f  target=%3.3f  accum=%3.3f  power=%d  err=%d  sync=%d",
+				LOGD("%-6s(%-2d) %-4d %3.3f/%3.3f=%3.3f  target=%3.3f  accum=%3.3f  power=%d  err=%d  sync=%d",
 					 sync_sign ? "SYNC" : clock_state == CLOCK_STATE_RUNNING ? "run" : "start",
 					 as5600_direction,
 					 cur_cycle,
@@ -1346,6 +1398,8 @@ void theClock::loop()	// override
 	//--------------------------------------
 	// PIXELS
 	//--------------------------------------
+	// In normal operation, pixels only change on each beat,
+	// but system pixels can change at any time.
 
 	uint32_t now = millis();
 	static uint32_t last_pixels = 0;
@@ -1358,11 +1412,12 @@ void theClock::loop()	// override
 		if (_pixel_mode == PIXEL_MODE_DIAG)
 		{
 			iotConnectStatus_t status = getConnectStatus();
+			bool wifi_on = getBool(ID_DEVICE_WIFI);
 			new_pixels[PIXEL_MAIN] =
 				status == IOT_CONNECT_ALL ? MY_LED_YELLOW :
 				status == IOT_CONNECT_AP ? MY_LED_PURPLE :
 				status == IOT_CONNECT_STA ? MY_LED_GREEN :
-				/* status == IOT_CONNECT_NONE ? */ MY_LED_RED;
+				wifi_on ? MY_LED_RED : MY_LED_BLUE;
 
 			new_pixels[PIXEL_STATE] =
 				clock_state == CLOCK_STATE_RUNNING ? MY_LED_GREEN :
@@ -1426,28 +1481,13 @@ void theClock::loop()	// override
 			}
 		}
 
-		// perhaps the use of pixels.canShow() will help a bit
-		// as there can be upto a 300 us delay at the top of pixels.show()
-		// BEFORE the interrupts are disabled.
+		// The use of pixels.canShow() may be superflous, but
+		// there can be upto a 300 us delay at the top of pixels.show()
+		// BEFORE the interrupts are disabled so I check it before
+		// calling pixels.show()
 
 		if (show_pixels && pixels.canShow())
 		{
-			// LOGU("show_pixels(0x%08x)=%d  now=%d  last_pixels(0x%08x)=%d  WAIT_SEMAPHORE=0x%08x",
-			//	 (uint32_t)&show_pixels,show_pixels,now,(uint32_t)&last_pixels,last_pixels,(uint32_t) &WAIT_SEMAPHORE);
-			// Serial.print("show_pixels(");
-			// Serial.print((uint32_t)&show_pixels,HEX);
-			// Serial.print(")=");
-			// Serial.print(show_pixels);
-			// Serial.print("  now=");
-			// Serial.print(now);
-			// Serial.print("  last_pixels(");
-			// Serial.print((uint32_t)&last_pixels,HEX);
-			// Serial.print(")=");
-			// Serial.print(last_pixels);
-			// Serial.print("  WAIT_SEMAPHORE=");
-			// Serial.print((uint32_t)&WAIT_SEMAPHORE,HEX);
-			// Serial.println();
-
 			show_pixels = 0;
 			WAIT_SEMAPHORE();
 			pixels.show();
@@ -1459,6 +1499,12 @@ void theClock::loop()	// override
 	//------------------------------------------
 	// THINGS BASED ON THE BEAT CHANGING
 	//------------------------------------------
+	// We base these on the beat changing to ensure that
+	// they take place near a 500ms crossing, but that
+	// may not be necessary.  As it stands right now
+	// because they are based on the beat, rather than on a time,
+	// we have to zero their 'last' values upon restarting.
+
 	// 1. Error correction vs ESP32 clock
 	// 2. Sbow statistics
 	// 3. NTP vs ESP32 clock correction
@@ -1489,7 +1535,7 @@ void theClock::loop()	// override
 		{
 			update_stats = false;
 			last_stats = num_beats;
-			LOGU("--> stats");
+			LOGI("--> stats");
 
 			// show the value of the RTC at the last zero crossing
 
