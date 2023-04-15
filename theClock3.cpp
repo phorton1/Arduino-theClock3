@@ -23,27 +23,6 @@
 // as I read that would yield without delay.  No joy.  I set the priority
 // of the task down to 1, no joy.  Finally I disabled the Watch Dog Timer,
 // (see code below) and that seems to work.
-//
-// USE OF VOLATILE ALL OVER THE PLACE
-//
-// I got some really weird behavior with static int show_pixels and
-// static uint32_t last_pixels (last pixel update time). Assignments to
-// these variables were not working (at all), even in loop(), which is
-// clearly NOT an ISR routine
-//
-// After much messing around with IRAM_ATTR, DRAM_ATTR, etc, I finally
-// concluded that I needed to use the volatile keyword on these variables.
-//
-// My rational is/was as follows:  I have to use the 'volatile' keyword to
-// ensure that the compiler reloads the variable from memory and does not use
-// register optimizations on these variables, because some improperly written
-// interrupt handler (AS5600? Pixels? myIOT? Wifi?) is using, but not restoring
-// registers properly.
-//
-// Without knowing exactly what is going on I added the volatile keyword liberally.
-//
-// There is also a heap problem somewhere in the code (myIOT?) that caused at
-// least one heap corruption crash and/or it could be a buffer overflow somewhere.
 
 
 //----------------------------
@@ -74,20 +53,20 @@ void motor(int state, int power)
 
 #define AS4500_THRESHOLD    4			// 5 required for change == about 0.5 degrees
 
-static volatile int as5600_cur;			// bits, not degrees
-static volatile int as5600_side;		// which side of zero is the pendulum on?
-static volatile int as5600_direction;	// which direction is it moving?
+static int as5600_cur;			// bits, not degrees
+static int as5600_side;		// which side of zero is the pendulum on?
+static int as5600_direction;	// which direction is it moving?
 
-static volatile int as5600_min;			// min and max are assigned on direction changes
-static volatile int as5600_max;
-static volatile int as5600_temp_min;	// and the temps are reset to zero for next go round
-static volatile int as5600_temp_max;
+static int as5600_min;			// min and max are assigned on direction changes
+static int as5600_max;
+static int as5600_temp_min;	// and the temps are reset to zero for next go round
+static int as5600_temp_max;
 
 // angles are calculated from integers when they change
 
-static volatile float as5600_cur_angle;
-static volatile float as5600_min_angle;
-static volatile float as5600_max_angle;
+static float as5600_cur_angle;
+static float as5600_min_angle;
+static float as5600_max_angle;
 
 AS5600 as5600;   //  uses default Wire
 
@@ -106,7 +85,6 @@ static float angle(int units)
 
 static volatile int sem_count = 0;
 static volatile int the_semaphore = 0;
-
 
 void WAIT_SEMAPHORE()
 {
@@ -127,8 +105,7 @@ void RELEASE_SEMAPHORE()
 // I change it so that 0=min, and 254=max-1 and never send 0
 
 
-static volatile uint32_t last_pixels = 0;
-static volatile int show_pixels = 0;
+static int show_pixels = 0;
 
 static Adafruit_NeoPixel pixels(NUM_PIXELS,PIN_LEDS);
 
@@ -178,49 +155,50 @@ uint32_t scalePixel(int amt, int scale, uint32_t color0, uint32_t color1, uint32
 // vars
 //--------------------------------------------
 
+
 #define CLOCK_STATE_NONE    	0
 #define CLOCK_STATE_STATS   	1
 #define CLOCK_STATE_START		2
 #define CLOCK_STATE_STARTED		3
 #define CLOCK_STATE_RUNNING		4
 
-static volatile int 	 clock_state = 0;
-static volatile bool 	 start_sync = 0;			// doing a synchronized start
-static volatile uint32_t last_change = 0;			// millis of last noticable pendulum movement
-static volatile int32_t  cur_cycle = 0;				// millis in this 'cycle' (forward zero crossing)
-static volatile int32_t  last_cycle = 0;			// millis at previous forward zero crossing
-static volatile uint32_t num_beats = 0;				// number of beats (while clock_started && !initial_pulse_time)
+static int 	 	clock_state = 0;
+static bool 	start_sync = 0;				// doing a synchronized start
+static uint32_t last_change = 0;			// millis of last noticable pendulum movement
+static int32_t  cur_cycle = 0;				// millis in this 'cycle' (forward zero crossing)
+static int32_t  last_cycle = 0;				// millis at previous forward zero crossing
+static uint32_t num_beats = 0;				// number of beats (while clock_started && !initial_pulse_time)
 
-static volatile uint32_t time_start = 0;
-static volatile uint32_t time_start_ms = 0;
-static volatile uint32_t time_zero = 0;				// ESP32 RTC time at zero crossing
-static volatile uint32_t time_zero_ms = 0;			// with milliseconds (from microseconds)
-static volatile uint32_t time_init = 0;
-static volatile uint32_t time_init_ms = 0;
+static uint32_t time_start = 0;
+static uint32_t time_start_ms = 0;
+static uint32_t time_zero = 0;				// ESP32 RTC time at zero crossing
+static uint32_t time_zero_ms = 0;			// with milliseconds (from microseconds)
+static uint32_t time_init = 0;
+static uint32_t time_init_ms = 0;
 
-static volatile int32_t  total_millis_error = 0;	// cumulative number of millis total error
-static volatile int32_t  prev_millis_error = 0;
-static volatile float    pid_angle = 0;				// angle determined by second PID controller or other parameters
+static int32_t  total_millis_error = 0;		// cumulative number of millis total error
+static int32_t  prev_millis_error = 0;
+static float    pid_angle = 0;				// angle determined by second PID controller or other parameters
 
-static volatile float 	 total_ang_error = 0;		// accumluated degrees of error (for "I")
-static volatile float 	 prev_ang_error = 0;		// the previous error (for "D")
-static volatile int 	 pid_power = 0;				// power adjusted by pid algorithm
+static float 	total_ang_error = 0;		// accumluated degrees of error (for "I")
+static float 	prev_ang_error = 0;			// the previous error (for "D")
+static int 	 	pid_power = 0;				// power adjusted by pid algorithm
 
 // SYNC
 
-static volatile int sync_sign = 0;
-static volatile int sync_millis = 0;
+static int sync_sign = 0;
+static int sync_millis = 0;
 
 // CONTROL
 
-static volatile uint32_t initial_pulse_time = 0;	// time at which we started initial clock starting pulse (push)
-static volatile bool push_motor = 0;				// push the pendulum next time after it leaves deadzone (determined at zero crossing)
-static volatile uint32_t motor_start = 0;
-static volatile uint32_t motor_dur = 0;
-static volatile uint32_t last_beat = 0xffffffff;
-static volatile uint32_t last_stats = 0;
-static volatile uint32_t last_sync = 0;
-static volatile uint32_t last_ntp = 0;
+static uint32_t initial_pulse_time = 0;	// time at which we started initial clock starting pulse (push)
+static bool push_motor = 0;				// push the pendulum next time after it leaves deadzone (determined at zero crossing)
+static uint32_t motor_start = 0;
+static uint32_t motor_dur = 0;
+static uint32_t last_beat = 0xffffffff;
+static uint32_t last_stats = 0;
+static uint32_t last_sync = 0;
+static uint32_t last_ntp = 0;
 
 
 // Statistics
@@ -228,7 +206,7 @@ static volatile uint32_t last_ntp = 0;
 static char msg_buf[512];
 	// generic buffer for loop() related messages
 
-static volatile bool 	update_stats = false;
+static bool 	update_stats = false;
 
 static uint32_t stat_num_bad_reads;
 static uint32_t stat_num_restarts;
@@ -305,12 +283,12 @@ int32_t timeAddMS(int32_t *secs, int32_t *ms, int32_t ms_delta)
 	*ms += ms_delta;
 	while (*ms < 0)
 	{
-		*secs--;
+		*secs -= 1;
 		*ms += 1000L;
 	}
 	while (*ms >= 1000L)
 	{
-		*secs++;
+		*secs += 1;
 		*ms -= 1000L;
 	}
 }
@@ -463,14 +441,9 @@ void theClock::initMotor()
 	motor_start = 0;
 	motor_dur = 0;
 
-	cur_cycle = 0;
-	last_cycle = 0;
-
-	num_beats = 0;
 	time_zero = 0;
 	time_zero_ms = 0;
-	time_init = 0;
-	time_init_ms = 0;
+
 }
 
 
@@ -484,6 +457,12 @@ void theClock::initStats(bool restart)
 		stat_num_restarts = 0;
 	}
 
+	cur_cycle = 0;
+	last_cycle = 0;
+	num_beats = 0;
+	time_init = 0;
+	time_init_ms = 0;
+
 	total_ang_error = 0;
 	prev_ang_error = 0;
 
@@ -493,7 +472,6 @@ void theClock::initStats(bool restart)
 	sync_sign = 0;
 	sync_millis = 0;
 
-	last_beat = 0xffffffff;
 	last_sync = 0;
 	last_stats = 0;
 	last_ntp = 0;
@@ -555,6 +533,10 @@ void theClock::clearStats()
 {
 	LOGU("STATISTICS CLEARED");
 	initStats(0);
+	struct timeval tv_now;
+	gettimeofday(&tv_now, NULL);
+	time_start = tv_now.tv_sec;
+	time_start_ms = tv_now.tv_usec / 1000L;
 	update_stats = true;
 }
 
@@ -600,10 +582,13 @@ void theClock::startClock(bool restart /*=0*/)
 			_clock_mode == CLOCK_MODE_MIN_MAX ? _angle_min :
 			_angle_start;
 
-		struct timeval tv_now;
-		gettimeofday(&tv_now, NULL);
-		time_start = tv_now.tv_sec;
-		time_start_ms = tv_now.tv_usec / 1000L;
+		if (!restart)
+		{
+			struct timeval tv_now;
+			gettimeofday(&tv_now, NULL);
+			time_start = tv_now.tv_sec;
+			time_start_ms = tv_now.tv_usec / 1000L;
+		}
 
 		motor(-1,_power_start);
 		initial_pulse_time = last_change = millis();
@@ -673,7 +658,7 @@ void theClock::onDiddleClock(const myIOTValue *desc, int val)
 
 	if (!val)
 	{
-		LOGU("onDiddleClock(%d) orig=%d.03d  NO CHANGE",val,orig_secs,orig_ms);
+		LOGU("onDiddleClock(%d) orig=%d.%03d  NO CHANGE",val,orig_secs,orig_ms);
 	}
 	else
 	{
@@ -701,14 +686,22 @@ void theClock::onSyncRTC()
 	total_millis_error = 0;
 
 	// time_init and time_init_ms was the 0th zero crossing
-	// num_beats is the number of full ticks that have taken place to time_zero.
-	// and we want the clock time to be num_beats + 500 ms
+	// num_beats is the number of full ticks that have taken place since time_init
+	// and the convention is that the zero crossing should take place at 500ms,
+	// 'beat_time' == the time the clock is showing plus that 500 ms.
 
-	int32_t clock_time = time_init + num_beats;
-	int32_t clock_time_ms = 500;
-	sync_millis = timeDeltaMS(clock_time,clock_time_ms,time_zero,time_zero_ms);
+	int32_t beat_time = time_init + num_beats;
+	int32_t beat_time_ms = 500;
 
-	// sync_millis is positive if the clock is running fast and negative if running slow
+	// then we have the 'actual' time (of the most recent zero crossing)
+	// if the 'actual_time' is greater than the 'beat' time, then the clock needs to speed up.
+	// sync_millis has the semantic of a 'correction', that is, a positive value will speed
+	// the clock up, and a negative value will slow it down.
+
+	sync_millis = timeDeltaMS(time_zero,time_zero_ms,beat_time,beat_time_ms);
+
+	// therefore to speed up, we need to subtract beat_time from time_zero,
+	// as we do in the above call, to result in a positive sync_millis to speed the clock up.
 
 	sync_sign =
 		sync_millis < 0 ? - 1 :
@@ -721,12 +714,12 @@ void theClock::onSyncRTC()
 		stat_last_sync_change = sync_millis;
 		stat_total_sync_changes += sync_millis;
 		stat_total_sync_changes_abs += abs(sync_millis);
-		LOGU("onSyncRTC(%d/%d) beats=%d clock_time=%d.%03d time_zero=%d.%03d  sync_millis=%d sign=%d",
+		LOGU("onSyncRTC(%d/%d) beats=%d beat_time=%d.%03d time_zero=%d.%03d  sync_millis=%d sign=%d",
 			stat_num_sync_changes,
 			stat_num_sync_checks,
 			num_beats,
-			clock_time,
-			clock_time_ms,
+			beat_time,
+			beat_time_ms,
 			time_zero,
 			time_zero_ms,
 			sync_millis,
@@ -1345,7 +1338,8 @@ void theClock::loop()	// override
 		{
 			last_seconds = seconds;
 			uint32_t ms = tv_now.tv_usec / 1000L;
-			LOGU("tick ms=%03d",ms);
+			LOGU("tick  seconds=%d  ms=%d",seconds,ms);
+
 		}
 	}
 
@@ -1354,12 +1348,10 @@ void theClock::loop()	// override
 	//--------------------------------------
 
 	uint32_t now = millis();
+	static uint32_t last_pixels = 0;
 	if (now - last_pixels > 100)
 	{
-		// LOGU("now=%d last_pixels=%d",now,last_pixels);
-
 		last_pixels = now;
-
 		uint32_t new_pixels[NUM_PIXELS];
 		memset(new_pixels,0,NUM_PIXELS * sizeof(uint32_t));
 
@@ -1418,13 +1410,12 @@ void theClock::loop()	// override
 		static uint32_t old_pixels[NUM_PIXELS];
 		if (show_pixels == 2)
 		{
-			LOGU("clearing old pixels  brightness=%d",_led_brightness);
 			memset(old_pixels,0,NUM_PIXELS * sizeof(uint32_t));
 			pixels.clear();
 			pixels.setBrightness(_led_brightness + 1);
 		}
 
-		for (int i=0; i<=NUM_PIXELS; i++)
+		for (int i=0; i<=NUM_PIXELS-1; i++)
 		{
 			if (show_pixels == 2 || old_pixels[i] != new_pixels[i])
 			{
@@ -1439,18 +1430,29 @@ void theClock::loop()	// override
 		// as there can be upto a 300 us delay at the top of pixels.show()
 		// BEFORE the interrupts are disabled.
 
-		// THERE MUST BE A WAY TO SEND THESE BYTES TO THE PIXELS WITH
-		// THE CORRECT TIMING WITHOUT DISABLING INTERRUPTS!!!
-
 		if (show_pixels && pixels.canShow())
 		{
-			LOGU("showPixels(%d)",show_pixels);
+			// LOGU("show_pixels(0x%08x)=%d  now=%d  last_pixels(0x%08x)=%d  WAIT_SEMAPHORE=0x%08x",
+			//	 (uint32_t)&show_pixels,show_pixels,now,(uint32_t)&last_pixels,last_pixels,(uint32_t) &WAIT_SEMAPHORE);
+			// Serial.print("show_pixels(");
+			// Serial.print((uint32_t)&show_pixels,HEX);
+			// Serial.print(")=");
+			// Serial.print(show_pixels);
+			// Serial.print("  now=");
+			// Serial.print(now);
+			// Serial.print("  last_pixels(");
+			// Serial.print((uint32_t)&last_pixels,HEX);
+			// Serial.print(")=");
+			// Serial.print(last_pixels);
+			// Serial.print("  WAIT_SEMAPHORE=");
+			// Serial.print((uint32_t)&WAIT_SEMAPHORE,HEX);
+			// Serial.println();
+
 			show_pixels = 0;
 			WAIT_SEMAPHORE();
 			pixels.show();
 			RELEASE_SEMAPHORE();
 		}
-
 	}	// now - 100 > last_pixels
 
 
@@ -1613,7 +1615,6 @@ void theClock::clockTask(void *param)
     delay(100);
     LOGI("starting clockTask loop on core(%d)",xPortGetCoreID());
     delay(100);
-	// debug_angle("in clockTask");
 
     while (1)
     {
