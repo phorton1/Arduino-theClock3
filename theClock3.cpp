@@ -85,15 +85,15 @@ void motor(int state, int power)
 // so each bit is 0.087890625 degrees.  For hysterisis (debouncing) we only take new
 // values when the change exceeds AS4500_THRESHOLD.
 
-#define AS4500_THRESHOLD    4			// 5 required for change == about 0.5 degrees
+#define AS4500_THRESHOLD    4	// 5 required for change == about 0.5 degrees
 
 static int as5600_cur;			// bits, not degrees
-static int as5600_side;		// which side of zero is the pendulum on?
+static int as5600_side;			// which side of zero is the pendulum on?
 static int as5600_direction;	// which direction is it moving?
 
 static int as5600_min;			// min and max are assigned on direction changes
 static int as5600_max;
-static int as5600_temp_min;	// and the temps are reset to zero for next go round
+static int as5600_temp_min;		// and the temps are reset to zero for next go round
 static int as5600_temp_max;
 
 // angles are calculated from integers when they change
@@ -202,7 +202,7 @@ uint32_t scalePixel(int amt, int scale, uint32_t color0, uint32_t color1, uint32
 static int 	 	clock_state = 0;
 static bool 	start_sync = 0;				// doing a synchronized start
 static uint32_t last_change = 0;			// millis of last noticable pendulum movement
-static uint32_t cur_cycle = 0;				// millis in this 'cycle' (forward zero crossing)
+static  int32_t cur_cycle = 0;				// millis in this 'cycle' (forward zero crossing)
 static uint32_t last_cycle = 0;				// millis at previous forward zero crossing
 static uint32_t num_beats = 0;				// number of beats (while clock_started && !initial_pulse_time)
 
@@ -232,7 +232,6 @@ static uint32_t initial_pulse_time = 0;	// time at which we started initial cloc
 static bool push_motor = 0;				// push the pendulum next time after it leaves deadzone (determined at zero crossing)
 static uint32_t motor_start = 0;
 static uint32_t motor_dur = 0;
-
 
 static uint32_t last_beat = 0xffffffff;
 static uint32_t last_stats = 0;
@@ -943,7 +942,7 @@ void theClock::run()
 	// This is called every 4 ms or so ...
 	// Try not to call setXXX stuff while clock is running.
 {
-	// start the clock if start_sync at at a minute crossing,
+	// start the clock if start_sync and at a minute crossing,
 	// or if the running variable turned on and not running
 
 	if (clock_state == CLOCK_STATE_NONE)
@@ -1072,7 +1071,7 @@ void theClock::run()
 			//
 			// We use millis() and a separate syncRTC() method rather than just using the RTC clock time
 			// so that changes due to drift from the RTC clock time will not all get lumped into the
-			// instantaneous error and allow us to keep track of the millis() vs RTC drift.
+			// instantaneous error and this allows us to keep track of the millis() vs RTC drift.
 
 			if (as5600_side < 0)
 			{
@@ -1093,7 +1092,7 @@ void theClock::run()
 					err -= 1000;
 
 					// if sync_sign, we are in a sync and the err is
-					// added to the sync_millisuntil it changes sign,
+					// added to the sync_millis until it changes sign,
 					// at which point the sync is "turned off" and the
 					// remaining error falls through to the 'total_millis_error'
 
@@ -1449,7 +1448,7 @@ void theClock::loop()	// override
 				MY_LED_BLACK;
 
 			// accuracy and cycle move from green to red/blue
-			// as they diverge by 2 * _min_max_ms
+			// as they diverge by +/- _min_max_ms
 
 			if (clock_state >= CLOCK_STATE_START)
 			{
@@ -1625,6 +1624,8 @@ void theClock::loop()	// override
 				// sprintf(msg_buf,"");
 				// setString(ID_STAT_MSG4,msg_buf);
 			}
+
+			// reset the 'recent' stats for the next _stat_interval
 
 			stat_recent_min_cycle = MAX_INT;
 			stat_recent_max_cycle = MIN_INT;
