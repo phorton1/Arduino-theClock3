@@ -5,7 +5,7 @@ with the goal of keeping accurate time.
 
 It uses an **angle sensor** to detect the position of the
 pendulum, an **electromagnet and coil** to provide pulses of energy
-to the pendulum to keep it moving, and a **magnetic spring** to
+to the pendulum to keep it moving, as well as a **magnetic spring** to
 allow us to speed up, or slow down the pendulum.
 
 It has a computer (an **ESP32**) in it, with a *Real Time Clock* (**RTC**)
@@ -28,9 +28,9 @@ and the extreme *minumum and maximum* angle during any given swing.
 The pendulum has a **magnet** in it that aligns with an **electromagnetic coil** in the
 box that can *repulse* (push) the pendulum a little on each swing, providing the energy
 to keep it moving.  By increasing the power provided to the coil we can make
-the pendulum swing further, and by decreasing it, we can make it swing less.
+the pendulum swing further, and by decreasing it, we can make it swing less widely.
 
-There another **pair of magnets**, one in the stem of the pendulum, and one
+There is another **pair of magnets**, one in the stem of the pendulum, and one
 that is affixed to the clock, that is adjustable, that together, via magnetic
 repulsion, act as a **spring** when the pendulum swings sufficiently far.
 Because of this spring, the pendulum swings *faster* when it swings further
@@ -52,11 +52,11 @@ correctly, the clock will reliably swing within a few tenths of a degree
 of the given target angle.
 
 We then use a second PID controller to adjust the target angle to minimize
-the clock's **ERROR** (in milliseconds).  On each swing, there is an instantaneous
+the clock's **error** (in milliseconds).  On each swing, there is an instantaneous
 error, which is how many ms faster, or slower, than 1000ms (one second) a particular
 swing took.  These errors can accumulate, causing the clock to run slower,
-or faster, overall, than the correct time.  The PID controller is tuned to minimize
-both the intantaneous, and the cumulative errors, so that the clock beats
+or faster, overall, than the correct time.  The second PID controller is tuned to
+minimize both the intantaneous, and the cumulative, errors, so that the clock beats
 at very close to 1000ms per beat with a time very close to the 'correct' time
 (as given by the RTC).
 
@@ -64,12 +64,32 @@ This two stage PID controller was an evolution. At first I merely tried to
 use a single PID controller to directly minimize the instantaneous and
 cumulative ms errors, but I found that it was better, both mechanically,
 and aesthetically in engineering terms and in the experience of the 'tick-tock'
-to try to get the clock to first swing at a relatively constant angle, and
+sound, to try to get the clock to first swing at a relatively constant angle, and
 THEN to adjust that angle subtly to correct the time.  The single PID
 controller approach resulted in much more noticable changes in the speed
 and swing of the pendulum, and adding the second PID controller significantly
 smoothed out the behavior of the clock.
 
+The swing error is based on subsequent calls to the millis() function, rather
+than comparing the time directly to the RTC clock.  This means that the algorithm
+itself can drift from RTC time.  We allow this to happen and provide a separate
+synchronization method, onSyncRTC(), to occasionally correct for this potential drift.
+This allows us to keep track of the drift between the algorithm and the RTC and
+isolates the basic swing PID controllers from changes in the RTC.
+
+Finally, if connected to the internet, we occasionally synchronize the RTC
+to NTP time to correct for the ESP32 clock drift.  Although we display
+the local time in LOG messages, etc, the algorithms all *should* work
+from UTC time to prevent changes in daylight savings time from affecting
+the clock, with the notion that the user will manually correct for daylight
+savings time by merely moving the hour hand as necessary.
+
+
+## Pixel Mode - show current time
+
+I designed the box with 5 LEDs.  How do I show the current time?
+And I would simultaneously like to show at least the cumulative
+error so I know the time is correct-ish.
 
 
 
