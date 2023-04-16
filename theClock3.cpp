@@ -1,8 +1,11 @@
+// theClock3.cpp
+
 #include "theClock3.h"
 #include <myIOTLog.h>
 #include <Adafruit_NeoPixel.h>
 #include <AS5600.h>
 #include <Wire.h>
+
 
 // What happens if the Wifi goes offline during normal operation?
 
@@ -1414,10 +1417,11 @@ void theClock::loop()	// override
 			iotConnectStatus_t status = getConnectStatus();
 			bool wifi_on = getBool(ID_DEVICE_WIFI);
 			new_pixels[PIXEL_MAIN] =
-				status == IOT_CONNECT_ALL ? MY_LED_YELLOW :
-				status == IOT_CONNECT_AP ? MY_LED_PURPLE :
+				status == IOT_CONNECT_ALL ? MY_LED_ORANGE :
+				status == IOT_CONNECT_AP  ? MY_LED_PURPLE :
 				status == IOT_CONNECT_STA ? MY_LED_GREEN :
-				wifi_on ? MY_LED_RED : MY_LED_BLUE;
+				wifi_on ? MY_LED_RED :
+				MY_LED_BLUE;
 
 			new_pixels[PIXEL_STATE] =
 				clock_state == CLOCK_STATE_RUNNING ? MY_LED_GREEN :

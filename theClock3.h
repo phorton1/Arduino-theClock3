@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Arduino.h>
 #include <myIOTDevice.h>
+
 
 //---------------------------------
 // pin assignments
