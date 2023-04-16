@@ -57,7 +57,7 @@
 
 #define DEFAULT_NTP_INTERVAL	86400L	// one day
 #define DEFAULT_SYNC_INTERVAL	3600L	// one hour
-#define DEFAULT_STAT_INTERVAL	0
+#define DEFAULT_STAT_INTERVAL	30
 
 
 
