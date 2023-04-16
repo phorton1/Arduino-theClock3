@@ -233,7 +233,9 @@ const valDescriptor theClock::m_clock_values[] =
 #define NUM_CLOCK_VALUES (sizeof(m_clock_values)/sizeof(valDescriptor))
 
 
-// static member data
+//--------------------------------------------------
+// params in this file, working vars in cpp
+//--------------------------------------------------
 
 bool 	theClock::_clock_running;
 uint32_t theClock::_clock_mode;

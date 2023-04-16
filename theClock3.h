@@ -148,28 +148,31 @@
 	// Will add given number of seconds to ESP32 clock
 	// for testing sync code
 
-
-
 // enumerated type values
 
-#define CLOCK_MODE_SENSOR_TEST		0
-#define CLOCK_MODE_POWER_MIN		1
-#define CLOCK_MODE_POWER_MAX        2
-#define CLOCK_MODE_ANGLE_START	    3
-#define CLOCK_MODE_ANGLE_MIN 		4
-#define CLOCK_MODE_ANGLE_MAX		5
-#define CLOCK_MODE_MIN_MAX			6
-#define CLOCK_MODE_PID              7
+#define CLOCK_STATE_NONE    	0
+#define CLOCK_STATE_STATS   	1
+#define CLOCK_STATE_START		2
+#define CLOCK_STATE_STARTED		3
+#define CLOCK_STATE_RUNNING		4
 
+#define CLOCK_MODE_SENSOR_TEST	0
+#define CLOCK_MODE_POWER_MIN	1
+#define CLOCK_MODE_POWER_MAX    2
+#define CLOCK_MODE_ANGLE_START	3
+#define CLOCK_MODE_ANGLE_MIN 	4
+#define CLOCK_MODE_ANGLE_MAX	5
+#define CLOCK_MODE_MIN_MAX		6
+#define CLOCK_MODE_PID          7
 
-#define PLOT_OFF		0
-#define PLOT_WAVES		1
-#define PLOT_PAUSE		2
-#define PLOT_CLOCK		3
+#define PLOT_OFF				0
+#define PLOT_WAVES				1
+#define PLOT_PAUSE				2
+#define PLOT_CLOCK				3
 
 #define PIXEL_MODE_OFF			0
-#define PIXEL_MODE_DIAG		1
-#define PIXEL_MODE_TIME		2
+#define PIXEL_MODE_DIAG			1
+#define PIXEL_MODE_TIME			2
 
 
 // theClock declaration
@@ -185,6 +188,8 @@ public:
 	virtual void loop() override;
 
 private:
+
+	// myIOT parameters
 
     static const valDescriptor m_clock_values[];
 
@@ -240,19 +245,59 @@ private:
 	static int _test_motor;		// memory only, only happens onChange
 	static int _diddle_clock;	// memory only, only happens onChange
 
+
+	// clock paramters
+
+	static int 	 	m_clock_state;
+	static bool 	m_start_sync;			// doing a synchronized start
+	static uint32_t m_last_change;			// millis of last noticable pendulum movement
+	static  int32_t m_cur_cycle;			// millis in this 'cycle' (forward zero crossing)
+	static uint32_t m_last_cycle;			// millis at previous forward zero crossing
+	static uint32_t m_num_beats;			// number of beats (while clock_started && !initial_pulse_time)
+
+	static uint32_t m_time_start;
+	static uint32_t m_time_start_ms;
+	static uint32_t m_time_zero;			// ESP32 RTC time at zero crossing
+	static uint32_t m_time_zero_ms;			// with milliseconds (from microseconds)
+	static uint32_t m_time_init;
+	static uint32_t m_time_init_ms;
+
+	static int32_t  m_total_millis_error;	// cumulative number of millis total error
+	static int32_t  m_prev_millis_error;
+	static float    m_pid_angle;			// angle determined by second PID controller or other parameters
+
+	static float 	m_total_ang_error;		// accumluated degrees of error (for "I")
+	static float 	m_prev_ang_error;		// the previous error (for "D")
+	static int 	 	m_pid_power;			// power adjusted by pid algorithm
+
+	static int 		m_sync_sign;			// if in a sync, the sign of sync_millis, else zero
+	static int 		m_sync_millis;			// if in a sync, the amount to sync, else zero
+
+	static uint32_t m_initial_pulse_time;	// time at which we started initial clock starting pulse (push)
+	static bool 	m_push_motor;			// push the pendulum next time after it leaves deadzone (determined at zero crossing)
+	static uint32_t m_motor_start;
+	static uint32_t m_motor_dur;
+
+	static uint32_t m_last_beat;
+	static uint32_t m_last_stats;
+	static uint32_t m_last_sync;
+	static uint32_t m_last_ntp;
+
+	static bool		m_update_stats;
+
+
 	// UI methods
 
 	static void onStartClockSynchronized();
-
     static void onClockRunningChanged(const myIOTValue *desc, bool val);
     static void onClockModeChanged(const myIOTValue *desc, uint32_t val);
 	static void onPlotValuesChanged(const myIOTValue *desc, uint32_t val);
 	static void onPixelModeChanged(const myIOTValue *desc, uint32_t val);
 	static void onBrightnessChanged(const myIOTValue *desc, uint32_t val);
-
 	static void clearStats();
 	static void setZeroAngle();
 	static void onSyncRTC();
+
 	#if CLOCK_WITH_NTP
 		static void onSyncNTP();
 	#endif
@@ -264,18 +309,20 @@ private:
 
 	// Internal Private methods
 
-	static void initAS5600();
 	static void initMotor();
 	static void initStats(bool restart);
+	static void motor(int state, int power);
 
 	static void run();
 	static void clockTask(void *param);
-
 	static void startClock(bool restart=0);
 	static void stopClock();
 
 	static float getPidAngle();
 	static int getPidPower(float avg_angle);
+
+	void doPixels();
+	void doButtons();
 
 };	// class theClock
 
