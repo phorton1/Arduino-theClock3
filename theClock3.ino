@@ -20,7 +20,7 @@
 #define OVER_MAX_ANGLE  		15			// over design maximum degrees
 
 #define DEFAULT_RUNNING			0				// factory reset == clock not running
-#define DEFAULT_CLOCK_MODE		CLOCK_MODE_MIN_MAX	// factory reset == PID mode turned on
+#define DEFAULT_CLOCK_MODE		CLOCK_MODE_PID	// factory reset == PID mode turned on
 #define DEFAULT_PIXEL_MODE		PIXEL_MODE_DIAG
 #define DEFAULT_LED_BRIGHTNESS  40
 
@@ -38,7 +38,7 @@
 #define DEFAULT_POWER_START     255
 
 #define DEFAULT_DUR_PULSE		150
-#define DEFAULT_DUR_START		500
+#define DEFAULT_DUR_START		250
 
 #define DEFAULT_PID_P			12.0
 #define DEFAULT_PID_I			0.50
@@ -171,7 +171,7 @@ const valDescriptor theClock::m_clock_values[] =
 	{ ID_START_CLOCK,  		VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    	(void *) onStartClockSynchronized },
 
 	{ ID_RUNNING,      		VALUE_TYPE_BOOL,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_clock_running,(void *) onClockRunningChanged, { .int_range = { DEFAULT_RUNNING }} },
-	{ ID_CLOCK_MODE,      	VALUE_TYPE_ENUM,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_clock_mode, 	(void *) onClockModeChanged, 	{ .enum_range = { 0, clockAllowed }} },
+	{ ID_CLOCK_MODE,      	VALUE_TYPE_ENUM,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_clock_mode, 	(void *) onClockModeChanged, 	{ .enum_range = { DEFAULT_CLOCK_MODE, clockAllowed }} },
 	{ ID_PLOT_VALUES,      	VALUE_TYPE_ENUM,     VALUE_STORE_PUB,      VALUE_STYLE_NONE,       (void *) &_plot_values, 	(void *) onPlotValuesChanged,   { .enum_range = { 0, plotAllowed }} },
 	{ ID_PIXEL_MODE,      	VALUE_TYPE_ENUM,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_pixel_mode, 	(void *) onPixelModeChanged,    { .enum_range = { DEFAULT_PIXEL_MODE, pixelsAllowed }} },
 	{ ID_LED_BRIGHTNESS,  	VALUE_TYPE_INT,    	 VALUE_STORE_PREF,     VALUE_STYLE_NONE,   	   (void *) &_led_brightness,(void *) onBrightnessChanged, 	{ .int_range = { DEFAULT_LED_BRIGHTNESS,  	0,  254}} },

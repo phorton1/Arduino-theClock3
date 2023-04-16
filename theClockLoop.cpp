@@ -1,19 +1,170 @@
 // theClockLoop.cpp
+//
+// Button functions
+//
+//   left button (1)
+//
+//			short press
+//
+//				if clock is running, stop it
+//              else if 1st press start sync
+//              else if 2nd press start immediate
+//
+//			medium press = turn wifi on/off
+//			long press = factory reset and reboot
+//
+//   right button (2)
+//
+//			short press = cycle pixel brightness
+//          medium press = change pixel mode
+//          long press = zero pendulum
+
 
 #include "theClock3.h"
 #include "clockStats.h"
 #include "clockPixels.h"
 #include <myIOTLog.h>
 
+#define MEDIUM_PRESS   3000
+#define LONG_PRESS     8000
+#define SECOND_PRESS   2000
+
+
+static uint32_t button_start[2];
 
 //--------------------------------------
 // doButtons
 //--------------------------------------
+// We assume they only press one button at a time in the pixels
 
 void theClock::doButtons()
 {
+	uint32_t now = millis();
+	static uint32_t button_check = 0;
 
-}
+	if (now - button_check > 33)	// 30 times per second
+	{
+		button_check = now;
+		for (int button=0; button<2; button++)
+		{
+			uint32_t start = button_start[button];
+			bool val = !digitalRead(button?PIN_BUTTON2:PIN_BUTTON1);
+
+			if (val && !start)	// initial press
+			{
+				button_start[button] = now;
+			}
+			else if (start && !val)	// button up
+			{
+				uint32_t dur = now - start;
+				button_start[button] = 0;
+
+				if (button)
+				{
+					// button2 long press = zero angle
+
+					if (dur >= LONG_PRESS)
+					{
+						setZeroAngle();
+					}
+
+					// button2 medium press = change pixel mode
+					// between modes
+
+					else if (dur >= MEDIUM_PRESS)
+					{
+						if (_pixel_mode == PIXEL_MODE_DIAG)
+							_pixel_mode = PIXEL_MODE_TIME;
+						else
+							_pixel_mode = PIXEL_MODE_DIAG;
+						setEnum(ID_PIXEL_MODE,_pixel_mode);
+					}
+
+					// button2 short press = change pixel brightness
+					// use smaller increments near zero
+
+					else
+					{
+						if (_led_brightness == 254)
+							_led_brightness = 0;
+						else if (_led_brightness < 40)
+							_led_brightness += 8;
+						else
+							_led_brightness += 25;
+						if (_led_brightness > 254)
+							_led_brightness = 254;
+						setInt(ID_LED_BRIGHTNESS,_led_brightness);
+					}
+				}
+				else
+				{
+					if (dur >= LONG_PRESS)		// button1 long press = factory reset
+					{
+						factoryReset();
+					}
+					else if (dur >= MEDIUM_PRESS)	// button1 medium press = turn wifi off/on
+					{
+						setBool(ID_DEVICE_WIFI,!getBool(ID_DEVICE_WIFI));
+					}
+
+					// button1 short press =
+					//    if running (or sync_starting) first_press = stop clock, second press ignored
+					//    otherwise first press = start_synchroniced, and second press = start running
+
+					else
+					{
+						bool is_first = 1;
+						static uint32_t first_press = 0;
+						if (start - SECOND_PRESS > first_press)
+							first_press = now;
+						else
+							is_first = 0;
+
+						if (is_first)		// first press
+						{
+							LOGD("first press");
+							if (m_clock_state || m_start_sync)	// while running or sync started
+							{
+								// if the clock is running (m_clock_state)
+								// we use the parameter to turn it off, otherwise
+								// we call stop clock directly.
+
+								if (m_clock_state)
+									setBool(ID_RUNNING,0);
+								else
+									stopClock();
+							}
+							else
+							{
+								// otherwise, we start synchronized
+								// start_sync is also a flag used on 2nd press
+
+								onStartClockSynchronized();
+							}
+						}
+						else	// 2nd press
+						{
+							LOGD("second press");
+							if (m_start_sync)
+							{
+								// second press while starting synchronized
+								// turns of sync and just starts the clock with parameter
+								// and does nothing in a stop cycle
+
+								m_start_sync = 0;
+								setBool(ID_RUNNING,1);
+							}
+						}
+
+					}	// short press
+				}	// 2nd button
+			}	// button up
+		}	// for each button
+	}	// every 33 ms
+}	// doButtons()
+
+
+
 
 
 //--------------------------------------
@@ -33,6 +184,24 @@ void theClock::doPixels()
 		uint32_t new_pixels[NUM_PIXELS];
 		memset(new_pixels,0,NUM_PIXELS * sizeof(uint32_t));
 
+		// PRESSED BUTTONS GO INTO THE LAST PIXEL (PIXEL SYNC)
+		// in either case we show pixels for buttons
+		// take the earlier start, if any
+
+		uint32_t early_button = button_start[0];
+		if (!early_button || (button_start[1] && button_start[1] > early_button))
+			early_button = button_start[1];
+
+		if (early_button)
+		{
+			uint32_t button_dur = now - early_button;
+			new_pixels[PIXEL_SYNC] =
+				button_dur >= LONG_PRESS ? MY_LED_MAGENTA :
+				button_dur >= MEDIUM_PRESS ? MY_LED_PURPLE :
+				MY_LED_WHITE;
+		}
+
+
 		if (_pixel_mode == PIXEL_MODE_DIAG)
 		{
 			iotConnectStatus_t status = getConnectStatus();
@@ -46,7 +215,7 @@ void theClock::doPixels()
 
 			new_pixels[PIXEL_STATE] =
 				m_clock_state == CLOCK_STATE_RUNNING ? MY_LED_GREEN :
-				m_clock_state == CLOCK_STATE_STARTED ? MY_LED_MAGENTA :
+				m_clock_state == CLOCK_STATE_STARTED ? MY_LED_CYAN :
 				m_clock_state == CLOCK_STATE_START ?   MY_LED_YELLOW :
 				m_start_sync ? MY_LED_WHITE :
 				m_clock_state == CLOCK_STATE_STATS ? MY_LED_ORANGE :
@@ -76,7 +245,8 @@ void theClock::doPixels()
 						MY_LED_GREEN,
 						MY_LED_BLUE);
 
-				new_pixels[PIXEL_SYNC] =
+				if (!early_button)
+					new_pixels[PIXEL_SYNC] =
 						!m_sync_sign ? MY_LED_BLACK :
 						scalePixel(m_sync_millis,_min_max_ms,
 							MY_LED_RED,

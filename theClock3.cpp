@@ -22,37 +22,40 @@
 
 // NOTES: USES A TASK FOR RUNNING THE CLOCK
 //
-// there is too much critical timing in the clock run() method to allow it
-// allow it to run in loop() on the same core as the webservers, etc.
-// When just run from the default core(1), along with the Webserver, it
-// regularly misses crossings, etc, esp when the myIOT WebSocket goes on and off.
+// 		there is too much critical timing in the clock run() method to allow it
+// 		allow it to run in loop() on the same core as the webservers, etc.
+// 		When just run from the default core(1), along with the Webserver, it
+// 		regularly misses crossings, etc, esp when the myIOT WebSocket goes on and off.
 //
-// So I made it a task on the unused core 0. However, usually tasks are limited
-// to 10ms time slices, and so it did not work at first.
+// 		So I made it a task on the unused core 0. However, usually tasks are limited
+// 		to 10ms time slices, and so it did not work at first.
 //
-// I was able to get it working. First I changed the call to vTaskDelay(0)
-// as I read that would yield without delay.  No joy.  I set the priority
-// of the task down to 1, no joy.  Finally I disabled the Watch Dog Timer,
-// (see code below) and that seems to work.
+// 		I was able to get it working. First I changed the call to vTaskDelay(0)
+// 		as I read that would yield without delay.  No joy.  I set the priority
+// 		of the task down to 1, no joy.  Finally I disabled the Watch Dog Timer,
+// 		(see code below) and that seems to work.
 //
 // TODO:
 //
-// Need to implement at least basic buttons.
-// Should be able to do basic setup via buttons and leds.
-// Would like to implement other pixel modes.
+// 		Implement PIXEL_TIME mode
+//
+//		There is an issue that if the clock is booted and started without internet
+//      whether it is turned off, or it could not at first connect, and set to 'running'
+//      and then connects, it will think it is running 40 years slow and will run as
+//      fast as possible forever.
 //
 // POSSIBLE CHANGES:
 //
-// It may be preferable to adjust the RTC clock when it has drifted a certain amount.
-// Same with NTP.
+// 		It may be preferable to adjust the RTC clock when it has drifted a certain amount.
+// 		Same with NTP.
 //
-// It might be better to base the cycle time directly on the RTC and eliminate
-// the notion of separately syncing to it.
+// 		It might be better to base the cycle time directly on the RTC and eliminate
+// 		the notion of separately syncing to it.
 //
-// It still might be possible (and/or better) to have a single PID controller
-// that directly corrects for the erorr.  However, that complicates the setup
-// process that currently allows me to test power, and angles, separately
-// from the 2nd 'time' PID controller.
+// 		It still might be possible (and/or better) to have a single PID controller
+// 		that directly corrects for the erorr.  However, that complicates the setup
+// 		process that currently allows me to test power, and angles, separately
+// 		from the 2nd 'time' PID controller.
 
 
 //-----------------------------------------------------
