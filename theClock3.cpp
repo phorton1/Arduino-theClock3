@@ -1,4 +1,13 @@
 // theClock3.cpp
+//
+// grrrrr - getting unresolved references to time variables in theClock3.cpp
+// when I removed uneeded WebSockets.h from myIOTDevice.h.
+// But they get fixed when I needlessly include WiFi.h in myIOTTypes.h.
+// The only thing I could find was a slight difference in the order of includes
+// in the two compile statements, with WiFi coming before Preferences.h when it
+// worked, and after when it failed.  So I moved Preferences.h from myIOTValue.h
+// to the cpp file, but alas, it did not 'fix' this weird problem.
+// And it doesn't seem to help to includes that stuff first in this compile.
 
 #include "theClock3.h"
 #include <myIOTLog.h>
@@ -6,8 +15,6 @@
 #include <AS5600.h>
 #include <Wire.h>
 
-
-// What happens if the Wifi goes offline during normal operation?
 
 // TODO:
 //
@@ -310,7 +317,7 @@ int32_t timeDeltaMS(int32_t secs1, int32_t ms1, int32_t secs2, int32_t ms2)
 	return diff_ms;
 }
 
-int32_t timeAddMS(int32_t *secs, int32_t *ms, int32_t ms_delta)
+void timeAddMS(int32_t *secs, int32_t *ms, int32_t ms_delta)
 {
 	*ms += ms_delta;
 	while (*ms < 0)
@@ -475,7 +482,6 @@ void theClock::initMotor()
 
 	time_zero = 0;
 	time_zero_ms = 0;
-
 }
 
 
@@ -862,7 +868,8 @@ float theClock::getPidAngle()  // APID parameters
 	// this_i == total ms error (including sync_millis)
 	// this_d == delta ms error this cycle
 
-	float this_p = cur_cycle - 1000;
+	float this_p = cur_cycle;
+	this_p -= 1000.0;
 	float this_i = total_millis_error + sync_millis;
 	float this_d = prev_millis_error - this_p;;
 	prev_millis_error = this_p;
@@ -875,6 +882,16 @@ float theClock::getPidAngle()  // APID parameters
 	float new_angle = pid_angle * factor;
 	if (new_angle > _angle_max) new_angle = _angle_max;
 	if (new_angle  < _angle_min) new_angle = _angle_min;
+
+	// LOGD("getPidAngle pid(%0.3f) cur(%d) P(%0.3f) I(%0.3f) D(%0.3f) factor(%0.3f) new(%0.3f)",
+	// 	pid_angle,
+	// 	cur_cycle,
+	// 	this_p,
+	// 	this_i,
+	// 	this_d,
+	// 	factor,
+	// 	new_angle);
+
 	pid_angle = new_angle;
 
 	if (pid_angle < stat_min_target)

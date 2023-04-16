@@ -28,7 +28,7 @@ static byte packetBuffer[ NTP_PACKET_SIZE];
 
 static WiFiUDP  udp;
 IPAddress timeServer;
-static bool udp_started = 0;
+static int udp_started = 0;
 
 
 
