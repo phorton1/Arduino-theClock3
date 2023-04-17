@@ -222,12 +222,12 @@ void localTimeToPixels(uint32_t *pix)
 	uint32_t fill_pixel = 0;
 	uint32_t time_pixel = 0;
 
-	if (hour >= 9)
+	if (hour >= 8)
 	{
 		fill_pixel = MY_LED_GREEN;
 		time_pixel = MY_LED_BLUE;
 	}
-	else if (hour >= 5)
+	else if (hour >= 4)
 	{
 		fill_pixel = MY_LED_RED;
 		time_pixel = MY_LED_GREEN;
@@ -291,49 +291,58 @@ void theClock::doPixels()
 		}
 
 
-		if (_pixel_mode == PIXEL_MODE_TIME &&
-			m_clock_state >= CLOCK_STATE_STARTED)
+		if (_pixel_mode == PIXEL_MODE_TIME)
 		{
-			// handle the error pixel
-
-			uint32_t err_pixel =
-				getNumRestarts() ? MY_LED_YELLOW :
-				m_total_millis_error + m_sync_millis > 5000 	? MY_LED_BLUE  :
-				m_total_millis_error + m_sync_millis < -5000 	? MY_LED_RED   :
-				m_total_millis_error + m_sync_millis > 1000 	? MY_LED_CYAN  :
-				m_total_millis_error + m_sync_millis < -1000 	? MY_LED_PURPLE :
-					getBool(ID_DEVICE_WIFI) &&
-					getString(ID_STA_SSID) != "" &&
-					!(getConnectStatus() & IOT_CONNECT_STA) ? MY_LED_GREEN :
-				MY_LED_BLACK;
-
-			if (time_error_pixel != err_pixel)
+			if (m_clock_state >= CLOCK_STATE_STARTED)
 			{
-				pixel_flash_on = 0;
-				pixel_flash_time = 0;
-				LOGI("TIME_ERROR_PIXEL changing from 0x%06x to 0x%06x",time_error_pixel,err_pixel);
-				time_error_pixel = err_pixel;
-			}
+				// handle the error pixel
 
-			if (time_error_pixel != MY_LED_BLACK)
-			{
-				if (now - pixel_flash_time > 500)
+				uint32_t err_pixel =
+					getNumRestarts() ? MY_LED_YELLOW :
+					m_total_millis_error + m_sync_millis > 5000 	? MY_LED_BLUE  :
+					m_total_millis_error + m_sync_millis < -5000 	? MY_LED_RED   :
+					m_total_millis_error + m_sync_millis > 1000 	? MY_LED_CYAN  :
+					m_total_millis_error + m_sync_millis < -1000 	? MY_LED_PURPLE :
+						getBool(ID_DEVICE_WIFI) &&
+						getString(ID_STA_SSID) != "" &&
+						!(getConnectStatus() & IOT_CONNECT_STA) ? MY_LED_GREEN :
+					MY_LED_BLACK;
+
+				if (time_error_pixel != err_pixel)
 				{
-					pixel_flash_time = now;
-					pixel_flash_on = !pixel_flash_on;
+					pixel_flash_on = 0;
+					pixel_flash_time = 0;
+					LOGI("TIME_ERROR_PIXEL changing from 0x%06x to 0x%06x",time_error_pixel,err_pixel);
+					time_error_pixel = err_pixel;
 				}
 
-				new_pixels[PIXEL_MAIN] = pixel_flash_on ? time_error_pixel : MY_LED_BLACK;
+				if (time_error_pixel != MY_LED_BLACK)
+				{
+					if (now - pixel_flash_time > 500)
+					{
+						pixel_flash_time = now;
+						pixel_flash_on = !pixel_flash_on;
+					}
+
+					new_pixels[PIXEL_MAIN] = pixel_flash_on ? time_error_pixel : MY_LED_BLACK;
+				}
+
+
+				else
+					new_pixels[PIXEL_MAIN] = MY_LED_BLACK;
+
+
+				// handle the four time pixels via
+				// simple call to localTime()
+
+				localTimeToPixels(new_pixels);
+
 			}
-			else
-				new_pixels[PIXEL_MAIN] = MY_LED_BLACK;
 
+			// show start sync even in PIXEL_TIME mode
 
-			// handle the four time pixels via
-			// simple call to localTime()
-
-			localTimeToPixels(new_pixels);
-
+			else if (m_start_sync && !(m_clock_state >= CLOCK_STATE_STARTED))
+				new_pixels[PIXEL_MAIN] = MY_LED_WHITE;
 		}
 
 		else if (_pixel_mode == PIXEL_MODE_DIAG)
