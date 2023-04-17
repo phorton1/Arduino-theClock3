@@ -55,6 +55,13 @@ static  int32_t stat_total_ntp_changes = 0;
 static uint32_t stat_total_ntp_changes_abs = 0;
 
 
+uint32_t getNumRestarts()
+{
+	return stat_num_restarts;
+}
+
+
+
 //===================================================
 // used in method
 //===================================================

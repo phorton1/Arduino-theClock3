@@ -32,6 +32,8 @@
 
 static uint32_t button_start[2];
 
+
+
 //--------------------------------------
 // doButtons
 //--------------------------------------
@@ -170,9 +172,96 @@ void theClock::doButtons()
 //--------------------------------------
 // doPxiels()
 //--------------------------------------
+// EXPLANATION OF PIXEL_TIME_MODE:
+//
+// The 0th pixel should be black unless there is a problem and
+// should flash if lit to differentiate it from the other pixels.
+//
+//       yellow       = restarted
+//       red/blue     = (serious) more than 5000 ms off total time
+//       cyan/purple  = (not serious) more than 1000 ms off total time
+//       green        = lost station connection (if STA_SSID specified and not IOT_CONNECT_STA)
+//
+//  flashing yellow menas the time is not reliable and the clock must be manually restarted
+//  note that we have to add sync_millis to total_millis_error in the if statement.
+//
+//  The remaining four pixels are set as follows:
+//
+//  0,12 	= BBBB
+//
+//  12:30   = MBBB			4:30    = YRRR			8:30    = CGGG
+//
+//  1 		= RBBB      	5 		= GRRR          9		= BGGG
+//  1:30    = RMBB      	5:30    = GYRR          9:30    = BCGG
+//  2 		= RRBB      	6 		= GGRR          10      = BBGG
+//  2:30    = RRMB      	6:30    = GGYR          10:30   = BBCG
+//  3 		= RRRB      	7 		= GGGY          11		= BBBG
+//  3:30    = RRRM      	7:30    = GGGG          11:30   = BBBC
+//  4 		= RRRR      	8       = GGGG          12      = BBBB
+
+void localTimeToPixels(uint32_t *pix)
+{
+	// get hour and minute
+	// remember that pixels are backwards and we are using the
+	// first four in reverse order, sheesh, so time_pixel0 is
+	// actual pixel #3, hence we subtract i from PIXEL_STATE
+
+	time_t t = time(NULL);
+    struct tm *ts = localtime(&t);	// &m_time_zero);
+	int hour = ts->tm_hour % 12;
+	int num = hour % 4;
+		// number of full pixels to be set with the time pixel
+		// the next one is the scale pixel
+	int mins = ts->tm_min;
+
+	float pct = mins;
+	pct /= 60;
+
+	// LOGD("timeZeroToPixels called hour=%d mins=%d num=%d pct=%0.3f",hour,mins,num,pct);
+
+	uint32_t fill_pixel = 0;
+	uint32_t time_pixel = 0;
+
+	if (hour >= 9)
+	{
+		fill_pixel = MY_LED_GREEN;
+		time_pixel = MY_LED_BLUE;
+	}
+	else if (hour >= 5)
+	{
+		fill_pixel = MY_LED_RED;
+		time_pixel = MY_LED_GREEN;
+	}
+	else
+	{
+		fill_pixel = MY_LED_BLUE;
+		time_pixel = MY_LED_RED;
+	}
+
+	// fill all pixels
+
+	for (int i=0; i<4; i++)
+		pix[PIXEL_STATE-i] = fill_pixel;
+
+	// set full hour pixels
+
+	for (int i=0; i<num; i++)
+		pix[PIXEL_STATE-i] = time_pixel;
+
+	// do the scale pixel
+
+	pix[PIXEL_STATE - num] = scalePixel(pct,fill_pixel,time_pixel);
+}
+
+
+
 
 void theClock::doPixels()
 {
+	static uint32_t pixel_flash_time = 0;
+	static bool 	pixel_flash_on = 0;
+	static uint32_t time_error_pixel = 0;
+
 	// In normal operation, pixels only change on each beat,
 	// but system pixels can change at any time.
 
@@ -202,8 +291,57 @@ void theClock::doPixels()
 		}
 
 
-		if (_pixel_mode == PIXEL_MODE_DIAG)
+		if (_pixel_mode == PIXEL_MODE_TIME &&
+			m_clock_state >= CLOCK_STATE_STARTED)
 		{
+			// handle the error pixel
+
+			uint32_t err_pixel =
+				getNumRestarts() ? MY_LED_YELLOW :
+				m_total_millis_error + m_sync_millis > 5000 	? MY_LED_BLUE  :
+				m_total_millis_error + m_sync_millis < -5000 	? MY_LED_RED   :
+				m_total_millis_error + m_sync_millis > 1000 	? MY_LED_CYAN  :
+				m_total_millis_error + m_sync_millis < -1000 	? MY_LED_PURPLE :
+					getBool(ID_DEVICE_WIFI) &&
+					getString(ID_STA_SSID) != "" &&
+					!(getConnectStatus() & IOT_CONNECT_STA) ? MY_LED_GREEN :
+				MY_LED_BLACK;
+
+			if (time_error_pixel != err_pixel)
+			{
+				pixel_flash_on = 0;
+				pixel_flash_time = 0;
+				LOGI("TIME_ERROR_PIXEL changing from 0x%06x to 0x%06x",time_error_pixel,err_pixel);
+				time_error_pixel = err_pixel;
+			}
+
+			if (time_error_pixel != MY_LED_BLACK)
+			{
+				if (now - pixel_flash_time > 500)
+				{
+					pixel_flash_time = now;
+					pixel_flash_on = !pixel_flash_on;
+				}
+
+				new_pixels[PIXEL_MAIN] = pixel_flash_on ? time_error_pixel : MY_LED_BLACK;
+			}
+			else
+				new_pixels[PIXEL_MAIN] = MY_LED_BLACK;
+
+
+			// handle the four time pixels via
+			// simple call to localTime()
+
+			localTimeToPixels(new_pixels);
+
+		}
+
+		else if (_pixel_mode == PIXEL_MODE_DIAG)
+		{
+			pixel_flash_on = 0;
+			pixel_flash_time = 0;
+			time_error_pixel = 0;
+
 			iotConnectStatus_t status = getConnectStatus();
 			bool wifi_on = getBool(ID_DEVICE_WIFI);
 			new_pixels[PIXEL_MAIN] =
@@ -229,7 +367,7 @@ void theClock::doPixels()
 				new_pixels[PIXEL_ACCURACY] =
 					m_total_millis_error >=  _min_max_ms 	? MY_LED_BLUE      :
 					m_total_millis_error <= -_min_max_ms 	? MY_LED_RED   :
-					scalePixel(m_total_millis_error,_min_max_ms,
+					scalePixel3(m_total_millis_error,_min_max_ms,
 						MY_LED_RED,
 						MY_LED_GREEN,
 						MY_LED_BLUE);
@@ -240,7 +378,7 @@ void theClock::doPixels()
 				else if (dif <= -_min_max_ms)
 					new_pixels[PIXEL_CYCLE] = MY_LED_RED;
 				else
-					new_pixels[PIXEL_CYCLE] = scalePixel(dif,_min_max_ms,
+					new_pixels[PIXEL_CYCLE] = scalePixel3(dif,_min_max_ms,
 						MY_LED_RED,
 						MY_LED_GREEN,
 						MY_LED_BLUE);
@@ -248,7 +386,7 @@ void theClock::doPixels()
 				if (!early_button)
 					new_pixels[PIXEL_SYNC] =
 						!m_sync_sign ? MY_LED_BLACK :
-						scalePixel(m_sync_millis,_min_max_ms,
+						scalePixel3(m_sync_millis,_min_max_ms,
 							MY_LED_RED,
 							MY_LED_GREEN,
 							MY_LED_BLUE);
