@@ -526,6 +526,14 @@ void theClock::onSyncRTC()
 		int32_t delta_ms = 0;
 		bool    failed = 0;
 
+		if (!the_clock->getBool(ID_DEVICE_WIFI) ||
+			!(the_clock->getConnectStatus() & IOT_CONNECT_STA))
+		{
+			LOGE("Attempt to sync to NTP when WIFI=%d and connect_status=0x%02x",
+				 the_clock->getBool(ID_DEVICE_WIFI),
+				 the_clock->getConnectStatus());
+
+		}
 		if (!getNtpTime(&ntp_secs,&ntp_ms))
 		{
 			failed = 1;

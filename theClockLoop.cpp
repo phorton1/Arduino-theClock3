@@ -402,8 +402,10 @@ void theClock::loop()	// override
 
 		#if CLOCK_WITH_NTP
 			else if (_ntp_interval &&
-					m_clock_state == CLOCK_STATE_RUNNING &&
-					m_num_beats - m_last_ntp >= _ntp_interval)
+					 getBool(ID_DEVICE_WIFI) &&
+					 getConnectStatus() & IOT_CONNECT_STA &&
+					 m_clock_state == CLOCK_STATE_RUNNING &&
+					 m_num_beats - m_last_ntp >= _ntp_interval)
 			{
 				m_last_ntp = m_num_beats;
 				onSyncNTP();
