@@ -189,15 +189,15 @@ void theClock::doButtons()
 //
 //  0,12 	= BBBB
 //
-//  12:30   = MBBB			4:30    = YRRR			8:30    = CGGG
+//  12:30   = CBBB			4:30    = YGGG			8:30    = MRRR
 //
-//  1 		= RBBB      	5 		= GRRR          9		= BGGG
-//  1:30    = RMBB      	5:30    = GYRR          9:30    = BCGG
-//  2 		= RRBB      	6 		= GGRR          10      = BBGG
-//  2:30    = RRMB      	6:30    = GGYR          10:30   = BBCG
-//  3 		= RRRB      	7 		= GGGY          11		= BBBG
-//  3:30    = RRRM      	7:30    = GGGG          11:30   = BBBC
-//  4 		= RRRR      	8       = GGGG          12      = BBBB
+//  1 		= GBBB      	5 		= RGGG          9		= BRRR
+//  1:30    = GMBB      	5:30    = RYGG          9:30    = BMRR
+//  2 		= GGBB      	6 		= RRGG          10      = BBRR
+//  2:30    = GGCB      	6:30    = RRYG          10:30   = BBMR
+//  3 		= GGGB      	7 		= RRRG          11		= BBBR
+//  3:30    = GGGC      	7:30    = RRRY          11:30   = BBBM
+//  4 		= GGGG      	8       = RRRR          12      = BBBB
 
 void localTimeToPixels(uint32_t *pix)
 {
@@ -225,17 +225,17 @@ void localTimeToPixels(uint32_t *pix)
 	if (hour >= 8)
 	{
 		fill_pixel = MY_LED_GREEN;
-		time_pixel = MY_LED_BLUE;
+		time_pixel = MY_LED_RED;
 	}
 	else if (hour >= 4)
 	{
-		fill_pixel = MY_LED_RED;
+		fill_pixel = MY_LED_BLUE;
 		time_pixel = MY_LED_GREEN;
 	}
 	else
 	{
-		fill_pixel = MY_LED_BLUE;
-		time_pixel = MY_LED_RED;
+		fill_pixel = MY_LED_RED;
+		time_pixel = MY_LED_BLUE;
 	}
 
 	// fill all pixels
