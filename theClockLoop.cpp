@@ -224,18 +224,18 @@ void localTimeToPixels(uint32_t *pix)
 
 	if (hour >= 8)
 	{
-		fill_pixel = MY_LED_GREEN;
-		time_pixel = MY_LED_RED;
+		fill_pixel = MY_LED_RED;
+		time_pixel = MY_LED_BLUE;
 	}
 	else if (hour >= 4)
 	{
-		fill_pixel = MY_LED_BLUE;
-		time_pixel = MY_LED_GREEN;
+		fill_pixel = MY_LED_GREEN;
+		time_pixel = MY_LED_RED;
 	}
 	else
 	{
-		fill_pixel = MY_LED_RED;
-		time_pixel = MY_LED_BLUE;
+		fill_pixel = MY_LED_BLUE;
+		time_pixel = MY_LED_GREEN;
 	}
 
 	// fill all pixels
@@ -335,7 +335,8 @@ void theClock::doPixels()
 				// handle the four time pixels via
 				// simple call to localTime()
 
-				localTimeToPixels(new_pixels);
+				if (!early_button)
+					localTimeToPixels(new_pixels);
 
 			}
 
