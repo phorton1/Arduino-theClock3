@@ -166,8 +166,33 @@ void theClock::setup()	// override
 	delay(500);
 
 	pinMode(PIN_BUTTON1,INPUT_PULLUP);
+#ifndef CLOCK1_WV3SENSOR
 	pinMode(PIN_BUTTON2,INPUT_PULLUP);
+#endif
 
+#ifdef CLOCK1_WV3SENSOR
+	#define PIN_ENA		27
+	#define PIN_INA1	25
+	#define PIN_INA2	26
+	#define PIN_ENB		4
+	#define PIN_INB1	17
+	#define PIN_INB2	5
+
+	ledcSetup(0, PWM_FREQUENCY, PWM_RESOLUTION);
+	ledcSetup(1, PWM_FREQUENCY, PWM_RESOLUTION);
+	ledcAttachPin(PIN_ENA, 0);
+	ledcAttachPin(PIN_ENB, 0);
+	ledcWrite(0,0);
+	ledcWrite(1,0);
+	pinMode(PIN_INA1,OUTPUT);
+	pinMode(PIN_INA2,OUTPUT);
+	pinMode(PIN_INB1,OUTPUT);
+	pinMode(PIN_INB2,OUTPUT);
+	digitalWrite(PIN_INA1,0);
+	digitalWrite(PIN_INA2,0);
+	digitalWrite(PIN_INB1,0);
+	digitalWrite(PIN_INB2,0);
+#else
 	ledcSetup(0, PWM_FREQUENCY, PWM_RESOLUTION);
 	ledcAttachPin(PIN_EN, 0);
 	ledcWrite(0,0);
@@ -175,6 +200,7 @@ void theClock::setup()	// override
 	pinMode(PIN_IN2,OUTPUT);
 	digitalWrite(PIN_IN1,0);
 	digitalWrite(PIN_IN2,0);
+#endif
 
 	setPixel(PIXEL_MAIN,MY_LED_ORANGE);
 	showPixels();
@@ -184,7 +210,7 @@ void theClock::setup()	// override
 	// START THE AS5600 before myIOTDevice::setup()
 	//--------------------------------------------------
 	// cuz it's better done when WIFI and all that stuff
-	// has not yet been started ...
+	// has not yet been started ..
 
 	startAS5600();
 

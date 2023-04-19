@@ -2,37 +2,65 @@
 
 #include <myIOTDevice.h>
 
+#define CLOCK1_WV3SENSOR
+	// Shoe-horned old v1.1 clock into v3 architecture by adding AS5600 sensor to it.
+	// I didn't want the clock to just die, when perhaps with 1 day work, I could bring
+	// it up to reasonable performance with V3 code and behavior.
+	//
+	// That circuit board had separate ENA, ENB, INA, and INB pins, one button, and
+	// was retrofitted to have 5 leds.  Dunno why, but whereas clock 3 runs on virtually
+	// any (the laptop) power supply, v1.3 REQUIRES a 3A power supply.  Because it only
+	// has one button, you cannot change LED_BRIGHTNESS, PIXEL_MODE, or Set the Zero Angle
+	// via the button and need to use the WebUI to do those things.
 
 //---------------------------------
 // pin assignments
 //---------------------------------
 // L293D motor driver
 
-#define PIN_IN1		27
-#define PIN_IN2		25
-#define PIN_EN		26
+#ifdef CLOCK1_WV3SENSOR
+	#define PIN_ENA		27
+	#define PIN_INA1	25
+	#define PIN_INA2	26
+	#define PIN_ENB		4
+	#define PIN_INB1	17
+	#define PIN_INB2	5
+#else
+	#define PIN_IN1		27
+	#define PIN_IN2		25
+	#define PIN_EN		26
+#endif
 
-// Rotary Sensor(s) uses Wire Defaults
-//
-// #define PIN_SDA	21
-// #define PIN_SCL	22
 
+#ifdef CLOCK1_WV3SENSOR
+	#define PIN_SDA		13
+	#define PIN_SCL		32
+#else
+	// v3 Rotary Sensor(s) uses Wire Defaults
+	// #define PIN_SDA	21
+	// #define PIN_SCL	22
+#endif
 
 // Optical Mouse Sensor (unused at this time)
-
-#define PIN_SCK		32
-#define PIN_SDIO	33
+//
+// #define PIN_SCK		32
+// #define PIN_SDIO	33
 
 // Leds and Buttons
 
-#if 1
-	#define PIN_BUTTON1 16	// RX2
-	#define PIN_BUTTON2 17	// TX2
-	#define PIN_LEDS	23	// overuse MOSI
-#else	// reminder of previous built unused pcb
-	#define PIN_BUTTON1 15
-	#define PIN_BUTTON2 16	// RX2
-	#define PIN_LEDS	17	// TX2
+#ifdef CLOCK1_WV3SENSOR
+		#define PIN_BUTTON1 18
+		#define PIN_LEDS	22
+#else
+	#if 1
+		#define PIN_BUTTON1 16	// RX2
+		#define PIN_BUTTON2 17	// TX2
+		#define PIN_LEDS	23	// overuse MOSI
+	#else	// reminder of previous built unused pcb
+		#define PIN_BUTTON1 15
+		#define PIN_BUTTON2 16	// RX2
+		#define PIN_LEDS	17	// TX2
+	#endif
 #endif
 
 // Pixels

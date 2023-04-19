@@ -14,8 +14,13 @@
 // theClock definition
 //------------------------
 
-#define THE_CLOCK             "theClock3"
-#define THE_CLOCK_VERSION     "3.1"
+#ifdef CLOCK1_WV3SENSOR
+	#define THE_CLOCK             "theClock1.3"
+	#define THE_CLOCK_VERSION     "1.3"
+#else
+	#define THE_CLOCK             "theClock3"
+	#define THE_CLOCK_VERSION     "3.1"
+#endif
 
 #define OVER_MAX_ANGLE  		15			// over design maximum degrees
 
@@ -28,9 +33,9 @@
 #define DEFAULT_ZERO_ANGLE		0			// 0 means it's not yet set
 #define DEFAULT_ZERO_ANGLE_F	0.00		// 0 means it's not yet set
 #define DEFAULT_DEAD_ZONE		0.7			// dead degrees about zero
-#define DEFAULT_ANGLE_START 	9.7		// starting value for clock_pid control
-#define DEFAULT_ANGLE_MIN 		9.0
-#define DEFAULT_ANGLE_MAX 		11.0
+#define DEFAULT_ANGLE_START 	9.7			// v1.3=10.0 - starting value for clock_pid control
+#define DEFAULT_ANGLE_MIN 		9.0			// v1.3=10.2
+#define DEFAULT_ANGLE_MAX 		11.0		// v1.3=11.0
 
 #define DEFAULT_POWER_MIN		140
 #define DEFAULT_POWER_PID		210
@@ -51,7 +56,7 @@
 #define DEFAULT_RUNNING_ANGLE   4.0
 #define DEFAULT_RUNNING_ERROR   2.0
 
-#define DEFAULT_MIN_MAX_MS		50
+#define DEFAULT_MIN_MAX_MS		50		// v1.3=100 (more leaway for LEDS)
 #define DEFAULT_RESTART_MILLIS  5000
 #define DEFAULT_START_DELAY     900
 

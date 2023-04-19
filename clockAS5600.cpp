@@ -38,6 +38,12 @@ float angleOf(int units)
 
 void startAS5600()
 {
+	#ifdef CLOCK1_WV3SENSOR
+		#define OLD_HALL2	35
+		pinMode(OLD_HALL2,INPUT);
+		Wire.setPins(PIN_SDA, PIN_SCL);
+	#endif
+
 	bool connected = false;
 	while (!connected)
 	{

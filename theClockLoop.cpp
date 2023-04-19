@@ -25,6 +25,8 @@
 #include "clockPixels.h"
 #include <myIOTLog.h>
 
+
+
 #define MEDIUM_PRESS   3000
 #define LONG_PRESS     8000
 #define SECOND_PRESS   2000
@@ -47,10 +49,18 @@ void theClock::doButtons()
 	if (now - button_check > 33)	// 30 times per second
 	{
 		button_check = now;
-		for (int button=0; button<2; button++)
+		#ifdef CLOCK1_WV3SENSOR
+			for (int button=0; button<1; button++)
+		#else
+			for (int button=0; button<2; button++)
+		#endif
 		{
 			uint32_t start = button_start[button];
-			bool val = !digitalRead(button?PIN_BUTTON2:PIN_BUTTON1);
+			#ifdef CLOCK1_WV3SENSOR
+				bool val = !digitalRead(PIN_BUTTON1);
+			#else
+				bool val = !digitalRead(button?PIN_BUTTON2:PIN_BUTTON1);
+			#endif
 
 			if (val && !start)	// initial press
 			{
