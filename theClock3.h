@@ -2,7 +2,7 @@
 
 #include <myIOTDevice.h>
 
-#define CLOCK1_WV3SENSOR
+// #define CLOCK1_WV3SENSOR
 	// Shoe-horned old v1.1 clock into v3 architecture by adding AS5600 sensor to it.
 	// I didn't want the clock to just die, when perhaps with 1 day work, I could bring
 	// it up to reasonable performance with V3 code and behavior.

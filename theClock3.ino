@@ -46,7 +46,7 @@
 #define DEFAULT_DUR_START		250
 
 #define DEFAULT_PID_P			12.0
-#define DEFAULT_PID_I			0.50
+#define DEFAULT_PID_I			0.50		// v1.3=1.0
 #define DEFAULT_PID_D			-9.0
 
 #define DEFAULT_APID_P			1.0
@@ -56,7 +56,7 @@
 #define DEFAULT_RUNNING_ANGLE   4.0
 #define DEFAULT_RUNNING_ERROR   2.0
 
-#define DEFAULT_MIN_MAX_MS		50		// v1.3=100 (more leaway for LEDS)
+#define DEFAULT_MIN_MAX_MS		50		// v1.3=300 (more leaway for LEDS)
 #define DEFAULT_RESTART_MILLIS  5000
 #define DEFAULT_START_DELAY     900
 
