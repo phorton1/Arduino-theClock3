@@ -64,6 +64,8 @@
 #define DEFAULT_SYNC_INTERVAL	3600L	// one hour
 #define DEFAULT_STAT_INTERVAL	30
 
+#define DEFAULT_CYCLE_RANGE 	50		// v1.3 100
+#define DEFAULT_ERROR_RANGE 	50		// v1.3 300
 
 
 // what shows up on the "dashboard" UI tab
@@ -121,6 +123,8 @@ static valueIdType device_items[] = {
 	ID_RUNNING_ERROR,
 	ID_MIN_MAX_MS,
 	ID_RESTART_MILLIS,
+	ID_DIAG_CYCLE_RANGE,
+	ID_DIAG_ERROR_RANGE,
 	ID_STAT_INTERVAL,
 	ID_SYNC_INTERVAL,
 #if CLOCK_WITH_NTP
@@ -211,6 +215,9 @@ const valDescriptor theClock::m_clock_values[] =
 	{ ID_RESTART_MILLIS,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_restart_millis,NULL, { .int_range = { DEFAULT_RESTART_MILLIS,   	0,  60000}} },
 	{ ID_START_DELAY,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,  	   (void *) &_start_delay,	 NULL, { .int_range = { DEFAULT_START_DELAY,   		0,  5000}} },
 
+	{ ID_DIAG_CYCLE_RANGE,  VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,   	   (void *) &_cycle_range,	 NULL, { .int_range = { DEFAULT_CYCLE_RANGE,   	    10, 1000}} },
+	{ ID_DIAG_ERROR_RANGE,  VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,   	   (void *) &_error_range,	 NULL, { .int_range = { DEFAULT_ERROR_RANGE,   	    10, 5000}} },
+
 	{ ID_CLEAR_STATS,       VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    (void *) clearStats },
 
 	{ ID_STAT_MSG0,      	VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_msg0, },
@@ -276,6 +283,9 @@ float  	theClock::_running_error;
 int	    theClock::_min_max_ms;
 uint32_t theClock::_restart_millis;
 uint32_t theClock::_start_delay;
+
+int	    theClock::_cycle_range;
+int	    theClock::_error_range;
 
 String 	 theClock::_stat_msg0;
 String 	 theClock::_stat_msg1;

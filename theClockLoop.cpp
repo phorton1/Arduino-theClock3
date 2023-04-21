@@ -188,8 +188,8 @@ void theClock::doButtons()
 // should flash if lit to differentiate it from the other pixels.
 //
 //       yellow       = restarted
-//       red/blue     = (serious) more than 5000 ms off total time
-//       cyan/purple  = (not serious) more than 1000 ms off total time
+//       red/blue     = (serious) more than 5 * error_range ms off total time
+//       cyan/purple  = (not serious) more than error_range ms off total time
 //       green        = lost station connection (if STA_SSID specified and not IOT_CONNECT_STA)
 //
 //  flashing yellow menas the time is not reliable and the clock must be manually restarted
@@ -309,10 +309,10 @@ void theClock::doPixels()
 
 				uint32_t err_pixel =
 					getNumRestarts() ? MY_LED_YELLOW :
-					m_total_millis_error + m_sync_millis > 5000 	? MY_LED_BLUE  :
-					m_total_millis_error + m_sync_millis < -5000 	? MY_LED_RED   :
-					m_total_millis_error + m_sync_millis > 1000 	? MY_LED_CYAN  :
-					m_total_millis_error + m_sync_millis < -1000 	? MY_LED_PURPLE :
+					m_total_millis_error + m_sync_millis > 5 * _error_range 	? MY_LED_BLUE  :
+					m_total_millis_error + m_sync_millis < -5 * _error_range 	? MY_LED_RED   :
+					m_total_millis_error + m_sync_millis > _error_range 		? MY_LED_CYAN  :
+					m_total_millis_error + m_sync_millis < -_error_range 		? MY_LED_PURPLE :
 						getBool(ID_DEVICE_WIFI) &&
 						getString(ID_STA_SSID) != "" &&
 						!(getConnectStatus() & IOT_CONNECT_STA) ? MY_LED_GREEN :
@@ -385,20 +385,20 @@ void theClock::doPixels()
 			if (m_clock_state >= CLOCK_STATE_START)
 			{
 				new_pixels[PIXEL_ACCURACY] =
-					m_total_millis_error >=  _min_max_ms 	? MY_LED_BLUE      :
-					m_total_millis_error <= -_min_max_ms 	? MY_LED_RED   :
-					scalePixel3(m_total_millis_error,_min_max_ms,
+					m_total_millis_error >=  _error_range 	? MY_LED_BLUE      :
+					m_total_millis_error <= -_error_range 	? MY_LED_RED   :
+					scalePixel3(m_total_millis_error,_error_range,
 						MY_LED_RED,
 						MY_LED_GREEN,
 						MY_LED_BLUE);
 
 				int dif = m_cur_cycle - 1000;
-				if (dif >= _min_max_ms)
+				if (dif >= _cycle_range)
 					new_pixels[PIXEL_CYCLE] = MY_LED_BLUE;
-				else if (dif <= -_min_max_ms)
+				else if (dif <= -_cycle_range)
 					new_pixels[PIXEL_CYCLE] = MY_LED_RED;
 				else
-					new_pixels[PIXEL_CYCLE] = scalePixel3(dif,_min_max_ms,
+					new_pixels[PIXEL_CYCLE] = scalePixel3(dif,_cycle_range,
 						MY_LED_RED,
 						MY_LED_GREEN,
 						MY_LED_BLUE);
@@ -406,7 +406,7 @@ void theClock::doPixels()
 				if (!early_button)
 					new_pixels[PIXEL_SYNC] =
 						!m_sync_sign ? MY_LED_BLACK :
-						scalePixel3(m_sync_millis,_min_max_ms,
+						scalePixel3(m_sync_millis,_cycle_range,
 							MY_LED_RED,
 							MY_LED_GREEN,
 							MY_LED_BLUE);
