@@ -3,7 +3,7 @@
 #include <myIOTDevice.h>
 
 #define USEV1_PINS   	0
-#define USEV1_BEHAVIOR  0
+#define USEV1_BEHAVIOR  1
 	// Shoe-horned old v1.1 clock into v3 architecture by adding AS5600 sensor to it.
 	// I didn't want the clock to just die, when perhaps with 1 day work, I could bring
 	// it up to reasonable performance with V3 code and behavior.
