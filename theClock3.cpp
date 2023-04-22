@@ -166,11 +166,11 @@ void theClock::setup()	// override
 	delay(500);
 
 	pinMode(PIN_BUTTON1,INPUT_PULLUP);
-#ifndef CLOCK1_WV3SENSOR
+#if !USEV1_PINS
 	pinMode(PIN_BUTTON2,INPUT_PULLUP);
 #endif
 
-#ifdef CLOCK1_WV3SENSOR
+#if USEV1_PINS
 	#define PIN_ENA		27
 	#define PIN_INA1	25
 	#define PIN_INA2	26

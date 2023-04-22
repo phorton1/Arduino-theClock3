@@ -38,17 +38,17 @@ float angleOf(int units)
 
 void startAS5600()
 {
-	#ifdef CLOCK1_WV3SENSOR
+	#if USEV1_PINS
 		#define OLD_HALL2	35
 		pinMode(OLD_HALL2,INPUT);
 		Wire.setPins(PIN_SDA, PIN_SCL);
 	#endif
 
+	int count = 0;
 	bool connected = false;
-	while (!connected)
+	while (!connected && count++<5)
 	{
 		as5600.begin();  //  set direction pin.
-		as5600.setDirection(AS5600_CLOCK_WISE);  // default, just be explicit.
 		connected = as5600.isConnected();
 		if (!connected)
 		{
@@ -61,6 +61,18 @@ void startAS5600()
 			}
 		}
 	}
+
+	if (connected)
+	{
+		as5600.setDirection(AS5600_CLOCK_WISE);  // default, just be explicit.
+	}
+	else
+	{
+		setPixel(PIXEL_MAIN,MY_LED_RED);
+		showPixels();
+		delay(2500);
+	}
+
 	LOGU("AS5600 connected=%d",connected);
 }
 

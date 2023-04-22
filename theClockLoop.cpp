@@ -49,14 +49,14 @@ void theClock::doButtons()
 	if (now - button_check > 33)	// 30 times per second
 	{
 		button_check = now;
-		#ifdef CLOCK1_WV3SENSOR
+		#ifdef USEV1_PINS
 			for (int button=0; button<1; button++)
 		#else
 			for (int button=0; button<2; button++)
 		#endif
 		{
 			uint32_t start = button_start[button];
-			#ifdef CLOCK1_WV3SENSOR
+			#if USEV1_PINS
 				bool val = !digitalRead(PIN_BUTTON1);
 			#else
 				bool val = !digitalRead(button?PIN_BUTTON2:PIN_BUTTON1);

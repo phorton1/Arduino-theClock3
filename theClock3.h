@@ -2,23 +2,29 @@
 
 #include <myIOTDevice.h>
 
-// #define CLOCK1_WV3SENSOR
+#define USEV1_PINS   	0
+#define USEV1_BEHAVIOR  0
 	// Shoe-horned old v1.1 clock into v3 architecture by adding AS5600 sensor to it.
 	// I didn't want the clock to just die, when perhaps with 1 day work, I could bring
 	// it up to reasonable performance with V3 code and behavior.
 	//
-	// That circuit board had separate ENA, ENB, INA, and INB pins, one button, and
+	// USEV1_PINS = That circuit board had separate ENA, ENB, INA, and INB pins, one button, and
 	// was retrofitted to have 5 leds.  Dunno why, but whereas clock 3 runs on virtually
 	// any (the laptop) power supply, v1.3 REQUIRES a 3A power supply.  Because it only
 	// has one button, you cannot change LED_BRIGHTNESS, PIXEL_MODE, or Set the Zero Angle
 	// via the button and need to use the WebUI to do those things.
+	//
+	// USEV1_BEHAVIOR = A later LOLIN32 board uses the same pins as V3, but the slightly different
+	// V1 behavior - it only takes one of the swings for the "average angle" - and has a
+	// default name of theClock1.3
+
 
 //---------------------------------
 // pin assignments
 //---------------------------------
 // L293D motor driver
 
-#ifdef CLOCK1_WV3SENSOR
+#if USEV1_PINS
 	#define PIN_ENA		27
 	#define PIN_INA1	25
 	#define PIN_INA2	26
@@ -32,7 +38,7 @@
 #endif
 
 
-#ifdef CLOCK1_WV3SENSOR
+#if USEV1_PINS
 	#define PIN_SDA		13
 	#define PIN_SCL		32
 #else
@@ -48,7 +54,7 @@
 
 // Leds and Buttons
 
-#ifdef CLOCK1_WV3SENSOR
+#if USEV1_PINS
 		#define PIN_BUTTON1 18
 		#define PIN_LEDS	22
 #else
