@@ -3,11 +3,13 @@
 #include <myIOTDevice.h>
 
 
-#define WITH_VOLT_CHECK   1
+#define WITH_VOLT_CHECK   0
 	// Voltage check on GPIO34 ala the bilgeAlarm.
 	// Adds ID_VOLT_INTERVAL and ID_VOLT_XX parameters, which then tells how
 	// often to check the voltage, and whether to go into m_low_power_mode
 
+#define REVERSE_PIXELS  0
+	// Set to Zero for test LOLIN32 circuit
 
 #define USEV1_PINS   	0
 #define USEV1_BEHAVIOR  1
@@ -83,7 +85,6 @@
 
 // Pixels
 
-#define REVERSE_PIXELS  0
 
 #if REVERSE_PIXELS
 	#define PIXEL_MAIN		4
