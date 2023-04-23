@@ -173,6 +173,25 @@ void theClock::run()
 	// CYCLE
 	//-------------------------------------------------
 
+	// get the current RTC clock time, and
+	// if CLOCK_STATE_STATS show the realtime clock every second
+
+	struct timeval tv_now;
+	gettimeofday(&tv_now, NULL);
+	if (m_clock_state == CLOCK_STATE_STATS)
+	{
+		static int32_t last_seconds = 0;
+		if (last_seconds != tv_now.tv_sec)
+		{
+			last_seconds = tv_now.tv_sec;
+			uint32_t ms = tv_now.tv_usec / 1000L;
+			LOGU("tick  seconds=%d  ms=%d",tv_now.tv_sec,ms);
+
+		}
+	}
+
+	// get angle changes
+
 	int cur = 0;
 	int rslt = getAS5600Angle(_zero_angle,&cur,m_clock_state > CLOCK_STATE_STATS);
 	if (rslt == -1)
@@ -215,8 +234,8 @@ void theClock::run()
 				{
 					// best guess of the actual RTC time at zero crossing
 
-					struct timeval tv_now;
-					gettimeofday(&tv_now, NULL);
+					// struct timeval tv_now;
+					// gettimeofday(&tv_now, NULL);
 					m_time_zero = tv_now.tv_sec;
                     m_time_zero_ms = tv_now.tv_usec / 1000L;
 

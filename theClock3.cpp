@@ -144,11 +144,11 @@ void timeAddMS(int32_t *secs, int32_t *ms, int32_t ms_delta)
 
 #if WITH_VOLT_CHECK
 	void theClock::checkVoltage()
-		// With 47K resistors ~ 0.5, ao it should be good to 6.6V or so
+		// With equal resistors ~ 0.5, ao it should be good to 6.6V or so
 		// 0..4095 = 0-6.6V
 		// we round to two places and only update when the value changes
 	{
-		#define NUM_VOLT_SAMPLES 10
+		#define NUM_VOLT_SAMPLES 4
 			// alogorithm skips 1st sample
 
 		static float last_volts;
@@ -163,9 +163,9 @@ void timeAddMS(int32_t *secs, int32_t *ms, int32_t ms_delta)
 		float pct = raw / 4096.0;
 		float scaled = pct * 6.6;
 		float full = scaled * _volt_calib;
-		float volts = (full * 10.0) + 0.5;
+		float volts = (full * 100.0) + 0.5;
 		volts = floor(volts);
-		volts /= 10.0;
+		volts /= 100.0;
 
 		LOGD("Voltage last(%0.3f) val(%d) raw(%0.3f) pct=(%0.3f) scaled(%0.3f) full(%0.3f)  volts=%0.3f",last_volts,val,raw,pct,scaled,full,volts);
 
@@ -193,7 +193,11 @@ void theClock::setup()	// override
 	clearPixels();
 	setPixelsBrightness(64);
 
-	for (int i=NUM_PIXELS-1; i>=0; i--)
+	#if REVERSE_PIXELS
+		for (int i=NUM_PIXELS-1; i>=0; i--)
+	#else
+		for (int i=0; i<NUM_PIXELS; i++)
+	#endif
 	{
 		setPixel(i,MY_LED_CYAN);
 		showPixels();

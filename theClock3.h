@@ -82,11 +82,21 @@
 
 // Pixels
 
-#define PIXEL_MAIN		4
-#define PIXEL_STATE     3
-#define PIXEL_ACCURACY  2
-#define PIXEL_CYCLE     1
-#define PIXEL_SYNC      0
+#define REVERSE_PIXELS  0
+
+#if REVERSE_PIXELS
+	#define PIXEL_MAIN		4
+	#define PIXEL_STATE     3
+	#define PIXEL_ACCURACY  2
+	#define PIXEL_CYCLE     1
+	#define PIXEL_SYNC      0
+#else
+	#define PIXEL_MAIN		0
+	#define PIXEL_STATE     1
+	#define PIXEL_ACCURACY  2
+	#define PIXEL_CYCLE     3
+	#define PIXEL_SYNC      4
+#endif
 
 #define NUM_PIXELS		5
 

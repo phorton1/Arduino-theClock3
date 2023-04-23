@@ -251,16 +251,29 @@ void localTimeToPixels(uint32_t *pix)
 	// fill all pixels
 
 	for (int i=0; i<4; i++)
+	#if REVERSE_PIXELS
 		pix[PIXEL_STATE-i] = fill_pixel;
+	#else
+		pix[i + 1] = fill_pixel;
+	#endif
 
 	// set full hour pixels
 
 	for (int i=0; i<num; i++)
+	#if REVERSE_PIXELS
 		pix[PIXEL_STATE-i] = time_pixel;
+	#else
+		pix[i + 1] = fill_pixel;
+	#endif
 
 	// do the scale pixel
 
-	pix[PIXEL_STATE - num] = scalePixel(pct,fill_pixel,time_pixel);
+	#if REVERSE_PIXELS
+		pix[PIXEL_STATE - num]
+	#else
+		pix[num + 1]
+	#endif
+		= scalePixel(pct,fill_pixel,time_pixel);
 }
 
 
@@ -459,24 +472,6 @@ void theClock::loop()	// override
 {
 	myIOTDevice::loop();
 
-	// show the realtime clock
-
-	struct timeval tv_now;
-	gettimeofday(&tv_now, NULL);
-	uint32_t now_seconds = tv_now.tv_sec;
-
-	if (m_clock_state == CLOCK_STATE_STATS)
-	{
-		static uint32_t last_seconds = 0;
-		if (last_seconds != now_seconds)
-		{
-			last_seconds = now_seconds;
-			uint32_t ms = tv_now.tv_usec / 1000L;
-			LOGU("tick  seconds=%d  ms=%d",now_seconds,ms);
-
-		}
-	}
-
 	//------------------------------------------
 	// THINGS BASED ON THE BEAT CHANGING
 	//------------------------------------------
@@ -582,11 +577,13 @@ void theClock::loop()	// override
 
 
 #if WITH_VOLT_CHECK
-	static uint32_t last_volt_check = 0;
+	struct timeval tv_now;
+	gettimeofday(&tv_now, NULL);
+	static int32_t last_volt_check = 0;
 	if (_volt_interval &&
-		now_seconds - last_volt_check > _volt_interval)
+		tv_now.tv_sec - last_volt_check > _volt_interval)
 	{
-		last_volt_check = now_seconds;
+		last_volt_check = tv_now.tv_sec;
 		checkVoltage();
 	}
 #endif
