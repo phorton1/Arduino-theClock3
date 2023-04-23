@@ -4,6 +4,8 @@
 
 #define MAX_ALLOWABLE_ANGLE  	15.0
 
+extern bool as5600_connected;	// whether the initial connect worked
+	// if it does not work, then the user needs to reboot the clock
 
 extern int as5600_cur;			// bits, not degrees
 extern int as5600_side;			// which side of zero is the pendulum on?
@@ -28,7 +30,7 @@ extern void initAS5600(int zero_angle);
 
 extern int getAS5600Raw();
 extern float getAS560AverageAngle();
-extern int getAS5600Angle(int zero_angle, int *cur, bool update_direction);
+extern int getAS5600Angle(int zero_angle, int *cur);
 	// return -1 on error, 1 if significant change, and 0 if not
 extern bool getAS5600ZeroCrossing();
 	// should be called right after getAS5600Angle()

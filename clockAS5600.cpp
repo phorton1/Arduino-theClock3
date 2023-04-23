@@ -10,13 +10,15 @@
 
 #define AS4500_THRESHOLD    4	// 5 required for change == about 0.5 degrees
 
+bool as5600_connected;
+
 int as5600_cur;			// bits, not degrees
-int as5600_side;			// which side of zero is the pendulum on?
+int as5600_side;		// which side of zero is the pendulum on?
 int as5600_direction;	// which direction is it moving?
 
 int as5600_min;			// min and max are assigned on direction changes
 int as5600_max;
-int as5600_temp_min;		// and the temps are reset to zero for next go round
+int as5600_temp_min;	// and the temps are reset to zero for next go round
 int as5600_temp_max;
 
 // angles are calculated from integers when they change
@@ -46,12 +48,12 @@ void startAS5600()
 
 	#define AS5600_TRY_COUNT	3
 	int count = 0;
-	bool connected = false;
-	while (!connected && count++<AS5600_TRY_COUNT)
+	as5600_connected = false;
+	while (!as5600_connected && count++<AS5600_TRY_COUNT)
 	{
 		as5600.begin();  //  set direction pin.
-		connected = as5600.isConnected();
-		if (!connected)
+		as5600_connected = as5600.isConnected();
+		if (!as5600_connected)
 		{
 			LOGE("Could not connect to AS5600");
 			for (int i=0; i<11; i++)
@@ -63,7 +65,7 @@ void startAS5600()
 		}
 	}
 
-	if (connected)
+	if (as5600_connected)
 	{
 		as5600.setDirection(AS5600_CLOCK_WISE);  // default, just be explicit.
 	}
@@ -74,7 +76,7 @@ void startAS5600()
 		delay(2500);
 	}
 
-	LOGU("AS5600 connected=%d",connected);
+	LOGU("AS5600 connected=%d",as5600_connected);
 }
 
 
@@ -96,6 +98,9 @@ void initAS5600(int zero_angle)
 
 int getAS5600Raw()
 {
+	if (!as5600_connected)
+		return 0;
+
 	WAIT_SEMAPHORE();
 	int raw = as5600.readAngle();
 	RELEASE_SEMAPHORE();
@@ -110,8 +115,14 @@ float getAS560AverageAngle()
 }
 
 
-int getAS5600Angle(int zero_angle, int *retval, bool update_direction)
+int getAS5600Angle(int zero_angle, int *retval)
 {
+	if (!as5600_connected)
+	{
+		*retval = zero_angle;
+		return 0;
+	}
+
 	// Read, but don't necessariy use the as5600 angle
 	// Note that sometimes, particularly when first starting, I get bogus readings here.
 	//
@@ -125,6 +136,8 @@ int getAS5600Angle(int zero_angle, int *retval, bool update_direction)
 
 	int raw = getAS5600Raw();
 	int cur = raw - zero_angle;
+		// in case not inited, we return whatever the zero angle is
+
 	float cur_angle = angleOf(cur);
 	if (abs(cur_angle) > MAX_ALLOWABLE_ANGLE)
 	{
@@ -154,7 +167,7 @@ int getAS5600Angle(int zero_angle, int *retval, bool update_direction)
 
 	// handle direction changes too ...
 
-	if (dif && update_direction)
+	if (dif)
 	{
 		int dir = as5600_direction;
 		if (dif < 0)
