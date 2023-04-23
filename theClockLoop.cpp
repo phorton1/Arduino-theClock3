@@ -135,7 +135,7 @@ void theClock::doButtons()
 						if (is_first)		// first press
 						{
 							LOGD("first press");
-							if (m_clock_state || m_start_sync)	// while running or sync started
+							if (m_clock_state || _start_sync)	// while running or sync started
 							{
 								// if the clock is running (m_clock_state)
 								// we use the parameter to turn it off, otherwise
@@ -151,19 +151,19 @@ void theClock::doButtons()
 								// otherwise, we start synchronized
 								// start_sync is also a flag used on 2nd press
 
-								onStartClockSynchronized();
+								setBool(ID_START_SYNC,1);
 							}
 						}
 						else	// 2nd press
 						{
 							LOGD("second press");
-							if (m_start_sync)
+							if (_start_sync)
 							{
 								// second press while starting synchronized
-								// turns of sync and just starts the clock with parameter
+								// turns of start_sync and just starts the clock with parameter
 								// and does nothing in a stop cycle
 
-								m_start_sync = 0;
+								setBool(ID_START_SYNC,0);
 								setBool(ID_RUNNING,1);
 							}
 						}
@@ -365,7 +365,7 @@ void theClock::doPixels()
 
 			// show start sync even in PIXEL_TIME mode
 
-			else if (m_start_sync && !(m_clock_state >= CLOCK_STATE_STARTED))
+			else if (_start_sync && !(m_clock_state >= CLOCK_STATE_STARTED))
 				new_pixels[PIXEL_MAIN] = MY_LED_WHITE;
 		}
 
@@ -388,7 +388,7 @@ void theClock::doPixels()
 				m_clock_state == CLOCK_STATE_RUNNING ? MY_LED_GREEN :
 				m_clock_state == CLOCK_STATE_STARTED ? MY_LED_CYAN :
 				m_clock_state == CLOCK_STATE_START ?   MY_LED_YELLOW :
-				m_start_sync ? MY_LED_WHITE :
+				_start_sync ? MY_LED_WHITE :
 				m_clock_state == CLOCK_STATE_STATS ? MY_LED_ORANGE :
 				MY_LED_BLACK;
 

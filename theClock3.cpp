@@ -66,7 +66,6 @@
 // This can be tested by changing timezones on a running clock.
 
 int 	 theClock::m_clock_state;
-bool 	 theClock::m_start_sync;
 uint32_t theClock::m_last_change;
  int32_t theClock::m_cur_cycle;
 uint32_t theClock::m_last_cycle;
@@ -388,15 +387,15 @@ void theClock::clearStats()
 
 void theClock::stopClock()
 {
-	m_start_sync = 0;
+	the_clock->setBool(ID_START_SYNC,0);
 	LOGU("stopClock()");
 	initMotor();
 }
 
 
-void theClock::onStartClockSynchronized()
+void theClock::onStartSyncChanged(const myIOTValue *desc, bool val)
 {
-	LOGU("StartClockSynchronized()");
+	LOGU("onStartSyncChanged(%d)",val);
 
 	// The seconds hand is attached such that a tock falls on an even second:
 	//
@@ -417,10 +416,11 @@ void theClock::onStartClockSynchronized()
 	// Regardless of the clocks left/right starting bias, the START_DELAY *should*
 	// be adjustable so that the first left crossing occurs about 500ms after zero.
 
-	if (m_clock_state != CLOCK_STATE_NONE )
-		LOGE("Attempt to call onStartClockSynchronized() while it's already running!");
-	else
-		m_start_sync = true;
+	if (val && m_clock_state != CLOCK_STATE_NONE )
+	{
+		LOGW("Attempt to call onStartClockSynchronized() while it's already running!");
+		the_clock->setBool(ID_START_SYNC,0);
+	}
 }
 
 
@@ -460,6 +460,7 @@ void theClock::startClock(bool restart /*=0*/)
 		m_clock_state = CLOCK_STATE_START;
 	}
 }
+
 
 
 void theClock::onClockRunningChanged(const myIOTValue *desc, bool val)

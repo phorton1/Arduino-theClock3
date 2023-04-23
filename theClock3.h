@@ -136,8 +136,7 @@
 //------------------------
 
 
-#define ID_START_CLOCK		"START_CLOCK"
-
+#define ID_START_SYNC		"START_SYNC"
 #define ID_RUNNING			"RUNNING"
 #define ID_CLOCK_MODE		"CLOCK_MODE"
 #define ID_PLOT_VALUES		"PLOT_VALUES"
@@ -256,6 +255,7 @@ private:
 
     static const valDescriptor m_clock_values[];
 
+	static bool _start_sync;		// doing a synchronized start
 	static bool _clock_running;		// user interface variable !! (as opposed to control variable)
 	static uint32_t _clock_mode;
 	static uint32_t _plot_values;
@@ -321,7 +321,6 @@ private:
 	// clock paramters
 
 	static int 	 	m_clock_state;
-	static bool 	m_start_sync;			// doing a synchronized start
 	static uint32_t m_last_change;			// millis of last noticable pendulum movement
 	static  int32_t m_cur_cycle;			// millis in this 'cycle' (forward zero crossing)
 	static uint32_t m_last_cycle;			// millis at previous forward zero crossing
@@ -360,7 +359,7 @@ private:
 
 	// UI methods
 
-	static void onStartClockSynchronized();
+	static void onStartSyncChanged(const myIOTValue *desc, bool val);
     static void onClockRunningChanged(const myIOTValue *desc, bool val);
     static void onClockModeChanged(const myIOTValue *desc, uint32_t val);
 	static void onPlotValuesChanged(const myIOTValue *desc, uint32_t val);

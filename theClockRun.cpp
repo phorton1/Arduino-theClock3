@@ -113,7 +113,7 @@ void theClock::run()
 
 	if (m_clock_state == CLOCK_STATE_NONE)
 	{
-		if (m_start_sync)
+		if (_start_sync)
 		{
 			if (time(NULL) % 60 == 59)
 			{
@@ -315,11 +315,11 @@ void theClock::run()
 
 		// do initial sync if running and we have a good set of times
 
-		if (m_start_sync &&
+		if (_start_sync &&
 			m_clock_state == CLOCK_STATE_RUNNING &&
 			m_time_init && m_cur_cycle )
 		{
-			m_start_sync = false;
+			the_clock->setBool(ID_START_SYNC,0);
 			m_last_sync = m_num_beats;
 			onSyncRTC();
 		}

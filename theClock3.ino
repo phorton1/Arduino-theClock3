@@ -69,13 +69,14 @@
 
 #if WITH_VOLT_CHECK
 	#define DEFAULT_VOLT_INTERVAL	30
+	#define DEFAULT_VOLT_SCALE		1.08
 #endif
 
 
 // what shows up on the "dashboard" UI tab
 
 static valueIdType dash_items[] = {
-	ID_START_CLOCK,
+	ID_START_SYNC,
 	ID_RUNNING,
 #if WITH_VOLT_CHECK
 	ID_VOLT_VALUE,
@@ -189,9 +190,8 @@ const valDescriptor theClock::m_clock_values[] =
     { ID_DEVICE_NAME,      VALUE_TYPE_STRING,    VALUE_STORE_PREF,     VALUE_STYLE_REQUIRED,   NULL,   NULL,   THE_CLOCK },
         // DEVICE_NAME overrides base class element
 
-	{ ID_START_CLOCK,  		VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    	(void *) onStartClockSynchronized },
-
-	{ ID_RUNNING,      		VALUE_TYPE_BOOL,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_clock_running,(void *) onClockRunningChanged, { .int_range = { DEFAULT_RUNNING }} },
+	{ ID_START_SYNC,      	VALUE_TYPE_BOOL,     VALUE_STORE_PUB,      VALUE_STYLE_NONE,       (void *) &_start_sync,	(void *) onStartSyncChanged, },
+	{ ID_RUNNING,      		VALUE_TYPE_BOOL,     VALUE_STORE_PUB,      VALUE_STYLE_NONE,       (void *) &_clock_running,(void *) onClockRunningChanged, },
 	{ ID_CLOCK_MODE,      	VALUE_TYPE_ENUM,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_clock_mode, 	(void *) onClockModeChanged, 	{ .enum_range = { DEFAULT_CLOCK_MODE, clockAllowed }} },
 	{ ID_PLOT_VALUES,      	VALUE_TYPE_ENUM,     VALUE_STORE_PUB,      VALUE_STYLE_NONE,       (void *) &_plot_values, 	(void *) onPlotValuesChanged,   { .enum_range = { 0, plotAllowed }} },
 	{ ID_PIXEL_MODE,      	VALUE_TYPE_ENUM,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_pixel_mode, 	(void *) onPixelModeChanged,    { .enum_range = { DEFAULT_PIXEL_MODE, pixelsAllowed }} },
@@ -233,7 +233,7 @@ const valDescriptor theClock::m_clock_values[] =
 #if WITH_VOLT_CHECK
 	{ ID_VOLT_VALUE,      	VALUE_TYPE_FLOAT,     VALUE_STORE_PUB,      VALUE_STYLE_READONLY,  (void *) &_volt_value, 		NULL,  { .float_range = { 0,  0,  120}} },
 	{ ID_VOLT_INTERVAL,  	VALUE_TYPE_INT,       VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,  (void *) &_volt_interval, 	NULL,  { .int_range = { DEFAULT_VOLT_INTERVAL, 0, 86400}} },
-	{ ID_VOLT_CALIB,      	VALUE_TYPE_FLOAT,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,      (void *) &_volt_calib, 		NULL,  { .float_range = { 1,  0,  2}} },
+	{ ID_VOLT_CALIB,      	VALUE_TYPE_FLOAT,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,      (void *) &_volt_calib, 		NULL,  { .float_range = { DEFAULT_VOLT_SCALE,  0,  2}} },
 #endif
 
 	{ ID_CLEAR_STATS,       VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    (void *) clearStats },
@@ -266,7 +266,7 @@ const valDescriptor theClock::m_clock_values[] =
 //--------------------------------------------------
 // params in this file, working vars in cpp
 //--------------------------------------------------
-
+bool 	theClock::_start_sync;
 bool 	theClock::_clock_running;
 uint32_t theClock::_clock_mode;
 uint32_t theClock::_plot_values;
