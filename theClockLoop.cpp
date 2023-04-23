@@ -182,7 +182,7 @@ void theClock::doButtons()
 //--------------------------------------
 // doPxiels()
 //--------------------------------------
-// EXPLANATION OF PIXEL_TIME_MODE:
+// EXPLANATION OF PIXEL_TIME_MODE (Pixels generally need work for !as5600_connected && m_low_power_mode:
 //
 // The 0th pixel should be black unless there is a problem and
 // should flash if lit to differentiate it from the other pixels.
@@ -385,11 +385,12 @@ void theClock::doPixels()
 				MY_LED_BLUE;
 
 			new_pixels[PIXEL_STATE] =
-				m_clock_state == CLOCK_STATE_RUNNING ? MY_LED_GREEN :
+				m_clock_state == CLOCK_STATE_RUNNING ?
+					_clock_mode == CLOCK_MODE_SENSOR_TEST ? MY_LED_ORANGE : MY_LED_GREEN :
 				m_clock_state == CLOCK_STATE_STARTED ? MY_LED_CYAN :
 				m_clock_state == CLOCK_STATE_START ?   MY_LED_YELLOW :
 				_start_sync ? MY_LED_WHITE :
-				m_clock_state == CLOCK_STATE_STATS ? MY_LED_ORANGE :
+
 				MY_LED_BLACK;
 
 			// accuracy and cycle move from green to red/blue
@@ -485,12 +486,13 @@ void theClock::loop()	// override
 	// 2. Sbow statistics
 	// 3. NTP vs ESP32 clock correction
 
-	if (m_clock_state >= CLOCK_STATE_STARTED &&
+	if (_clock_mode > CLOCK_MODE_SENSOR_TEST &&
+		m_clock_state >= CLOCK_STATE_STARTED &&
 		m_last_beat != m_num_beats)
 	{
 		m_last_beat = m_num_beats;
 
-		// 1. Error correction vs ESP32 clock
+		// 1. Error correction vs ESP32 clock if properly RUNNING
 
 		if (!m_sync_sign &&
 			_sync_interval &&
@@ -501,7 +503,7 @@ void theClock::loop()	// override
 			onSyncRTC();
 		}
 
-		// 2. Sbow statistics
+		// 2. Sbow statistics for most clock modes
 
 		else if (_stat_interval &&
 				 _plot_values == PLOT_OFF &&
@@ -509,47 +511,8 @@ void theClock::loop()	// override
 				 m_update_stats ||
 				 m_num_beats % _stat_interval == 0))
 		{
-			m_update_stats = false;
 			m_last_stats = m_num_beats;
-			LOGI("--> stats");
-
-			// show the value of the RTC at the last zero crossing
-
-			initStatBuf();
-			formatTimeToStatBuf("TIME_START",m_time_start,m_time_start_ms,true);
-			formatTimeToStatBuf("TIME_INIT",m_time_init,m_time_init_ms,true);
-			formatTimeToStatBuf("CUR_TIME",m_time_zero,m_time_zero_ms,false);
-			setString(ID_STAT_MSG0,getStatBuf());
-
-			uint32_t full_secs = m_time_init ? m_time_zero - m_time_init : 0;
-			uint32_t secs = full_secs;
-			uint32_t mins = secs / 60;
-			uint32_t hours = mins / 60;
-			secs = secs - mins * 60;
-			mins = mins - hours * 60;
-
-			char *msg_buf = (char *) getStatBuf();
-			sprintf(msg_buf,"%s %02d:%02d:%02d  == %d SECS %d BEATS",
-				(m_clock_state == CLOCK_STATE_RUNNING ?"RUNNING":"STARTING"),
-				hours,
-				mins,
-				secs,
-				full_secs,
-				m_num_beats);
-			setString(ID_STAT_MSG1,msg_buf);
-
-			setString(ID_STAT_MSG2,getStatBufBadReadsAndRestarts());
-
-			if (m_cur_cycle)	// to prevent annoying -32767's on 0th cycle
-			{
-				setString(ID_STAT_MSG3,getStatBufAll());
-				setString(ID_STAT_MSG4,getStatBufRecent());
-			}
-
-			// reset the 'recent' stats for the next _stat_interval
-
-			initRecentStats();
-
+			showStats();
 		}
 
 		// 3. NTP vs ESP32 clock correction
@@ -575,18 +538,83 @@ void theClock::loop()	// override
 	doPixels();
 	doButtons();
 
+	// do stats for CLOCK_MODE_SENSOR_TEST
+
+	int32_t time_now = time(NULL);
+	if (_clock_mode == CLOCK_MODE_SENSOR_TEST &&
+		m_clock_state == CLOCK_STATE_RUNNING && (
+		m_update_stats ||
+		time_now - m_last_beat >= _stat_interval))
+	{
+		m_last_beat = time_now;		// overuse m_last_beat to hold last time for sensor test
+		showStats();
+	}
 
 #if WITH_VOLT_CHECK
-	struct timeval tv_now;
-	gettimeofday(&tv_now, NULL);
+
 	static int32_t last_volt_check = 0;
 	if (_volt_interval &&
-		tv_now.tv_sec - last_volt_check > _volt_interval)
+		time_now - last_volt_check > _volt_interval)
 	{
-		last_volt_check = tv_now.tv_sec;
+		last_volt_check = time_now;
 		checkVoltage();
 	}
+
+	#define LOW_POWER_DELAY    10000
+
+	if (m_low_power_time && millis() - m_low_power_time >= LOW_POWER_DELAY)
+	{
+		m_low_power_time = 0;
+		setActualLowPowerMode(1);
+	}
+
 #endif
 
 
 }	// theClock::loop()
+
+
+
+void theClock::showStats()
+{
+	m_update_stats = false;
+	LOGI("--> stats");
+
+	// show the value of the RTC at the last zero crossing
+
+	initStatBuf();
+	formatTimeToStatBuf("TIME_START",m_time_start,m_time_start_ms,true);
+	formatTimeToStatBuf("TIME_INIT",m_time_init,m_time_init_ms,true);
+	formatTimeToStatBuf("CUR_TIME",m_time_zero,m_time_zero_ms,false);
+	setString(ID_STAT_MSG1,getStatBuf());
+
+	uint32_t full_secs = m_time_init ? m_time_zero - m_time_init : 0;
+	uint32_t secs = full_secs;
+	uint32_t mins = secs / 60;
+	uint32_t hours = mins / 60;
+	secs = secs - mins * 60;
+	mins = mins - hours * 60;
+
+	char *msg_buf = (char *) getStatBuf();
+	sprintf(msg_buf,"%s %02d:%02d:%02d  == %d SECS %d BEATS",
+		(m_clock_state == CLOCK_STATE_RUNNING ?"RUNNING":"STARTING"),
+		hours,
+		mins,
+		secs,
+		full_secs,
+		m_num_beats);
+	setString(ID_STAT_MSG2,msg_buf);
+
+	setString(ID_STAT_MSG0,getStatBufMain());
+
+	if (m_cur_cycle)	// to prevent annoying -32767's on 0th cycle
+	{
+		setString(ID_STAT_MSG3,getStatBufAll());
+		setString(ID_STAT_MSG4,getStatBufRecent());
+	}
+
+	// reset the 'recent' stats for the next _stat_interval
+
+	initRecentStats();
+
+}

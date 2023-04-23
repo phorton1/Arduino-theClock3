@@ -145,9 +145,9 @@ void theClock::run()
 			// and only go to running later
 
 			if (_clock_mode < CLOCK_MODE_ANGLE_START)
-				m_clock_state = CLOCK_STATE_RUNNING;
+				setClockState(CLOCK_STATE_RUNNING);
 			else
-				m_clock_state = CLOCK_STATE_STARTED;
+				setClockState(CLOCK_STATE_STARTED);
 		}
 		else
 		{
@@ -169,6 +169,11 @@ void theClock::run()
 	}
 
 
+	// The rest of this is only done if we are running
+
+	if (m_clock_state < CLOCK_STATE_STARTED)
+		return;
+
 	//-------------------------------------------------
 	// CYCLE
 	//-------------------------------------------------
@@ -178,7 +183,7 @@ void theClock::run()
 
 	struct timeval tv_now;
 	gettimeofday(&tv_now, NULL);
-	if (m_clock_state == CLOCK_STATE_STATS)
+	if (_clock_mode == CLOCK_MODE_SENSOR_TEST)
 	{
 		static int32_t last_seconds = 0;
 		if (last_seconds != tv_now.tv_sec)
@@ -193,7 +198,7 @@ void theClock::run()
 	// get angle changes
 
 	int cur = 0;
-	int rslt = getAS5600Angle(_zero_angle,&cur,m_clock_state > CLOCK_STATE_STATS);
+	int rslt = getAS5600Angle(_zero_angle,&cur);
 	if (rslt == -1)
 		return;
 
@@ -201,19 +206,17 @@ void theClock::run()
 	{
 		m_last_change = now;
 
-		if (m_clock_state == CLOCK_STATE_STATS)
+		if (_clock_mode == CLOCK_MODE_SENSOR_TEST && _plot_values == PLOT_OFF)
 		{
-			if (_plot_values == PLOT_OFF)
-			{
-				LOGU("as5600=%-4d  angle=%0.3f",cur,as5600_cur_angle);
-			}
+			LOGU("as5600=%-4d  angle=%0.3f",cur,as5600_cur_angle);
 		}
 
 		// started ... detect zero crossing
 
-		else if (getAS5600ZeroCrossing())
+		if (getAS5600ZeroCrossing())
 		{
-			m_push_motor = true;
+			if (_clock_mode > CLOCK_MODE_SENSOR_TEST)
+				m_push_motor = true;
 
 			// Get full cycle time using uint32_t subtract to work at millis() overflow crossing.
 			// Calculate signed error using int32_t and add it to the accumulated error if running
@@ -303,13 +306,12 @@ void theClock::run()
 		//------------------------------------------------
 		// Switch to RUNNING if needed
 
-		if (m_clock_state == CLOCK_STATE_STARTED &&
+		if (m_clock_state == CLOCK_STATE_STARTED &&		// only true on PID modes
 			as5600_max_angle >= _running_angle &&
 			as5600_min_angle <= -_running_angle &&
 			abs(m_total_ang_error) < _running_error)
 		{
-			m_clock_state = CLOCK_STATE_RUNNING;
-			LOGU("Clock running!");
+			setClockState(CLOCK_STATE_RUNNING);
 			// clearStats();
 		}
 

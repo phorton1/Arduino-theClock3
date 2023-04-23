@@ -70,6 +70,8 @@
 #if WITH_VOLT_CHECK
 	#define DEFAULT_VOLT_INTERVAL	30
 	#define DEFAULT_VOLT_SCALE		1.08
+	#define DEFAULT_VOLT_CUTOFF		3.90
+	#define DEFAULT_VOLT_RESTORE    4.10
 #endif
 
 
@@ -141,6 +143,8 @@ static valueIdType device_items[] = {
 #if WITH_VOLT_CHECK
 	ID_VOLT_INTERVAL,
 	ID_VOLT_CALIB,
+	ID_VOLT_CUTOFF,
+	ID_VOLT_RESTORE,
 #endif
 
 	0
@@ -234,6 +238,8 @@ const valDescriptor theClock::m_clock_values[] =
 	{ ID_VOLT_VALUE,      	VALUE_TYPE_FLOAT,     VALUE_STORE_PUB,      VALUE_STYLE_READONLY,  (void *) &_volt_value, 		NULL,  { .float_range = { 0,  0,  120}} },
 	{ ID_VOLT_INTERVAL,  	VALUE_TYPE_INT,       VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,  (void *) &_volt_interval, 	NULL,  { .int_range = { DEFAULT_VOLT_INTERVAL, 0, 86400}} },
 	{ ID_VOLT_CALIB,      	VALUE_TYPE_FLOAT,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,      (void *) &_volt_calib, 		NULL,  { .float_range = { DEFAULT_VOLT_SCALE,  0,  2}} },
+	{ ID_VOLT_CUTOFF,      	VALUE_TYPE_FLOAT,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,  	   (void *) &_volt_cutoff, 		NULL,  { .float_range = { DEFAULT_VOLT_CUTOFF,  0,  120}} },
+	{ ID_VOLT_RESTORE,      VALUE_TYPE_FLOAT,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,  	   (void *) &_volt_restore, 	NULL,  { .float_range = { DEFAULT_VOLT_RESTORE,  0,  120}} },
 #endif
 
 	{ ID_CLEAR_STATS,       VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    (void *) clearStats },
@@ -310,6 +316,8 @@ int	    theClock::_error_range;
 	float    theClock::_volt_value;
 	uint32_t theClock::_volt_interval;
 	float	 theClock::_volt_calib;
+	float	 theClock::_volt_cutoff;
+	float	 theClock::_volt_restore;
 #endif
 
 

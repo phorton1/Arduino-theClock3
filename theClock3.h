@@ -5,8 +5,9 @@
 
 #define WITH_VOLT_CHECK   1
 	// Voltage check on GPIO34 ala the bilgeAlarm.
-	// Turns on ID_VOLT_INTERVAL, which then tells how
-	// many seconds (default 30) beteen calls
+	// Adds ID_VOLT_INTERVAL and ID_VOLT_XX parameters, which then tells how
+	// often to check the voltage, and whether to go into m_low_power_mode
+
 
 #define USEV1_PINS   	0
 #define USEV1_BEHAVIOR  1
@@ -199,6 +200,8 @@
 	#define ID_VOLT_VALUE	 "VOLT_VALUE"
 	#define ID_VOLT_INTERVAL "VOLT_INTERVAL"
 	#define ID_VOLT_CALIB	 "VOLT_CALIB"
+	#define ID_VOLT_CUTOFF	 "VOLT_CUTOFF"
+	#define ID_VOLT_RESTORE	 "VOLT_RESTORE"
 #endif
 
 
@@ -213,10 +216,9 @@
 // enumerated type values
 
 #define CLOCK_STATE_NONE    	0
-#define CLOCK_STATE_STATS   	1
-#define CLOCK_STATE_START		2
-#define CLOCK_STATE_STARTED		3
-#define CLOCK_STATE_RUNNING		4
+#define CLOCK_STATE_START		1
+#define CLOCK_STATE_STARTED		2
+#define CLOCK_STATE_RUNNING		3
 
 #define CLOCK_MODE_SENSOR_TEST	0
 #define CLOCK_MODE_POWER_MIN	1
@@ -235,6 +237,11 @@
 #define PIXEL_MODE_OFF			0
 #define PIXEL_MODE_DIAG			1
 #define PIXEL_MODE_TIME			2
+
+
+#define INIT_STATS_RESTART     0
+#define INIT_STATS_START_CLOCK 1
+#define INIT_STATS_ALL   	   2
 
 
 // theClock declaration
@@ -298,6 +305,8 @@ private:
 	static float    _volt_value;
 	static uint32_t _volt_interval;
 	static float	_volt_calib;
+	static float	_volt_cutoff;
+	static float	_volt_restore;
 #endif
 
 	static String 	_stat_msg0;		// messages
@@ -380,8 +389,10 @@ private:
 
 	// Internal Private methods
 
+
+	static void setClockState(int state);
 	static void initMotor();
-	static void initStats(bool restart);
+	static void initStats(int how);
 	static void motor(int state, int power);
 
 	static void run();
@@ -394,9 +405,13 @@ private:
 
 	void doPixels();
 	void doButtons();
+	void showStats();
 
 	#if WITH_VOLT_CHECK
 		void checkVoltage();
+		void setActualLowPowerMode(bool low);
+		static bool m_low_power_mode;
+		static uint32_t m_low_power_time;
 	#endif
 
 };	// class theClock

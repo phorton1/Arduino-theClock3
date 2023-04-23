@@ -65,7 +65,7 @@
 // changes in daylight savings time do not affect the clock.
 // This can be tested by changing timezones on a running clock.
 
-int 	 theClock::m_clock_state;
+int 	 theClock::m_clock_state = CLOCK_STATE_NONE;
 uint32_t theClock::m_last_change;
  int32_t theClock::m_cur_cycle;
 uint32_t theClock::m_last_cycle;
@@ -102,10 +102,117 @@ uint32_t theClock::m_last_ntp;
 bool 	 theClock::m_update_stats;
 
 
+#if WITH_VOLT_CHECK
+
+	bool theClock::m_low_power_mode ;
+	uint32_t theClock::m_low_power_time;
+
+
+	void theClock::setActualLowPowerMode(bool low)
+	{
+		static bool save_wifi;
+		static int save_brightness;
+
+		LOGU("ENTERING %s POWER MODE",low?"LOW":"NORMAL");
+		if (low)
+		{
+			// change variables in memory
+			// so if reboot, the prefs will be re-read
+			// but for the duration, wifi and brightness can change
+
+			save_wifi = _device_wifi;
+			save_brightness = _led_brightness;
+			if (_led_brightness > 4)
+			{
+				_led_brightness = 4;
+				onBrightnessChanged(NULL,_led_brightness);
+			}
+			if (_device_wifi)
+			{
+				_device_wifi = 0;
+				onChangeWifi(NULL,false);
+			}
+		}
+		else
+		{
+			_led_brightness = save_brightness;
+			onBrightnessChanged(NULL,_led_brightness);
+			if (save_wifi)
+			{
+				_device_wifi = 1;
+				onChangeWifi(NULL,true);
+				save_wifi = false;
+			}
+		}
+	}
+
+
+	void theClock::checkVoltage()
+		// With equal resistors ~ 0.5, ao it should be good to 6.6V or so
+		// 0..4095 = 0-6.6V
+		// we round to two places and only update when the value changes
+	{
+		#define NUM_VOLT_SAMPLES 4
+			// alogorithm skips 1st sample
+
+		static float last_volts;
+		uint32_t val = 0;
+		for (int i=0; i<NUM_VOLT_SAMPLES+1; i++)
+		{
+			int j = analogRead(PIN_VOLT_CHECK);
+			if (i) val += j;
+			delayMicroseconds(100);
+		}
+		float raw = (val / NUM_VOLT_SAMPLES);
+		float pct = raw / 4096.0;
+		float scaled = pct * 6.6;
+		float full = scaled * _volt_calib;
+		float volts = (full * 100.0) + 0.5;
+		volts = floor(volts);
+		volts /= 100.0;
+
+		LOGD("Voltage last(%0.3f) val(%d) raw(%0.3f) pct=(%0.3f) scaled(%0.3f) full(%0.3f)  volts=%0.3f",last_volts,val,raw,pct,scaled,full,volts);
+
+		if (last_volts != volts)
+		{
+			last_volts = volts;
+			setFloat(ID_VOLT_VALUE,volts);
+
+			if (!m_low_power_mode && volts < _volt_cutoff)
+			{
+				LOGU("low power detected");
+				m_low_power_mode = 1;
+				m_low_power_time = millis();
+				setStatLowPowerMode(1);
+				setString(ID_STAT_MSG0,getStatBufMain());
+			}
+			else if (m_low_power_mode && volts >= _volt_restore)
+			{
+				LOGU("restore power detected");
+				m_low_power_mode = 0;
+				m_low_power_time = 0;
+				setActualLowPowerMode(0);
+				setStatLowPowerMode(0);
+				setString(ID_STAT_MSG0,getStatBufMain());
+			}
+		}
+	}
+#endif
+
 
 //-----------------------------------------------
 // utilities
 //-----------------------------------------------
+
+void theClock::setClockState(int state)
+{
+	LOGI("CLOCK_STATE(%d) %s",state,
+		 state == CLOCK_STATE_RUNNING ? "RUNNING" :
+		 state == CLOCK_STATE_STARTED ? "STARTED" :
+		 state == CLOCK_STATE_START   ? "START" : "NONE");
+	m_clock_state = state;
+}
+
 
 int32_t timeDeltaMS(int32_t secs1, int32_t ms1, int32_t secs2, int32_t ms2)
 {
@@ -139,45 +246,6 @@ void timeAddMS(int32_t *secs, int32_t *ms, int32_t ms_delta)
 		*ms -= 1000L;
 	}
 }
-
-
-#if WITH_VOLT_CHECK
-	void theClock::checkVoltage()
-		// With equal resistors ~ 0.5, ao it should be good to 6.6V or so
-		// 0..4095 = 0-6.6V
-		// we round to two places and only update when the value changes
-	{
-		#define NUM_VOLT_SAMPLES 4
-			// alogorithm skips 1st sample
-
-		static float last_volts;
-		uint32_t val = 0;
-		for (int i=0; i<NUM_VOLT_SAMPLES+1; i++)
-		{
-			int j = analogRead(PIN_VOLT_CHECK);
-			if (i) val += j;
-			delayMicroseconds(100);
-		}
-		float raw = (val / NUM_VOLT_SAMPLES);
-		float pct = raw / 4096.0;
-		float scaled = pct * 6.6;
-		float full = scaled * _volt_calib;
-		float volts = (full * 100.0) + 0.5;
-		volts = floor(volts);
-		volts /= 100.0;
-
-		LOGD("Voltage last(%0.3f) val(%d) raw(%0.3f) pct=(%0.3f) scaled(%0.3f) full(%0.3f)  volts=%0.3f",last_volts,val,raw,pct,scaled,full,volts);
-
-		if (last_volts != volts)
-		{
-			last_volts = volts;
-			setFloat(ID_VOLT_VALUE,volts);
-		}
-	}
-#endif
-
-
-
 
 
 //-----------------------------------------------
@@ -292,7 +360,8 @@ void theClock::setup()	// override
 
 	#if WITH_VOLT_CHECK
 		pinMode(PIN_VOLT_CHECK,INPUT);
-		checkVoltage();
+		if (_volt_interval)
+			checkVoltage();
 	#endif
 
 
@@ -325,7 +394,7 @@ void theClock::initMotor()
 {
 	motor(0,0);
 
-	m_clock_state = 0;
+	setClockState(CLOCK_STATE_NONE);
 	m_last_change = 0;
 	m_initial_pulse_time = 0;
 	m_push_motor = 0;
@@ -337,7 +406,7 @@ void theClock::initMotor()
 }
 
 
-void theClock::initStats(bool restart)
+void theClock::initStats(int how)
 {
 	m_update_stats = false;
 
@@ -360,9 +429,11 @@ void theClock::initStats(bool restart)
 	m_last_stats = 0;
 	m_last_ntp = 0;
 
-	initClockStats(restart);
+	initClockStats(how);
 
-	the_clock->setString(ID_STAT_MSG0,"");
+	if (how > INIT_STATS_RESTART)
+		the_clock->setString(ID_STAT_MSG0,"");
+
 	the_clock->setString(ID_STAT_MSG1,"");
 	the_clock->setString(ID_STAT_MSG2,"");
 	the_clock->setString(ID_STAT_MSG3,"");
@@ -374,9 +445,11 @@ void theClock::initStats(bool restart)
 
 
 void theClock::clearStats()
+	// ONLY called from the UI!!
 {
 	LOGU("STATISTICS CLEARED");
-	initStats(0);
+
+	initStats(INIT_STATS_ALL);
 	struct timeval tv_now;
 	gettimeofday(&tv_now, NULL);
 	m_time_start = tv_now.tv_sec;
@@ -416,9 +489,11 @@ void theClock::onStartSyncChanged(const myIOTValue *desc, bool val)
 	// Regardless of the clocks left/right starting bias, the START_DELAY *should*
 	// be adjustable so that the first left crossing occurs about 500ms after zero.
 
-	if (val && m_clock_state != CLOCK_STATE_NONE )
+	if (val && (
+		_clock_mode < CLOCK_MODE_MIN_MAX ||
+		m_clock_state != CLOCK_STATE_NONE ))
 	{
-		LOGW("Attempt to call onStartClockSynchronized() while it's already running!");
+		LOGW("Attempt to call onStartClockSynchronized() in mode(%d) and state(%d)!!",_clock_mode,m_clock_state);
 		the_clock->setBool(ID_START_SYNC,0);
 	}
 }
@@ -430,13 +505,13 @@ void theClock::startClock(bool restart /*=0*/)
 
 	initMotor();
 	initAS5600(_zero_angle);
-	initStats(restart);
+	initStats(restart ? INIT_STATS_RESTART : INIT_STATS_START_CLOCK);
 
 	if (_clock_mode == CLOCK_MODE_SENSOR_TEST)
 	{
 		m_pid_power = 0;
 		m_pid_angle = 0;
-		m_clock_state = CLOCK_STATE_STATS;
+		setClockState(CLOCK_STATE_RUNNING);
 	}
 	else
 	{
@@ -457,7 +532,7 @@ void theClock::startClock(bool restart /*=0*/)
 
 		motor(-1,_power_start);
 		m_initial_pulse_time = m_last_change = millis();
-		m_clock_state = CLOCK_STATE_START;
+		setClockState(CLOCK_STATE_START);
 	}
 }
 
@@ -541,9 +616,10 @@ void theClock::onDiddleClock(const myIOTValue *desc, int val)
 
 void theClock::onSyncRTC()
 {
-	if (m_clock_state != CLOCK_STATE_RUNNING )
+	if (_clock_mode < CLOCK_MODE_MIN_MAX ||
+		m_clock_state != CLOCK_STATE_RUNNING)
 	{
-		LOGE("Attempt to call onSyncRTC() while clock is not running!");
+		LOGE("Attempt to call onSyncRTC() with mode(%d) in state(%d)!!",_clock_mode,m_clock_state);
 		return;
 	}
 

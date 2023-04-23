@@ -1,8 +1,73 @@
 // clockStats.cpp
 
 #include "clockStats.h"
+#include <myIOTLog.h>
 
-// Statistics
+// STATISTICS, ESP32_STATE, CLOCK_STATE, and CLOCK_MODE.
+//
+// 		Although we generally presume the clock will be running, there are
+// 		certain statistics that are germaine to the life-cycle of the ESP32,
+// 		like the number of power losses/restores and when they happen.
+// 		A failure to init the AS5600 ... and a way to retry it ... might
+// 		also fall into this category of ESP32_STATE.
+//
+// 		Then it is necessary to understand the difference between the UI
+// 		RUNNING parameter and the CLOCK_STATE (m_clock_state), which is the
+// 		actual STATE of the clock, which in turn relies on the CLOCK_MODE
+// 		(m_clock_mode), which tells HOW to run the clock.
+//
+// 		Turning RUNNING off will call stopClock() and remove most 'statistics'.
+// 		If the clock_state is NONE, and RUNNING is turned on, startClock(0=cold start) will
+// 		be called.  This will clear the num_bad_reads value.
+//
+// 		CLOCK_MODE_SENSOR_TEST goes directly to CLOCK_STATE_RUNNING when startClock() is called.
+//
+// 		All other modes will include a starting pulse, and go to CLOCK_STATE_START after the
+// 		initial impulse is delivered.  They then quickly go to a higher state when the impulse
+// 		finishes. CLOCK_MODE_POWER_MIN/MAX go directly to CLOCK_STATE_RUNNING, whereas the
+// 		rest of the (PID) modes go to CLOCK_STATE_STARTED, where they will wait for the clock
+// 		angle PID controller to stabilize before going to CLOCK_STATE_RUNNING.
+//
+// 		In the special case of a synchronized start in MIN_MAX or PID modes, upon going to
+// 		CLOCK_STATE_RUNNING, onSyncRTC() will be called.
+//
+// RESTARTS
+//
+//      The clock will be restarted for any modes > CLOCK_MODE_SENSOR_TEST if no significant
+//		movment of the pendululm is detected after a given time.  Most stats, but not
+//      num_restarts and num_bad_reads, will be cleared.
+//
+//
+// CRITICAL TIMING
+//
+//		Because, for most modes, the stats show the number of beats versus the seconds, it is critical that
+//      it is called soon after a cycle, hence the main statistics are generally updated based on
+//      the number of beats changing, rather than on the RTC clock changing.
+//
+//      However, in CLOCK_MODE_SENSOR_TEST we update the stats based on the RTC.
+//
+// CLEAR_STATS
+//
+//      Clearing the statistics is a UI operation.  Hence it clears EVERYTHING including
+//      the number of restarts, bad reads, and power loss statistics.
+
+
+//	#define CLOCK_STATE_NONE    	0
+//	#define CLOCK_STATE_START		1
+//	#define CLOCK_STATE_STARTED		2
+//	#define CLOCK_STATE_RUNNING		3
+//
+//	#define CLOCK_MODE_SENSOR_TEST	0
+//	#define CLOCK_MODE_POWER_MIN	1
+//	#define CLOCK_MODE_POWER_MAX    2
+//	#define CLOCK_MODE_ANGLE_START	3
+//	#define CLOCK_MODE_ANGLE_MIN 	4
+//	#define CLOCK_MODE_ANGLE_MAX	5
+//	#define CLOCK_MODE_MIN_MAX		6
+//	#define CLOCK_MODE_PID          7
+
+
+
 
 static char msg_buf[512];
 	// generic buffer for loop() related messages
@@ -54,6 +119,12 @@ static  int32_t stat_last_ntp_change = 0;
 static  int32_t stat_total_ntp_changes = 0;
 static uint32_t stat_total_ntp_changes_abs = 0;
 
+#if WITH_VOLT_CHECK
+	static int stat_num_low_powers;
+	static int32_t last_low_power_time;
+	static int32_t last_restore_power_time;
+#endif
+
 
 uint32_t getNumRestarts()
 {
@@ -66,13 +137,23 @@ uint32_t getNumRestarts()
 // used in method
 //===================================================
 
-void initClockStats(bool restart)
+void initClockStats(int how)
 {
-	if (!restart)
+	if (how > INIT_STATS_RESTART)
 	{
 		stat_num_bad_reads = 0;
 		stat_num_restarts = 0;
 	}
+
+	#if WITH_VOLT_CHECK
+		if (how == INIT_STATS_ALL)
+		{
+			stat_num_low_powers = 0;
+			last_low_power_time = 0;
+			last_restore_power_time = 0;
+		}
+	#endif
+
 
 	stat_min_cycle = MAX_INT;
 	stat_max_cycle = MIN_INT;
@@ -267,6 +348,26 @@ void updateStatsPowerAngle(int power, float angle_error)
 
 
 //=====================================
+// power mode stats
+//=====================================
+
+#if WITH_VOLT_CHECK
+	void setStatLowPowerMode(bool low)
+	{
+		if (low)
+		{
+			stat_num_low_powers++;
+			last_low_power_time = time(NULL);
+		}
+		else
+		{
+			last_restore_power_time = time(NULL);
+		}
+	}
+#endif
+
+
+//=====================================
 // used in loop()
 //=====================================
 
@@ -299,11 +400,24 @@ void formatTimeToStatBuf(const char *label, uint32_t time_s, uint32_t time_ms, b
 }
 
 
-const char *getStatBufBadReadsAndRestarts()
+const char *getStatBufMain()
 {
 	sprintf(msg_buf,"num_bad(%d)  restarts(%d)",
 		stat_num_bad_reads,
 		stat_num_restarts);
+
+	#if WITH_VOLT_CHECK
+		if (stat_num_low_powers)
+		{
+			LOGD("adding low power stuff to main message");
+			char *b = &msg_buf[strlen(msg_buf)];
+			sprintf(b," LOW_POWER(%d)<br>",stat_num_low_powers);
+			formatTimeToStatBuf("LAST_DOWN", last_low_power_time, 0, last_restore_power_time);
+			if (last_restore_power_time)
+				formatTimeToStatBuf("LAST_UP", last_restore_power_time, 0, false);
+		}
+	#endif
+
 	return msg_buf;
 }
 

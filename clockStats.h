@@ -7,7 +7,7 @@
 
 // used in various methods
 
-extern void initClockStats(bool restart);
+extern void initClockStats(int how);
 
 extern const char *getStatBufRTC(int32_t sync_millis);
 #if CLOCK_WITH_NTP
@@ -26,10 +26,15 @@ extern void updateStatsPowerAngle(int power, float angle_error);
 
 // used in loop()
 
+#if WITH_VOLT_CHECK
+	extern void setStatLowPowerMode(bool low);
+#endif
+
+
 extern void initStatBuf();
 extern void formatTimeToStatBuf(const char *label, uint32_t time_s, uint32_t time_ms, bool with_br);
 extern const char *getStatBuf();
-extern const char *getStatBufBadReadsAndRestarts();
+extern const char *getStatBufMain();
 extern const char *getStatBufAll();
 extern const char *getStatBufRecent();
 extern void initRecentStats();
