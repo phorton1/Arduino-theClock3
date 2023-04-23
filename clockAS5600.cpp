@@ -44,9 +44,10 @@ void startAS5600()
 		Wire.setPins(PIN_SDA, PIN_SCL);
 	#endif
 
+	#define AS5600_TRY_COUNT	3
 	int count = 0;
 	bool connected = false;
-	while (!connected && count++<5)
+	while (!connected && count++<AS5600_TRY_COUNT)
 	{
 		as5600.begin();  //  set direction pin.
 		connected = as5600.isConnected();
