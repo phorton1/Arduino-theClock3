@@ -2,6 +2,12 @@
 
 #include <myIOTDevice.h>
 
+
+#define WITH_VOLT_CHECK   1
+	// Voltage check on GPIO34 ala the bilgeAlarm.
+	// Turns on ID_VOLT_INTERVAL, which then tells how
+	// many seconds (default 30) beteen calls
+
 #define USEV1_PINS   	0
 #define USEV1_BEHAVIOR  1
 	// Shoe-horned old v1.1 clock into v3 architecture by adding AS5600 sensor to it.
@@ -23,6 +29,11 @@
 // pin assignments
 //---------------------------------
 // L293D motor driver
+
+#if WITH_VOLT_CHECK
+	#define PIN_VOLT_CHECK	34
+#endif
+
 
 #if USEV1_PINS
 	#define PIN_ENA		27
@@ -50,7 +61,7 @@
 // Optical Mouse Sensor (unused at this time)
 //
 // #define PIN_SCK		32
-// #define PIN_SDIO	33
+// #define PIN_SDIO		33
 
 // Leds and Buttons
 
@@ -114,6 +125,7 @@
 // theClock definition
 //------------------------
 
+
 #define ID_START_CLOCK		"START_CLOCK"
 
 #define ID_RUNNING			"RUNNING"
@@ -165,7 +177,6 @@
 #define ID_STAT_MSG5		"STAT_MSG5"
 #define ID_STAT_MSG6		"STAT_MSG6"
 
-
 #define ID_STAT_INTERVAL	"STAT_INTERVAL"
 #define ID_SYNC_INTERVAL	"SYNC_INTERVAL"
 #define ID_SYNC_RTC			"SYNC_RTC"
@@ -175,6 +186,11 @@
 	#define ID_SYNC_NTP		"SYNC_NTP"
 #endif
 
+#if WITH_VOLT_CHECK
+	#define ID_VOLT_VALUE	 "VOLT_VALUE"
+	#define ID_VOLT_INTERVAL "VOLT_INTERVAL"
+	#define ID_VOLT_CALIB	 "VOLT_CALIB"
+#endif
 
 
 #define ID_TEST_MOTOR		"MOTOR"
@@ -267,6 +283,12 @@ private:
 
 	static int   _cycle_range;			// range for displaying diag LED for cycles
 	static int   _error_range;			// range for displaying diag LED for cumulative error
+
+#if WITH_VOLT_CHECK
+	static float    _volt_value;
+	static uint32_t _volt_interval;
+	static float	_volt_calib;
+#endif
 
 	static String 	_stat_msg0;		// messages
 	static String 	_stat_msg1;
@@ -363,6 +385,10 @@ private:
 
 	void doPixels();
 	void doButtons();
+
+	#if WITH_VOLT_CHECK
+		void checkVoltage();
+	#endif
 
 };	// class theClock
 

@@ -461,17 +461,18 @@ void theClock::loop()	// override
 
 	// show the realtime clock
 
+	struct timeval tv_now;
+	gettimeofday(&tv_now, NULL);
+	uint32_t now_seconds = tv_now.tv_sec;
+
 	if (m_clock_state == CLOCK_STATE_STATS)
 	{
 		static uint32_t last_seconds = 0;
-		struct timeval tv_now;
-		gettimeofday(&tv_now, NULL);
-		uint32_t seconds = tv_now.tv_sec;
-		if (last_seconds != seconds)
+		if (last_seconds != now_seconds)
 		{
-			last_seconds = seconds;
+			last_seconds = now_seconds;
 			uint32_t ms = tv_now.tv_usec / 1000L;
-			LOGU("tick  seconds=%d  ms=%d",seconds,ms);
+			LOGU("tick  seconds=%d  ms=%d",now_seconds,ms);
 
 		}
 	}
@@ -578,5 +579,17 @@ void theClock::loop()	// override
 
 	doPixels();
 	doButtons();
+
+
+#if WITH_VOLT_CHECK
+	static uint32_t last_volt_check = 0;
+	if (_volt_interval &&
+		now_seconds - last_volt_check > _volt_interval)
+	{
+		last_volt_check = now_seconds;
+		checkVoltage();
+	}
+#endif
+
 
 }	// theClock::loop()

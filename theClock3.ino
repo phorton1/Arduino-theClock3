@@ -67,7 +67,9 @@
 #define DEFAULT_SYNC_INTERVAL	3600L	// one hour
 #define DEFAULT_NTP_INTERVAL	86400L	// one day
 
-
+#if WITH_VOLT_CHECK
+	#define DEFAULT_VOLT_INTERVAL	30
+#endif
 
 
 // what shows up on the "dashboard" UI tab
@@ -75,6 +77,9 @@
 static valueIdType dash_items[] = {
 	ID_START_CLOCK,
 	ID_RUNNING,
+#if WITH_VOLT_CHECK
+	ID_VOLT_VALUE,
+#endif
 	ID_CLOCK_MODE,
 	ID_PLOT_VALUES,
 	ID_PIXEL_MODE,
@@ -132,6 +137,11 @@ static valueIdType device_items[] = {
 #if CLOCK_WITH_NTP
 	ID_NTP_INTERVAL,
 #endif
+#if WITH_VOLT_CHECK
+	ID_VOLT_INTERVAL,
+	ID_VOLT_CALIB,
+#endif
+
 	0
 };
 
@@ -220,6 +230,12 @@ const valDescriptor theClock::m_clock_values[] =
 	{ ID_DIAG_CYCLE_RANGE,  VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,   	   (void *) &_cycle_range,	 NULL, { .int_range = { DEFAULT_CYCLE_RANGE,   	    10, 1000}} },
 	{ ID_DIAG_ERROR_RANGE,  VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,   	   (void *) &_error_range,	 NULL, { .int_range = { DEFAULT_ERROR_RANGE,   	    10, 5000}} },
 
+#if WITH_VOLT_CHECK
+	{ ID_VOLT_VALUE,      	VALUE_TYPE_FLOAT,     VALUE_STORE_PUB,      VALUE_STYLE_READONLY,  (void *) &_volt_value, 		NULL,  { .float_range = { 0,  0,  120}} },
+	{ ID_VOLT_INTERVAL,  	VALUE_TYPE_INT,       VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,  (void *) &_volt_interval, 	NULL,  { .int_range = { DEFAULT_VOLT_INTERVAL, 0, 86400}} },
+	{ ID_VOLT_CALIB,      	VALUE_TYPE_FLOAT,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,      (void *) &_volt_calib, 		NULL,  { .float_range = { 1,  0,  2}} },
+#endif
+
 	{ ID_CLEAR_STATS,       VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    (void *) clearStats },
 
 	{ ID_STAT_MSG0,      	VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_msg0, },
@@ -288,6 +304,14 @@ uint32_t theClock::_start_delay;
 
 int	    theClock::_cycle_range;
 int	    theClock::_error_range;
+
+
+#if WITH_VOLT_CHECK
+	float    theClock::_volt_value;
+	uint32_t theClock::_volt_interval;
+	float	 theClock::_volt_calib;
+#endif
+
 
 String 	 theClock::_stat_msg0;
 String 	 theClock::_stat_msg1;

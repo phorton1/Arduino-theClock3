@@ -142,6 +142,44 @@ void timeAddMS(int32_t *secs, int32_t *ms, int32_t ms_delta)
 }
 
 
+#if WITH_VOLT_CHECK
+	void theClock::checkVoltage()
+		// With 47K resistors ~ 0.5, ao it should be good to 6.6V or so
+		// 0..4095 = 0-6.6V
+		// we round to two places and only update when the value changes
+	{
+		#define NUM_VOLT_SAMPLES 10
+			// alogorithm skips 1st sample
+
+		static float last_volts;
+		uint32_t val = 0;
+		for (int i=0; i<NUM_VOLT_SAMPLES+1; i++)
+		{
+			int j = analogRead(PIN_VOLT_CHECK);
+			if (i) val += j;
+			delayMicroseconds(100);
+		}
+		float raw = (val / NUM_VOLT_SAMPLES);
+		float pct = raw / 4096.0;
+		float scaled = pct * 6.6;
+		float full = scaled * _volt_calib;
+		float volts = (full * 10.0) + 0.5;
+		volts = floor(volts);
+		volts /= 10.0;
+
+		LOGD("Voltage last(%0.3f) val(%d) raw(%0.3f) pct=(%0.3f) scaled(%0.3f) full(%0.3f)  volts=%0.3f",last_volts,val,raw,pct,scaled,full,volts);
+
+		if (last_volts != volts)
+		{
+			last_volts = volts;
+			setFloat(ID_VOLT_VALUE,volts);
+		}
+	}
+#endif
+
+
+
+
 
 //-----------------------------------------------
 // setup
@@ -246,9 +284,19 @@ void theClock::setup()	// override
 	setPixelsBrightness(_led_brightness);
 	showPixels();
 
+	// sample and set the voltage
+
+
+	#if WITH_VOLT_CHECK
+		pinMode(PIN_VOLT_CHECK,INPUT);
+		checkVoltage();
+	#endif
+
+
+
 	//------------------------------------------------
 	// Start the clock task and away we go ...
-	//------------------------------------------------
+	//-------------------------------------------------
 
 	LOGI("starting clockTask");
 	xTaskCreatePinnedToCore(clockTask,
