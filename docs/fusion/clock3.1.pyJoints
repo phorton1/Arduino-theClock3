@@ -23,7 +23,7 @@ design_max = 5
 period = getValueByName('period')
 degrees = getValueByName('degrees')
 
-setGifLength((360/120) * 2 * period)
+setGifLength(2 * period)	# (360/120) *
 
 # cam
 
