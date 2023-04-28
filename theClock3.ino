@@ -22,13 +22,14 @@
 
 	#define DEFAULT_ANGLE_START 	9.0 		// starting value for clock_pid control
 	#define DEFAULT_ANGLE_MIN 		9.5
-	#define DEFAULT_POWER_MIN		190
+	#define DEFAULT_POWER_MIN		140
+	#define DEFAULT_POWER_MAX		220
 
-	#define DEFAULT_PID_P			20.0
-	#define DEFAULT_PID_I			2.0
+	#define DEFAULT_PID_P			30.0
+	#define DEFAULT_PID_I			3.0
 	#define DEFAULT_PID_D			0.8
 
-	#define DEFAULT_APID_P			0.8
+	#define DEFAULT_APID_P			0.6
 	#define DEFAULT_APID_I			0.03
 	#define DEFAULT_APID_D			0.003
 
@@ -38,18 +39,19 @@
 	#define THE_CLOCK_VERSION     	"3.1"
 
 	#define DEFAULT_ANGLE_START 	9.7			// starting value for clock_pid control
-	#define DEFAULT_ANGLE_MIN 		9.0
-	#define DEFAULT_POWER_MIN		140
+	#define DEFAULT_ANGLE_MIN 		8.5
+	#define DEFAULT_POWER_MIN		120
+	#define DEFAULT_POWER_MAX		255
 
 	#define DEFAULT_PID_P			12.0
 	#define DEFAULT_PID_I			0.50
 	#define DEFAULT_PID_D			-9.0
 
-	#define DEFAULT_APID_P			1.0
+	#define DEFAULT_APID_P			0.8
 	#define DEFAULT_APID_I			0.10
 	#define DEFAULT_APID_D			0.01
 
-	#define DEFAULT_ERROR_RANGE 	50
+	#define DEFAULT_ERROR_RANGE 	150
 #endif
 
 
@@ -66,7 +68,7 @@
 #define DEFAULT_ANGLE_MAX 		11.0
 
 #define DEFAULT_POWER_PID		210
-#define DEFAULT_POWER_MAX		255
+
 #define DEFAULT_POWER_START     255
 
 #define DEFAULT_DUR_PULSE		150
@@ -83,7 +85,7 @@
 
 #define DEFAULT_STAT_INTERVAL	30
 #define DEFAULT_SYNC_INTERVAL	3600L	// one hour
-#define DEFAULT_NTP_INTERVAL	86400L	// one day
+#define DEFAULT_NTP_INTERVAL	14400L	// four hours
 
 #if WITH_VOLT_CHECK
 	#define DEFAULT_VOLT_INTERVAL	30
