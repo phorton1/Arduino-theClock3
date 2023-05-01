@@ -263,6 +263,11 @@ void theClock::run()
 							err = m_sync_millis;
 							m_sync_sign = 0;
 							m_sync_millis = 0;
+
+							// to ease the transition, we also set the total_ang_error to zero
+							// in case the clock has built up a large one doing a big correction
+
+							m_total_ang_error = 0;
 						}
 
 						// if the sync is not turned off, it ate all the error millis
