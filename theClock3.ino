@@ -52,24 +52,24 @@
 	#define THE_CLOCK_VERSION     	"3.1"
 
 	#define DEFAULT_START_DELAY     900
-	#define DEFAULT_ANGLE_START 	9.7			// starting value for clock_pid control
-	#define DEFAULT_ANGLE_MIN 		9.2
-	#define DEFAULT_ANGLE_MAX 		10.5
-	#define DEFAULT_DEAD_ZONE		0.2			// dead degrees about zero
+	#define DEFAULT_ANGLE_START 	9.8			// starting value for clock_pid control
+	#define DEFAULT_ANGLE_MIN 		9.6
+	#define DEFAULT_ANGLE_MAX 		10.6
+	#define DEFAULT_DEAD_ZONE		0.3			// dead degrees about zero
 
-	#define DEFAULT_POWER_MIN		110
+	#define DEFAULT_POWER_MIN		135
 	#define DEFAULT_POWER_PID		210
 	#define DEFAULT_POWER_MAX		255
 
-	#define DEFAULT_DUR_PULSE		90
+	#define DEFAULT_DUR_PULSE		120
 
-	#define DEFAULT_PID_P			12.0
+	#define DEFAULT_PID_P			20.0
 	#define DEFAULT_PID_I			0.50
 	#define DEFAULT_PID_D			-9.0
 
-	#define DEFAULT_APID_P			0.8
-	#define DEFAULT_APID_I			0.10
-	#define DEFAULT_APID_D			0.01
+	#define DEFAULT_APID_P			0.2
+	#define DEFAULT_APID_I			0.025
+	#define DEFAULT_APID_D			0.002
 
 	#define DEFAULT_RUNNING_ANGLE   4.0
 	#define DEFAULT_RUNNING_ERROR   2.0
