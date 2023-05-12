@@ -54,10 +54,10 @@
 	#define DEFAULT_START_DELAY     900
 	#define DEFAULT_ANGLE_START 	10.0			// starting value for clock_pid control
 	#define DEFAULT_ANGLE_MIN 		9.5
-	#define DEFAULT_ANGLE_MAX 		10.5
+	#define DEFAULT_ANGLE_MAX 		10.7
 	#define DEFAULT_DEAD_ZONE		0.3			// dead degrees about zero
 
-	#define DEFAULT_POWER_MIN		100
+	#define DEFAULT_POWER_MIN		120
 	#define DEFAULT_POWER_PID		210
 	#define DEFAULT_POWER_MAX		255
 
