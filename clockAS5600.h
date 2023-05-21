@@ -2,7 +2,7 @@
 
 #include "theClock3.h"
 
-#define MAX_ALLOWABLE_ANGLE  	15.0
+#define MAX_ALLOWABLE_ANGLE  	17.0
 
 extern bool as5600_connected;	// whether the initial connect worked
 	// if it does not work, then the user needs to reboot the clock
