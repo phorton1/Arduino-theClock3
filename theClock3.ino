@@ -61,7 +61,7 @@
 	#define DEFAULT_START_DELAY     100				// now defined as MS BEFORE 0 crossing to start clock
 	#define DEFAULT_ANGLE_START 	10.0			// starting value for clock_pid control
 	#define DEFAULT_ANGLE_MIN 		9.5
-	#define DEFAULT_ANGLE_MAX 		11.0
+	#define DEFAULT_ANGLE_MAX 		11.5
 	#define DEFAULT_DEAD_ZONE		0.3			// dead degrees about zero
 
 	#define DEFAULT_POWER_MIN		120
