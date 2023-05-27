@@ -20,7 +20,9 @@
 	#define THE_CLOCK             	"theClock1.3"
 	#define THE_CLOCK_VERSION     	"1.3"
 
-	#define DEFAULT_START_DELAY     400
+	#define DEFAULT_START_DELAY     600			// now defined as MS BEFORE 0 crossing to start clock
+		// Note that clock 1.3 firmware has NOT been updated to this new code!
+
 	#define DEFAULT_ANGLE_START 	10.5 		// starting value for clock_pid control
 	#define DEFAULT_ANGLE_MIN 		10.3
 	#define DEFAULT_ANGLE_MAX 		11.0
@@ -48,10 +50,15 @@
 
 #else	// clock 3 definitions
 
+	// ALL VERSION 3 CLOCKS ARE USING DEFAULT CONFIGURATION PARAMETERS
+	// EXCEPT START_DELAY which is customized per clock
+	// Apart from that, only the clock name has been changed on the most
+	// recent three clocks to 3.21, 3.22, and 3.23, respectively.
+
 	#define THE_CLOCK             	"theClock3.2"
 	#define THE_CLOCK_VERSION     	"3.2"
 
-	#define DEFAULT_START_DELAY     900
+	#define DEFAULT_START_DELAY     100				// now defined as MS BEFORE 0 crossing to start clock
 	#define DEFAULT_ANGLE_START 	10.0			// starting value for clock_pid control
 	#define DEFAULT_ANGLE_MIN 		9.5
 	#define DEFAULT_ANGLE_MAX 		11.0
@@ -260,7 +267,7 @@ const valDescriptor theClock::m_clock_values[] =
 	{ ID_RUNNING_ERROR,  	VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_running_error, NULL, { .float_range = { DEFAULT_RUNNING_ERROR, 1.0, 100}} },
 	{ ID_MIN_MAX_MS,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,   	   (void *) &_min_max_ms,	 NULL, { .int_range = { DEFAULT_MIN_MAX_MS,   	    10, 1000}} },
 	{ ID_RESTART_MILLIS,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_restart_millis,NULL, { .int_range = { DEFAULT_RESTART_MILLIS,   	0,  60000}} },
-	{ ID_START_DELAY,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,  	   (void *) &_start_delay,	 NULL, { .int_range = { DEFAULT_START_DELAY,   		0,  5000}} },
+	{ ID_START_DELAY,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,  	   (void *) &_start_delay,	 NULL, { .int_range = { DEFAULT_START_DELAY,   		-5000,  5000}} },
 
 	{ ID_DIAG_CYCLE_RANGE,  VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,   	   (void *) &_cycle_range,	 NULL, { .int_range = { DEFAULT_CYCLE_RANGE,   	    10, 1000}} },
 	{ ID_DIAG_ERROR_RANGE,  VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,   	   (void *) &_error_range,	 NULL, { .int_range = { DEFAULT_ERROR_RANGE,   	    10, 5000}} },

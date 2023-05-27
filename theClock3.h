@@ -4,7 +4,7 @@
 
 
 #define WITH_VOLT_CHECK   0
-	// Voltage check on GPIO34 ala the bilgeAlarm.
+	// Voltage check on GPIO ala the bilgeAlarm.
 	// Adds ID_VOLT_INTERVAL and ID_VOLT_XX parameters, which then tells how
 	// often to check the voltage, and whether to go into m_low_power_mode
 
@@ -31,11 +31,12 @@
 //---------------------------------
 // pin assignments
 //---------------------------------
-// L293D motor driver
 
 #if WITH_VOLT_CHECK
 	#define PIN_VOLT_CHECK	34
 #endif
+
+// L293D motor driver
 
 
 #if USEV1_PINS
@@ -51,6 +52,8 @@
 	#define PIN_EN		26
 #endif
 
+
+// Rotary Sensor
 
 #if USEV1_PINS
 	#define PIN_SDA		13

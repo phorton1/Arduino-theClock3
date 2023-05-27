@@ -104,22 +104,44 @@ int theClock::getPidPower(float avg_angle)	// PID parameters
 // run()
 //===================================================================
 
+extern void timeAddMS(int32_t *secs, int32_t *ms, int32_t ms_delta);
+	// in theClock3.cpp
+
+
 void theClock::run()
 	// This is called every 4 ms or so ...
 	// Try not to call setXXX stuff while clock is running.
 {
-	// start the clock if m_start_sync and at a minute crossing,
-	// or if the running variable turned on and not running
+	// Semantics of START_DELAY
+	//
+	// It is now the number of milliseconds BEFORE the zero crossing at which we will
+	// deliver the initial impulse.  It used to be the number of milliseconds AFTER -1
+	// seconds (59 seconds) and used a delay() to effect the starting pulse.
+	//
+	// We assume this method will be called at least every 4-5 ms, esp when in
+	// CLOCK_STATE_NONE.
 
 	if (m_clock_state == CLOCK_STATE_NONE)
 	{
 		if (_start_sync)
 		{
-			if (time(NULL) % 60 == 59)
+			// get the current RTC clock time
+
+			struct timeval tv;
+			gettimeofday(&tv, NULL);
+			int32_t secs = tv.tv_sec % 60;
+			int32_t ms = tv.tv_usec / 1000L;
+
+			// calculate the time at which to start
+
+			int32_t start_secs = 60;
+			int32_t start_ms = 0;
+			timeAddMS(&start_secs,&start_ms,-_start_delay);
+
+			if (secs >= start_secs &&
+				ms >= start_ms)
 			{
-				LOGI("starting synchronized delay=%d",_start_delay);
-				if (_start_delay)
-					delay(_start_delay);				// do it about 1/2 second early
+				LOGI("start_sync at %d:%03d delay=%d",secs,ms,_start_delay);
 				the_clock->setBool(ID_RUNNING,1);	    // set the UI bool
 				startClock();							// and away we go
 			}
@@ -158,7 +180,8 @@ void theClock::run()
 	// Restart if necessary
 
 	int res_millis = now - m_last_change;
-	if (_clock_mode > CLOCK_MODE_SENSOR_TEST &&
+	if (_restart_millis &&
+		_clock_mode > CLOCK_MODE_SENSOR_TEST &&
 		m_clock_state >= CLOCK_STATE_STARTED &&
 		res_millis > _restart_millis)
 	{
