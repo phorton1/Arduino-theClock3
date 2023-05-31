@@ -35,14 +35,22 @@
 // 		of the task down to 1, no joy.  Finally I disabled the Watch Dog Timer,
 // 		(see code below) and that seems to work.
 //
-// TODO:
+// STARTUP WITH NO NTP:
 //
-// 		Implement PIXEL_TIME mode
+//		There is an issue that if the clock is booted at about the same time as the
+//      wifi router, it *may* succesfully connect to the router before the router has
+//      had a chance to connect to the internet, and myIOT will fail to set NTP time.
+//      Then, if the clock is started, it could be on the cannonical 1970 clock, but
+//      the wifi may subsequently get the correct NTP time, so the clock will think
+//      it is running 40 years slow.
 //
-//		There is an issue that if the clock is booted and started without internet
-//      whether it is turned off, or it could not at first connect, and set to 'running'
-//      and then connects, it will think it is running 40 years slow and will run as
-//      fast as possible forever.
+//      Although it is simple to merely restart the clock, the issue is that naive end
+//      users will not notice this situation and the clock will run incorrectly.
+//
+//		This is a bit thorny because it could also occur with a misconfigured router.
+//      It seems we might need an error mode ... if the clock is connected as a STA,
+//      and the date is less to 2023 then perhaps the left (green) LED should flash
+//      indicating that the clock needs to be rebooted.
 //
 // POSSIBLE CHANGES:
 //
