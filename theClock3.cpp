@@ -47,10 +47,8 @@
 //      Although it is simple to merely restart the clock, the issue is that naive end
 //      users will not notice this situation and the clock will run incorrectly.
 //
-//		This is a bit thorny because it could also occur with a misconfigured router.
-//      It seems we might need an error mode ... if the clock is connected as a STA,
-//      and the date is less to 2023 then perhaps the left (green) LED should flash
-//      indicating that the clock needs to be rebooted.
+//		Therefore clock sync LED will flash if it is more than 5 minutes off,
+//      in which case the user should reboot the clock.
 //
 // POSSIBLE CHANGES:
 //
@@ -108,6 +106,8 @@ uint32_t theClock::m_last_sync;
 uint32_t theClock::m_last_ntp;
 
 bool 	 theClock::m_update_stats;
+bool     theClock::m_force_pixels;
+bool     theClock::m_setting_zero;
 
 
 #if WITH_VOLT_CHECK
@@ -186,23 +186,27 @@ bool 	 theClock::m_update_stats;
 			last_volts = volts;
 			setFloat(ID_VOLT_VALUE,volts);
 
-			if (!m_low_power_mode && volts < _volt_cutoff)
-			{
-				LOGU("low power detected");
-				m_low_power_mode = 1;
-				m_low_power_time = millis();
-				setStatLowPowerMode(1);
-				setString(ID_STAT_MSG0,getStatBufMain());
-			}
-			else if (m_low_power_mode && volts >= _volt_restore)
-			{
-				LOGU("restore power detected");
-				m_low_power_mode = 0;
-				m_low_power_time = 0;
-				setActualLowPowerMode(0);
-				setStatLowPowerMode(0);
-				setString(ID_STAT_MSG0,getStatBufMain());
-			}
+			// power_mode changes are currently NOT compiled in !!!
+
+			#if ALLOW_POWER_MODE_CHANGES
+				if (!m_low_power_mode && volts < _volt_cutoff)
+				{
+					LOGU("low power detected");
+					m_low_power_mode = 1;
+					m_low_power_time = millis();
+					setStatLowPowerMode(1);
+					setString(ID_STAT_MSG0,getStatBufMain());
+				}
+				else if (m_low_power_mode && volts >= _volt_restore)
+				{
+					LOGU("restore power detected");
+					m_low_power_mode = 0;
+					m_low_power_time = 0;
+					setActualLowPowerMode(0);
+					setStatLowPowerMode(0);
+					setString(ID_STAT_MSG0,getStatBufMain());
+				}
+			#endif
 		}
 	}
 #endif
@@ -267,12 +271,13 @@ void theClock::setup()	// override
 
 	clearPixels();
 	setPixelsBrightness(64);
+	showPixels();
+	delay(500);
 
-	#if REVERSE_PIXELS
-		for (int i=NUM_PIXELS-1; i>=0; i--)
-	#else
-		for (int i=0; i<NUM_PIXELS; i++)
-	#endif
+	// Note that the pixels are backwards (right to left)
+	// and we want to go left to right
+
+	for (int i=NUM_PIXELS-1; i>=0; i--)
 	{
 		setPixel(i,MY_LED_CYAN);
 		showPixels();
@@ -283,18 +288,11 @@ void theClock::setup()	// override
 	delay(500);
 
 	pinMode(PIN_BUTTON1,INPUT_PULLUP);
-#if !USEV1_PINS
+#if CLOCK_COMPILE_VERSION > 1
 	pinMode(PIN_BUTTON2,INPUT_PULLUP);
 #endif
 
-#if USEV1_PINS
-	#define PIN_ENA		27
-	#define PIN_INA1	25
-	#define PIN_INA2	26
-	#define PIN_ENB		4
-	#define PIN_INB1	17
-	#define PIN_INB2	5
-
+#if CLOCK_COMPILE_VERSION == 1
 	ledcSetup(0, PWM_FREQUENCY, PWM_RESOLUTION);
 	ledcSetup(1, PWM_FREQUENCY, PWM_RESOLUTION);
 	ledcAttachPin(PIN_ENA, 0);
@@ -365,14 +363,11 @@ void theClock::setup()	// override
 
 	// sample and set the voltage
 
-
 	#if WITH_VOLT_CHECK
 		pinMode(PIN_VOLT_CHECK,INPUT);
 		if (_volt_interval)
 			checkVoltage();
 	#endif
-
-
 
 	//------------------------------------------------
 	// Start the clock task and away we go ...
@@ -391,7 +386,7 @@ void theClock::setup()	// override
 	clearPixels();
 	showPixels();
 
-	clock_show_pixels = 2;
+	m_force_pixels = 1;
 
 }	// theClock::setup()
 
@@ -570,25 +565,76 @@ void theClock::onPlotValuesChanged(const myIOTValue *desc, uint32_t val)
 void theClock::onPixelModeChanged(const myIOTValue *desc, uint32_t val)
 {
 	LOGU("onPixelModeChanged(%d)",val);
-	clock_show_pixels = 2;
+	m_force_pixels = 1;
 }
 
 void theClock::onBrightnessChanged(const myIOTValue *desc, uint32_t val)
 {
 	LOGU("onBrightnessChanged(%d)",val);
-	clock_show_pixels = 2;
+	m_force_pixels = 1;
 }
 
 
 void theClock::setZeroAngle()
 {
-	LOGI("Setting AS5600 zero angle ...");
+	LOGI("Setting AS5600 zero angle...",sizeof(int));
+
+	// As with initializing the AS5600, the clock will just flat out NOT run
+	// if the zero angle cannot be set. We will try upto 5 times to set it.
+	//
+	// The zero angle MUST be between 45 and 235 degrees.
+	//
+	// Setting the zero angle is important enough to warrant taking
+	// over all the LEDs, so we set the static global "m_setting_zero"
+	// to prevent loop() from modifying the pixels
+
+	m_setting_zero = 1;
+	for (int i=0; i<NUM_PIXELS; i++)
+		setPixel(i,MY_LED_WHITE);
+	showPixels();
+
+	// All pixels set to white.
+	// On success we will show the center pixel (PIXEL_ACCURACY) green for 3 seconds
+	// On failure we will show it as red and retry upto 3 times.
+	// Subsequently, if the zero was not set, the PIXEL_STATE led will flash red
+
+	int count = 0;
 	int zero = getAS5600Raw();
 	float zero_f =  angleOf(zero);
-	LOGU("AS5600 zero angle=%d  %0.3f", zero,zero_f);
+	bool ok = (zero_f >= MIN_ZERO_ANGLE) && (zero_f <= MAX_ZERO_ANGLE);
+
+	while (!ok && count++ < 5)
+	{
+		LOGE("COULD NOT SET AS5600 zero angle=%d  %0.3f", zero,zero_f);
+		setPixel(2,MY_LED_RED);
+		showPixels();
+		delay(300);
+		setPixel(2,MY_LED_WHITE);
+		showPixels();
+		zero = getAS5600Raw();
+		zero_f =  angleOf(zero);
+		ok = (zero_f >= MIN_ZERO_ANGLE) && (zero_f <= MAX_ZERO_ANGLE);
+	}
+
+	// we set the values even though they might be incorrect
+	// so that loop() can start flashing the state pixel red
+
 	the_clock->setInt(ID_ZERO_ANGLE,zero);
 	the_clock->setFloat(ID_ZERO_ANGLE_F,zero_f);
+	if (ok)
+	{
+		LOGU("AS5600 zero angle=%d  %0.3f", zero,zero_f);
+		setPixel(2,MY_LED_GREEN);
+		showPixels();
+		delay(3000);
+	}
+
+	// turn off the loop supressor and force the pixels to be redisplayed
+
+	m_setting_zero = 0;
+	m_force_pixels = 1;
 }
+
 
 
 void theClock::onTestMotor(const myIOTValue *desc, int val)

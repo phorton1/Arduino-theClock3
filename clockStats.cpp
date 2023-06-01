@@ -126,12 +126,6 @@ static uint32_t stat_total_ntp_changes_abs = 0;
 #endif
 
 
-uint32_t getNumRestarts()
-{
-	return stat_num_restarts;
-}
-
-
 
 //===================================================
 // used in method

@@ -2,30 +2,39 @@
 
 #include <myIOTDevice.h>
 
+#define CLOCK_COMPILE_VERSION    3		// 1, 2, 3
+	// 1 == clock 1.3, modified from 1.1 by adding an AS5600 sensor and 5 LEDs
+	// 		it has separate ENA, ENB, INA, and INB pins and one button and
+	//      completely different default (factory reset) parameters
+	//		REQUIRES a 3A power supply ?!?!
+	// 2 == the original clock 3.2 (on my desk)
+	//      that pcb had connectors for hall and optical mouse sensors
+	//      which I repurposed to connect the A5600 sensor to, and
+	//      it does not have the power sense pin.
+	// 3 == the three clocks I made as gifts, which are wired exactly
+	//      the same as clock 3.2 but also have the power sense pins connected
 
-#define WITH_VOLT_CHECK   0
-	// Voltage check on GPIO ala the bilgeAlarm.
-	// Adds ID_VOLT_INTERVAL and ID_VOLT_XX parameters, which then tells how
-	// often to check the voltage, and whether to go into m_low_power_mode
 
-#define REVERSE_PIXELS  1
-	// Set to Zero for test LOLIN32 circuit
+// Voltage check on GPIO ala the bilgeAlarm. on the three I made as gifts
+// Adds ID_VOLT_INTERVAL and ID_VOLT_XX parameters, which then tells how
+// often to check the voltage, and a separate define (currently 0) on
+// whether to go into m_low_power_mode
 
-#define USEV1_PINS   	0
-#define USEV1_BEHAVIOR  0
-	// Shoe-horned old v1.1 clock into v3 architecture by adding AS5600 sensor to it.
-	// I didn't want the clock to just die, when perhaps with 1 day work, I could bring
-	// it up to reasonable performance with V3 code and behavior.
-	//
-	// USEV1_PINS = That circuit board had separate ENA, ENB, INA, and INB pins, one button, and
-	// was retrofitted to have 5 leds.  Dunno why, but whereas clock 3 runs on virtually
-	// any (the laptop) power supply, v1.3 REQUIRES a 3A power supply.  Because it only
-	// has one button, you cannot change LED_BRIGHTNESS, PIXEL_MODE, or Set the Zero Angle
-	// via the button and need to use the WebUI to do those things.
-	//
-	// USEV1_BEHAVIOR = A later LOLIN32 board uses the same pins as V3, but the slightly different
-	// V1 behavior - it only takes one of the swings for the "average angle" - and has a
-	// default name of theClock1.3
+#if CLOCK_COMPILE_VERSION == 3
+	#define WITH_VOLT_CHECK   1
+	#define ALLOW_POWER_MODE_CHANGES 0
+#else
+	#define WITH_VOLT_CHECK   0
+#endif
+
+
+//--------------------------------
+// Critical Angle Constants
+//--------------------------------
+
+#define MIN_ZERO_ANGLE          45.0			// criteria for successful setZeroAngle
+#define MAX_ZERO_ANGLE			235.0			// criteria for successful setZeroAngle
+#define MAX_ALLOWABLE_ANGLE  	17.0			// adjusted angles greater than this will be ignored in run()
 
 
 //---------------------------------
@@ -33,13 +42,14 @@
 //---------------------------------
 
 #if WITH_VOLT_CHECK
-	#define PIN_VOLT_CHECK	34
+	#define PIN_VOLT_CHECK	39
+		// The 3 gift clock boards DO NOT have resistors soldered in
+		// for SBUS or SBATT, only for pin 39 S5V !!!
 #endif
 
 // L293D motor driver
 
-
-#if USEV1_PINS
+#if CLOCK_COMPILE_VERSION == 1
 	#define PIN_ENA		27
 	#define PIN_INA1	25
 	#define PIN_INA2	26
@@ -55,53 +65,39 @@
 
 // Rotary Sensor
 
-#if USEV1_PINS
+#if CLOCK_COMPILE_VERSION == 1
 	#define PIN_SDA		13
 	#define PIN_SCL		32
 #else
-	// v3 Rotary Sensor(s) uses Wire Defaults
+	// Rotary Sensor(s) uses Wire Defaults
 	// #define PIN_SDA	21
 	// #define PIN_SCL	22
 #endif
 
-// Optical Mouse Sensor (unused at this time)
-//
-// #define PIN_SCK		32
-// #define PIN_SDIO		33
 
 // Leds and Buttons
 
-#if USEV1_PINS
-		#define PIN_BUTTON1 18
-		#define PIN_LEDS	22
+#if CLOCK_COMPILE_VERSION == 1
+	#define PIN_LEDS	22
+	#define PIN_BUTTON1 18
+	#define PIN_BUTTON2 -1	// undefined (not used)
+	#define NUM_BUTTONS 1
 #else
-	#if 1
-		#define PIN_BUTTON1 16	// RX2
-		#define PIN_BUTTON2 17	// TX2
-		#define PIN_LEDS	23	// overuse MOSI
-	#else	// reminder of previous built unused pcb
-		#define PIN_BUTTON1 15
-		#define PIN_BUTTON2 16	// RX2
-		#define PIN_LEDS	17	// TX2
-	#endif
+	#define PIN_LEDS	23	// overuse MOSI
+	#define PIN_BUTTON1 16	// RX2
+	#define PIN_BUTTON2 17	// TX2
+	#define NUM_BUTTONS 2
 #endif
 
 
 // Pixels
+// Note that pixels are backwards (left to right == 4..0)
 
-#if REVERSE_PIXELS
-	#define PIXEL_MAIN		4
-	#define PIXEL_STATE     3
-	#define PIXEL_ACCURACY  2
-	#define PIXEL_CYCLE     1
-	#define PIXEL_SYNC      0
-#else
-	#define PIXEL_MAIN		0
-	#define PIXEL_STATE     1
-	#define PIXEL_ACCURACY  2
-	#define PIXEL_CYCLE     3
-	#define PIXEL_SYNC      4
-#endif
+#define PIXEL_MAIN		4
+#define PIXEL_STATE     3
+#define PIXEL_ACCURACY  2
+#define PIXEL_CYCLE     1
+#define PIXEL_SYNC      0
 
 #define NUM_PIXELS		5
 
@@ -144,7 +140,6 @@
 #define ID_RUNNING			"RUNNING"
 #define ID_CLOCK_MODE		"CLOCK_MODE"
 #define ID_PLOT_VALUES		"PLOT_VALUES"
-#define ID_PIXEL_MODE		"PIXEL_MODE"
 #define ID_LED_BRIGHTNESS	"LED_BRIGHTNESS"
 
 #define ID_SET_ZERO_ANGLE	"SET_ZERO_ANGLE"
@@ -237,11 +232,6 @@
 #define PLOT_PAUSE				2
 #define PLOT_CLOCK				3
 
-#define PIXEL_MODE_OFF			0
-#define PIXEL_MODE_DIAG			1
-#define PIXEL_MODE_TIME			2
-
-
 #define INIT_STATS_RESTART     0
 #define INIT_STATS_START_CLOCK 1
 #define INIT_STATS_ALL   	   2
@@ -269,7 +259,6 @@ private:
 	static bool _clock_running;		// user interface variable !! (as opposed to control variable)
 	static uint32_t _clock_mode;
 	static uint32_t _plot_values;
-	static uint32_t _pixel_mode;
 	static int _led_brightness;
 
 	static int _zero_angle;			// actual used value is in as5600 units
@@ -367,6 +356,8 @@ private:
 	static uint32_t m_last_ntp;
 
 	static bool		m_update_stats;
+	static bool     m_force_pixels;
+	static bool     m_setting_zero;
 
 
 	// UI methods

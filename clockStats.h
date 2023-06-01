@@ -39,6 +39,3 @@ extern const char *getStatBufAll();
 extern const char *getStatBufRecent();
 extern void initRecentStats();
 
-// used by PIXEL_MODE_TIME
-
-extern uint32_t getNumRestarts();

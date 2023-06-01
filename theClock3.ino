@@ -16,7 +16,7 @@
 // theClock definition
 //------------------------
 
-#if USEV1_BEHAVIOR
+#if CLOCK_COMPILE_VERSION == 1
 	#define THE_CLOCK             	"theClock1.3"
 	#define THE_CLOCK_VERSION     	"1.3"
 
@@ -48,18 +48,17 @@
 	#define DEFAULT_CYCLE_RANGE 	80
 	#define DEFAULT_ERROR_RANGE 	300
 
-#else	// clock 3 definitions
+#else	// !CLOCK_V1
 
 	// ALL VERSION 3 CLOCKS ARE USING DEFAULT CONFIGURATION PARAMETERS
-	// EXCEPT START_DELAY which is customized per clock
 	// Apart from that, only the clock name has been changed on the most
 	// recent three clocks to 3.21, 3.22, and 3.23, respectively.
 
 	#define THE_CLOCK             	"theClock3.2"
 	#define THE_CLOCK_VERSION     	"3.2"
 
-	#define DEFAULT_START_DELAY     100				// now defined as MS BEFORE 0 crossing to start clock
-	#define DEFAULT_ANGLE_START 	10.0			// starting value for clock_pid control
+	#define DEFAULT_START_DELAY     100			// now defined as MS BEFORE 0 crossing to start clock
+	#define DEFAULT_ANGLE_START 	10.0		// starting value for clock_pid control
 	#define DEFAULT_ANGLE_MIN 		9.5
 	#define DEFAULT_ANGLE_MAX 		11.5
 	#define DEFAULT_DEAD_ZONE		0.3			// dead degrees about zero
@@ -90,7 +89,6 @@
 
 #define DEFAULT_RUNNING			0				// factory reset == clock not running
 #define DEFAULT_CLOCK_MODE		CLOCK_MODE_PID	// factory reset == PID mode turned on
-#define DEFAULT_PIXEL_MODE		PIXEL_MODE_DIAG
 #define DEFAULT_LED_BRIGHTNESS  40
 
 #define DEFAULT_ZERO_ANGLE		0			// 0 means it's not yet set
@@ -108,7 +106,7 @@
 
 #if WITH_VOLT_CHECK
 	#define DEFAULT_VOLT_INTERVAL	30
-	#define DEFAULT_VOLT_SCALE		1.08
+	#define DEFAULT_VOLT_SCALE		1.03
 	#define DEFAULT_VOLT_CUTOFF		3.90
 	#define DEFAULT_VOLT_RESTORE    4.10
 #endif
@@ -124,7 +122,6 @@ static valueIdType dash_items[] = {
 #endif
 	ID_CLOCK_MODE,
 	ID_PLOT_VALUES,
-	ID_PIXEL_MODE,
 	ID_LED_BRIGHTNESS,
 	ID_CLEAR_STATS,
 	ID_SYNC_RTC,
@@ -236,7 +233,6 @@ const valDescriptor theClock::m_clock_values[] =
 	{ ID_RUNNING,      		VALUE_TYPE_BOOL,     VALUE_STORE_PUB,      VALUE_STYLE_NONE,       (void *) &_clock_running,(void *) onClockRunningChanged, },
 	{ ID_CLOCK_MODE,      	VALUE_TYPE_ENUM,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_clock_mode, 	(void *) onClockModeChanged, 	{ .enum_range = { DEFAULT_CLOCK_MODE, clockAllowed }} },
 	{ ID_PLOT_VALUES,      	VALUE_TYPE_ENUM,     VALUE_STORE_PUB,      VALUE_STYLE_NONE,       (void *) &_plot_values, 	(void *) onPlotValuesChanged,   { .enum_range = { 0, plotAllowed }} },
-	{ ID_PIXEL_MODE,      	VALUE_TYPE_ENUM,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_pixel_mode, 	(void *) onPixelModeChanged,    { .enum_range = { DEFAULT_PIXEL_MODE, pixelsAllowed }} },
 	{ ID_LED_BRIGHTNESS,  	VALUE_TYPE_INT,    	 VALUE_STORE_PREF,     VALUE_STYLE_NONE,   	   (void *) &_led_brightness,(void *) onBrightnessChanged, 	{ .int_range = { DEFAULT_LED_BRIGHTNESS,  	0,  254}} },
 
 	{ ID_SET_ZERO_ANGLE,  	VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    (void *) setZeroAngle },
@@ -300,7 +296,7 @@ const valDescriptor theClock::m_clock_values[] =
 #endif
 
 	{ ID_TEST_MOTOR,  		VALUE_TYPE_INT,    	 VALUE_STORE_PUB,      VALUE_STYLE_NONE,   	   (void *) &_test_motor,		(void *) onTestMotor,  { .int_range = { 0, -1, 1}} },
-	{ ID_DIDDLE_CLOCK,  	VALUE_TYPE_INT,    	 VALUE_STORE_PUB,      VALUE_STYLE_NONE,   	   (void *) &_diddle_clock,		(void *) onDiddleClock,  { .int_range = { 0, -10000, 10000}} },
+	{ ID_DIDDLE_CLOCK,  	VALUE_TYPE_INT,    	 VALUE_STORE_PUB,      VALUE_STYLE_NONE,   	   (void *) &_diddle_clock,		(void *) onDiddleClock,  { .int_range = { 0, -3000000L, 3000000L}} },
 };
 
 
@@ -314,7 +310,6 @@ bool 	theClock::_start_sync;
 bool 	theClock::_clock_running;
 uint32_t theClock::_clock_mode;
 uint32_t theClock::_plot_values;
-uint32_t theClock::_pixel_mode;
 int  	theClock::_led_brightness;
 
 int  	theClock::_zero_angle;
@@ -373,8 +368,10 @@ uint32_t theClock::_sync_interval;
 	uint32_t theClock::_ntp_interval;
 #endif
 
+// remember, 'int' is 32 bits on ESP32 !!
+
 int 	 theClock::_test_motor;
-int 	 theClock::_diddle_clock;
+int		theClock::_diddle_clock;
 
 
 // ctor

@@ -7,7 +7,7 @@
 #include <AS5600.h>
 #include <Wire.h>
 
-
+#define AS5600_TRY_COUNT    5	// number of retries to init as5600
 #define AS4500_THRESHOLD    4	// 5 required for change == about 0.5 degrees
 
 bool as5600_connected;
@@ -39,26 +39,28 @@ float angleOf(int units)
 
 
 void startAS5600()
+	// We try upto 5 times to initialize the AS5600, flashing all the LEDs RED if we cant.
+	// We allow it past here to test other things like the coils and motors and particularly
+	// so we can upload a new executable via the WebUI
 {
-	#if USEV1_PINS
-		#define OLD_HALL2	35
-		pinMode(OLD_HALL2,INPUT);
+	#if CLOCK_COMPILE_VERSION == 1
 		Wire.setPins(PIN_SDA, PIN_SCL);
 	#endif
 
-	#define AS5600_TRY_COUNT	3
 	int count = 0;
 	as5600_connected = false;
 	while (!as5600_connected && count++<AS5600_TRY_COUNT)
 	{
-		as5600.begin();  //  set direction pin.
+		as5600.begin();
 		as5600_connected = as5600.isConnected();
+
 		if (!as5600_connected)
 		{
-			LOGE("Could not connect to AS5600");
-			for (int i=0; i<11; i++)
+			LOGE("Could not connect to AS5600!!!");
+			for (int i=0; i<11; i++)	// must end on black (even number)
 			{
-				setPixel(PIXEL_MAIN,i&1?MY_LED_RED:MY_LED_BLACK);
+				for (int j=0; j<NUM_PIXELS; j++)
+					setPixel(j,i&1?MY_LED_RED:MY_LED_BLACK);
 				showPixels();
 				delay(300);
 			}
@@ -68,12 +70,6 @@ void startAS5600()
 	if (as5600_connected)
 	{
 		as5600.setDirection(AS5600_CLOCK_WISE);  // default, just be explicit.
-	}
-	else
-	{
-		setPixel(PIXEL_MAIN,MY_LED_RED);
-		showPixels();
-		delay(2500);
 	}
 
 	LOGU("AS5600 connected=%d",as5600_connected);

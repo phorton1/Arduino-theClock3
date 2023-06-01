@@ -2,8 +2,6 @@
 
 #include "theClock3.h"
 
-extern int clock_show_pixels;
-
 extern void showPixels();
 extern void clearPixels();
 extern bool pixelsCanShow();

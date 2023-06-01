@@ -16,7 +16,7 @@ void theClock::motor(int state, int power)
 {
 	motor_state = state;
 	int use_power = state ? power : 0;
-#if USEV1_PINS
+#if CLOCK_COMPILE_VERSION == 1
 	ledcWrite(0, use_power);
 	digitalWrite(PIN_INA1,state == 1  ? 1 : 0);
 	digitalWrite(PIN_INA2,state == -1 ? 1 : 0);
@@ -385,9 +385,9 @@ void theClock::run()
 			}
 
 			// calculate the power to use
-			// weird v1.3 with sensor just uses right (power) swing
+			// v1.3 with sensor just uses right (power) swing
 
-			#if USEV1_BEHAVIOR
+			#if CLOCK_COMPILE_VERSION == 1
 				float avg_angle = as5600_max_angle;
 			#else
 				float avg_angle = getAS560AverageAngle();

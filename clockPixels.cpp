@@ -8,8 +8,6 @@
 #include <Adafruit_NeoPixel.h>
 
 
-int clock_show_pixels = 0;
-
 static Adafruit_NeoPixel pixels(NUM_PIXELS,PIN_LEDS);
 
 //------------------------------------------

@@ -1,28 +1,66 @@
 // theClockLoop.cpp
 //
-// Button functions
+// BUTTON functions
 //
 //   left button (1)
 //
 //			short press
-//
 //				if clock is running, stop it
 //              else if 1st press start sync
 //              else if 2nd press start immediate
-//
 //			medium press = turn wifi on/off
 //			long press = factory reset and reboot
 //
 //   right button (2)
 //
 //			short press = cycle pixel brightness
-//          medium press = change pixel mode
-//          long press = zero pendulum
+//          medium press = zero pendulum
+//
+// PIXEL semantics
+//    STARTUP in theClock,cpp::setup()
+//          all leds lit CYAN from left to right
+//			left pixel ORANGE before call to startAS5600
+//          left pixel CYAN before call to myIOT::setup()
+//          left pixel PURPLE before possible call to setZeroAngle
+//          ... brightness is set
+//          all pixels turned off at end of setup()
+//
+//    left == WIFI state
+//			BLUE   == WIFI turned off
+//          RED    == WIFI on, but no AP or STA ?!?
+//			GREEN  == connected as STA
+//          PURPLE == acting as AP
+//          ORANGE == transient AP_STA mode
+//    second == CLOCK state
+//          BLACK  == nothing
+//          WHITE  == waiting for start sync
+//          YELLOW == initial impulse
+//          CYAN   == started, but not yet "running within tolerance"
+//          GREEN  == "running"
+//          ORANGE == running is special "sensor test" mode
+//          FLASHING RED == could not init AS5600
+//          FLASHING ORANGE == zero angle out of range
+//    third == CLOCK accuracy
+//          RED(ish)  == running faster upto _error_range
+//          GREEN     == running accurately
+//          BLUE(ish) == running slower upto _error_range
+//    fourth == CYCLE accuracy
+//          RED(ish)  == running faster upto _cycle_range
+//          GREEN     == running accurately
+//          BLUE(ish) == running slower upto _cycle_range
+//    fifth == SYNC_STATE
+//          RED(ish)  == syncing from too fast (_cycle_range)
+//          GREEN     == sync done
+//          BLUE(ish) == syncing from too slow (_cycle_range)
+//          FLASHING RED OR BLUE == more than 5 minutes out of sync
+//              may just need a restart, but could indicate mechanical problems
+
 
 
 #include "theClock3.h"
 #include "clockStats.h"
 #include "clockPixels.h"
+#include "clockAS5600.h"
 #include <myIOTLog.h>
 
 
@@ -49,18 +87,10 @@ void theClock::doButtons()
 	if (now - button_check > 33)	// 30 times per second
 	{
 		button_check = now;
-		#ifdef USEV1_PINS
-			for (int button=0; button<1; button++)
-		#else
-			for (int button=0; button<2; button++)
-		#endif
+		for (int button=0; button<NUM_BUTTONS; button++)
 		{
 			uint32_t start = button_start[button];
-			#if USEV1_PINS
-				bool val = !digitalRead(PIN_BUTTON1);
-			#else
-				bool val = !digitalRead(button?PIN_BUTTON2:PIN_BUTTON1);
-			#endif
+			bool val = !digitalRead(button?PIN_BUTTON2:PIN_BUTTON1);
 
 			if (val && !start)	// initial press
 			{
@@ -71,25 +101,14 @@ void theClock::doButtons()
 				uint32_t dur = now - start;
 				button_start[button] = 0;
 
-				if (button)
+				if (button)		// BUTTON2 (right) up
 				{
-					// button2 long press = zero angle
+					// button2 long press NOT USED
+					// button2 medium press = set zero angle
 
-					if (dur >= LONG_PRESS)
+					if (dur >= MEDIUM_PRESS)
 					{
 						setZeroAngle();
-					}
-
-					// button2 medium press = change pixel mode
-					// between modes
-
-					else if (dur >= MEDIUM_PRESS)
-					{
-						if (_pixel_mode == PIXEL_MODE_DIAG)
-							_pixel_mode = PIXEL_MODE_TIME;
-						else
-							_pixel_mode = PIXEL_MODE_DIAG;
-						setEnum(ID_PIXEL_MODE,_pixel_mode);
 					}
 
 					// button2 short press = change pixel brightness
@@ -108,7 +127,7 @@ void theClock::doButtons()
 						setInt(ID_LED_BRIGHTNESS,_led_brightness);
 					}
 				}
-				else
+				else	// BUTTON1 (left) up
 				{
 					if (dur >= LONG_PRESS)		// button1 long press = factory reset
 					{
@@ -119,7 +138,7 @@ void theClock::doButtons()
 						setBool(ID_DEVICE_WIFI,!getBool(ID_DEVICE_WIFI));
 					}
 
-					// button1 short press =
+					// button1 short press
 					//    if running (or sync_starting) first_press = stop clock, second press ignored
 					//    otherwise first press = start_synchroniced, and second press = start running
 
@@ -182,111 +201,12 @@ void theClock::doButtons()
 //--------------------------------------
 // doPxiels()
 //--------------------------------------
-// EXPLANATION OF PIXEL_TIME_MODE (Pixels generally need work for !as5600_connected && m_low_power_mode:
-//
-// The 0th pixel should be black unless there is a problem and
-// should flash if lit to differentiate it from the other pixels.
-//
-//       yellow       = restarted
-//       red/blue     = (serious) more than 5 * error_range ms off total time
-//       cyan/purple  = (not serious) more than error_range ms off total time
-//       green        = lost station connection (if STA_SSID specified and not IOT_CONNECT_STA)
-//
-//  flashing yellow menas the time is not reliable and the clock must be manually restarted
-//  note that we have to add sync_millis to total_millis_error in the if statement.
-//
-//  The remaining four pixels are set as follows:
-//
-//  0,12 	= BBBB
-//
-//  12:30   = CBBB			4:30    = YGGG			8:30    = MRRR
-//
-//  1 		= GBBB      	5 		= RGGG          9		= BRRR
-//  1:30    = GMBB      	5:30    = RYGG          9:30    = BMRR
-//  2 		= GGBB      	6 		= RRGG          10      = BBRR
-//  2:30    = GGCB      	6:30    = RRYG          10:30   = BBMR
-//  3 		= GGGB      	7 		= RRRG          11		= BBBR
-//  3:30    = GGGC      	7:30    = RRRY          11:30   = BBBM
-//  4 		= GGGG      	8       = RRRR          12      = BBBB
-
-void localTimeToPixels(uint32_t *pix)
-{
-	// get hour and minute
-	// remember that pixels are backwards and we are using the
-	// first four in reverse order, sheesh, so time_pixel0 is
-	// actual pixel #3, hence we subtract i from PIXEL_STATE
-
-	time_t t = time(NULL);
-    struct tm *ts = localtime(&t);	// &m_time_zero);
-	int hour = ts->tm_hour % 12;
-	int num = hour % 4;
-		// number of full pixels to be set with the time pixel
-		// the next one is the scale pixel
-	int mins = ts->tm_min;
-
-	float pct = mins;
-	pct /= 60;
-
-	// LOGD("timeZeroToPixels called hour=%d mins=%d num=%d pct=%0.3f",hour,mins,num,pct);
-
-	uint32_t fill_pixel = 0;
-	uint32_t time_pixel = 0;
-
-	if (hour >= 8)
-	{
-		fill_pixel = MY_LED_RED;
-		time_pixel = MY_LED_BLUE;
-	}
-	else if (hour >= 4)
-	{
-		fill_pixel = MY_LED_GREEN;
-		time_pixel = MY_LED_RED;
-	}
-	else
-	{
-		fill_pixel = MY_LED_BLUE;
-		time_pixel = MY_LED_GREEN;
-	}
-
-	// fill all pixels
-
-	for (int i=0; i<4; i++)
-	#if REVERSE_PIXELS
-		pix[PIXEL_STATE-i] = fill_pixel;
-	#else
-		pix[i + 1] = fill_pixel;
-	#endif
-
-	// set full hour pixels
-
-	for (int i=0; i<num; i++)
-	#if REVERSE_PIXELS
-		pix[PIXEL_STATE-i] = time_pixel;
-	#else
-		pix[i + 1] = fill_pixel;
-	#endif
-
-	// do the scale pixel
-
-	#if REVERSE_PIXELS
-		pix[PIXEL_STATE - num]
-	#else
-		pix[num + 1]
-	#endif
-		= scalePixel(pct,fill_pixel,time_pixel);
-}
-
-
 
 
 void theClock::doPixels()
 {
-	static uint32_t pixel_flash_time = 0;
-	static bool 	pixel_flash_on = 0;
-	static uint32_t time_error_pixel = 0;
-
-	// In normal operation, pixels only change on each beat,
-	// but system pixels can change at any time.
+	// redisplay the pixels 10 times a second
+	// but only if they changed
 
 	uint32_t now = millis();
 	static uint32_t last_pixels = 0;
@@ -296,166 +216,142 @@ void theClock::doPixels()
 		uint32_t new_pixels[NUM_PIXELS];
 		memset(new_pixels,0,NUM_PIXELS * sizeof(uint32_t));
 
-		// PRESSED BUTTONS GO INTO THE LAST PIXEL (PIXEL SYNC)
-		// in either case we show pixels for buttons
-		// take the earlier start, if any
+		// invariant 'flash' stste as needed
 
-		uint32_t early_button = button_start[0];
-		if (!early_button || (button_start[1] && button_start[1] > early_button))
-			early_button = button_start[1];
-
-		if (early_button)
+		static uint32_t flash_time;
+		static bool flash_on;
+		if (now - flash_time > 300)
 		{
-			uint32_t button_dur = now - early_button;
+			flash_time = now;
+			flash_on = !flash_on;
+		}
+
+		// The right most LED shows WHITE-MAGENTA-PURPLE if a button is pressed
+		// We assume only one button is pressed at a time
+
+		uint32_t button_time = button_start[0] ?
+			button_start[0] : button_start[1];
+		if (button_time)
+		{
+			uint32_t button_dur = now - button_time;
 			new_pixels[PIXEL_SYNC] =
 				button_dur >= LONG_PRESS ? MY_LED_MAGENTA :
 				button_dur >= MEDIUM_PRESS ? MY_LED_PURPLE :
 				MY_LED_WHITE;
 		}
 
+		// Leftmost pixel shows WIFI status
 
-		if (_pixel_mode == PIXEL_MODE_TIME)
+		iotConnectStatus_t status = getConnectStatus();
+		bool wifi_on = getBool(ID_DEVICE_WIFI);
+		new_pixels[PIXEL_MAIN] =
+			status == IOT_CONNECT_ALL ? MY_LED_ORANGE :
+			status == IOT_CONNECT_AP  ? MY_LED_PURPLE :
+			status == IOT_CONNECT_STA ? MY_LED_GREEN :
+			wifi_on ? MY_LED_RED :
+			MY_LED_BLUE;
+
+		// Second pixel shows the CLOCK state
+		// if the zero is out of range we will toggle a bit every 300 ms for flashing
+
+		bool zero_bad =
+			(_zero_angle_f < MIN_ZERO_ANGLE) ||
+			(_zero_angle_f > MAX_ZERO_ANGLE);
+
+
+		new_pixels[PIXEL_STATE] =
+			!as5600_connected ? (flash_on ? MY_LED_RED : MY_LED_BLACK) :
+			zero_bad ? (flash_on ? MY_LED_ORANGE : MY_LED_BLACK) :
+			m_clock_state == CLOCK_STATE_RUNNING ?
+				_clock_mode == CLOCK_MODE_SENSOR_TEST ? MY_LED_ORANGE : MY_LED_GREEN :
+			m_clock_state == CLOCK_STATE_STARTED ? MY_LED_CYAN :
+			m_clock_state == CLOCK_STATE_START ?   MY_LED_YELLOW :
+			_start_sync ? MY_LED_WHITE :
+			MY_LED_BLACK;
+
+		// Third pixel shows overall clock accuracy compared to _error_range
+		// accuracy and cycle move from green to red/blue
+		// as they diverge by +/- parameterized values
+
+		if (m_clock_state >= CLOCK_STATE_START)
 		{
-			if (m_clock_state >= CLOCK_STATE_STARTED)
+			new_pixels[PIXEL_ACCURACY] =
+				m_total_millis_error >=  _error_range 	? MY_LED_BLUE      :
+				m_total_millis_error <= -_error_range 	? MY_LED_RED   :
+				scalePixel3(m_total_millis_error,_error_range,
+					MY_LED_RED,
+					MY_LED_GREEN,
+					MY_LED_BLUE);
+
+			// Fourth pixel shows instantaneous error (per swing)
+			// compared to _cycle_range parameter
+
+			int dif = m_cur_cycle - 1000;
+			if (dif >= _cycle_range)
+				new_pixels[PIXEL_CYCLE] = MY_LED_BLUE;
+			else if (dif <= -_cycle_range)
+				new_pixels[PIXEL_CYCLE] = MY_LED_RED;
+			else
+				new_pixels[PIXEL_CYCLE] = scalePixel3(dif,_cycle_range,
+					MY_LED_RED,
+					MY_LED_GREEN,
+					MY_LED_BLUE);
+
+			// Fifth pixel shows SYNC state compared to _cycle_range
+			// if a button is not pressed.  If it is extreme (more than 5 minutes)
+			// it likely means they started the clock without NTP and then got NTP
+			// so the clock thinks it is running 40 years slow and needs to be restarted,
+			// but it could also mean other serious problems ... so we flash the LED
+
+			if (!button_time)
 			{
-				// handle the error pixel
+				#define EXTREME_SYNC   300000L
+				bool extreme = m_sync_sign && (
+					m_sync_millis > EXTREME_SYNC ||
+					m_sync_millis < -EXTREME_SYNC);
 
-				uint32_t err_pixel =
-					getNumRestarts() ? MY_LED_YELLOW :
-					m_total_millis_error + m_sync_millis > 5 * _error_range 	? MY_LED_BLUE  :
-					m_total_millis_error + m_sync_millis < -5 * _error_range 	? MY_LED_RED   :
-					m_total_millis_error + m_sync_millis > _error_range 		? MY_LED_CYAN  :
-					m_total_millis_error + m_sync_millis < -_error_range 		? MY_LED_PURPLE :
-						getBool(ID_DEVICE_WIFI) &&
-						getString(ID_STA_SSID) != "" &&
-						!(getConnectStatus() & IOT_CONNECT_STA) ? MY_LED_GREEN :
-					MY_LED_BLACK;
-
-				if (time_error_pixel != err_pixel)
-				{
-					pixel_flash_on = 0;
-					pixel_flash_time = 0;
-					LOGI("TIME_ERROR_PIXEL changing from 0x%06x to 0x%06x",time_error_pixel,err_pixel);
-					time_error_pixel = err_pixel;
-				}
-
-				if (time_error_pixel != MY_LED_BLACK)
-				{
-					if (now - pixel_flash_time > 500)
-					{
-						pixel_flash_time = now;
-						pixel_flash_on = !pixel_flash_on;
-					}
-
-					new_pixels[PIXEL_MAIN] = pixel_flash_on ? time_error_pixel : MY_LED_BLACK;
-				}
-
-
-				else
-					new_pixels[PIXEL_MAIN] = MY_LED_BLACK;
-
-
-				// handle the four time pixels via
-				// simple call to localTime()
-
-				if (!early_button)
-					localTimeToPixels(new_pixels);
-
+				new_pixels[PIXEL_SYNC] =
+					!m_sync_sign ? MY_LED_BLACK :
+					extreme && !flash_on ? MY_LED_BLACK :
+					scalePixel3(m_sync_millis,_cycle_range,
+						MY_LED_RED,
+						MY_LED_GREEN,
+						MY_LED_BLUE);
 			}
-
-			// show start sync even in PIXEL_TIME mode
-
-			else if (_start_sync && !(m_clock_state >= CLOCK_STATE_STARTED))
-				new_pixels[PIXEL_MAIN] = MY_LED_WHITE;
 		}
 
-		else if (_pixel_mode == PIXEL_MODE_DIAG)
-		{
-			pixel_flash_on = 0;
-			pixel_flash_time = 0;
-			time_error_pixel = 0;
-
-			iotConnectStatus_t status = getConnectStatus();
-			bool wifi_on = getBool(ID_DEVICE_WIFI);
-			new_pixels[PIXEL_MAIN] =
-				status == IOT_CONNECT_ALL ? MY_LED_ORANGE :
-				status == IOT_CONNECT_AP  ? MY_LED_PURPLE :
-				status == IOT_CONNECT_STA ? MY_LED_GREEN :
-				wifi_on ? MY_LED_RED :
-				MY_LED_BLUE;
-
-			new_pixels[PIXEL_STATE] =
-				m_clock_state == CLOCK_STATE_RUNNING ?
-					_clock_mode == CLOCK_MODE_SENSOR_TEST ? MY_LED_ORANGE : MY_LED_GREEN :
-				m_clock_state == CLOCK_STATE_STARTED ? MY_LED_CYAN :
-				m_clock_state == CLOCK_STATE_START ?   MY_LED_YELLOW :
-				_start_sync ? MY_LED_WHITE :
-
-				MY_LED_BLACK;
-
-			// accuracy and cycle move from green to red/blue
-			// as they diverge by +/- _min_max_ms
-
-			if (m_clock_state >= CLOCK_STATE_START)
-			{
-				new_pixels[PIXEL_ACCURACY] =
-					m_total_millis_error >=  _error_range 	? MY_LED_BLUE      :
-					m_total_millis_error <= -_error_range 	? MY_LED_RED   :
-					scalePixel3(m_total_millis_error,_error_range,
-						MY_LED_RED,
-						MY_LED_GREEN,
-						MY_LED_BLUE);
-
-				int dif = m_cur_cycle - 1000;
-				if (dif >= _cycle_range)
-					new_pixels[PIXEL_CYCLE] = MY_LED_BLUE;
-				else if (dif <= -_cycle_range)
-					new_pixels[PIXEL_CYCLE] = MY_LED_RED;
-				else
-					new_pixels[PIXEL_CYCLE] = scalePixel3(dif,_cycle_range,
-						MY_LED_RED,
-						MY_LED_GREEN,
-						MY_LED_BLUE);
-
-				if (!early_button)
-					new_pixels[PIXEL_SYNC] =
-						!m_sync_sign ? MY_LED_BLACK :
-						scalePixel3(m_sync_millis,_cycle_range,
-							MY_LED_RED,
-							MY_LED_GREEN,
-							MY_LED_BLUE);
-			}
-		}	// PIXEL_MODE_DIAG
-
-		// set pixels and show if changed
+		// set pixels and show if forced or changed
 
 		static uint32_t old_pixels[NUM_PIXELS];
-		if (clock_show_pixels == 2)
+		if (m_force_pixels)
 		{
 			memset(old_pixels,0,NUM_PIXELS * sizeof(uint32_t));
 			clearPixels();
 			setPixelsBrightness(_led_brightness + 1);
 		}
 
+		// once a pixel is changed the rest are forced
+
 		for (int i=0; i<=NUM_PIXELS-1; i++)
 		{
-			if (clock_show_pixels == 2 || old_pixels[i] != new_pixels[i])
+			if (m_force_pixels ||
+				old_pixels[i] != new_pixels[i])
 			{
 				old_pixels[i] = new_pixels[i];
 				setPixel(i,new_pixels[i]);
-				if (!clock_show_pixels)
-					clock_show_pixels = 1;
+				m_force_pixels = 1;
 			}
 		}
 
 		// The use of pixels.canShow() may be superflous, but
 		// there can be upto a 300 us delay at the top of showPixels()
 		// BEFORE the interrupts are disabled so I check it before
-		// calling showPixels()
+		// calling showPixels(). JIC we can't show the pixels,
+		// m_force_pixels remains in effect.
 
-		if (clock_show_pixels && pixelsCanShow())
+		if (m_force_pixels && pixelsCanShow())
 		{
-			clock_show_pixels = 0;
+			m_force_pixels = 0;
 			WAIT_SEMAPHORE();
 			showPixels();
 			RELEASE_SEMAPHORE();
@@ -534,9 +430,13 @@ void theClock::loop()	// override
 
 
 	// do the pixels and buttons
+	// supressed while setZeroAngle is being called
 
-	doPixels();
-	doButtons();
+	if (!m_setting_zero)
+	{
+		doPixels();
+		doButtons();
+	}
 
 	// do stats for CLOCK_MODE_SENSOR_TEST
 
