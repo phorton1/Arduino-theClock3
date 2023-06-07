@@ -1,47 +1,57 @@
-## User Manual
+# The Clock - User Manual
+
+**[Home](readme.md)** --
+**[Design](design.md)** --
+**[Wood](wood.md)** --
+**[Plastic](plastic.md)** --
+**[Electronics](electronics.md)** --
+**[Coils](coils.md)** --
+**[Assembly](assembly.md)** --
+**[Tuning](tuning.md)** --
+**[Quick Start](quick_start.md)** --
+**User Manual** --
+**[Trouble Shooting](troubles.md)** --
+**[Notes](notes.md)**
 
 Welcome to theClock v3.2 !!
 
 This clock has been especially **hand-crafted** for **YOU**.
 
-It was entirely designed and produced by **yours truly**.  It consists of laser cut wooden parts,
-3D printed plastic parts, hand cut brass tubes and threaded rods, a hand made and soldered circuit board,
-hand wound electromagnetic coils, hand made connectors and cables, and, of course, I designed
-and wrote all the software used by the internal computer as well as assembled, sanded, and
-finished all of the wooden parts.
-
-Not only did I design and produce the clock, but I also designed and produced the **machine
-that laser cut** the wooden pieces, as well as the machine I used to **mill and create the
-printed circuit board**, as well the circuit boards and most of the software in those machines,
-as well as a few other **custom machines**, like a coil winder, that were used in the assembly.
-
-I would like you to visit **github.com/phorton1/Arduino-theClock3** and view the web-pages in the repository
-which show how the clock was built so that you can see a bit of the insane amount of effort in this seemingly
-simple project.  There you will find ample detail about the clock, as well as links to the other
-projects and machines that are involved.
+Please visit **https://github.com/phorton1/Arduino-theClock3** and view the web-pages in the repository
+for many more details about the clock, it's design and construction, maintenance and operation.
 
 Although you could theoretically merely unpack the clock, plug it in, and press the left button
-twice to start it ticking, **I highly recommend that you first connect it to your local WiFi network**,
-and use the **Synchronized Start** method described below in the *Quick Start* section to start the clock.
+twice to start it ticking, **it is highly recommended that you follow the Quick Start guide**
+and **first connect it to your local WiFi network**, and use the **Synchronized Start** method
+described below to start the clock.
 
 The clock is designed to **synchronize itself** to the Network Time Protocol (NTP) if it is given a
 Wifi connection, with the idea that it should run within a second or so of the correct time for
-the forseeable future (until at least the *Y2038 problem*, when unix time will overflow 32 bits).
+the forseeable future (until, hopefully, at least the *Y2038 problem*, when unix time will overflow 32 bits).
 If it is not connected to the internet, the best it can do is synchronize itself to the internal
 RTC (Real Time Clock) on the embedded computer, which, at best, will only be correct to within
-a few seconds a day, so I really hope you'll take the time to give it access to NTP.
+a few seconds a day.
 
 A few notes:
 
-- The **Wifi has been enabled by default**. It can be turned off if you are paranoid about your home network security.
+- The clock was shipped to you after a fresh **Factory Reset**.  You can, at any time, return the clock's
+  software to it's initial state by issuing a Factory Reset as described below.
+- The **Wifi has been enabled by default**. It can be turned off (as described below)
+  if you are paranoid about your home network security.
   Substantial efforts were put into ensuring that the clock does not create any significant security risk
   to your home network, but just in case, I added the ability for you to disable the clock's Wifi access entirely.
-- The **Time Zone** for the clock has been pre-customized to your location before I shipped it to you.
-  The Time Zone will be cleared by a *Factory Reset*.
-  So, if you do a *Factory Reset*, you will probably want to connect to the clock, go to the *WebUI*, and set the
-  correct time zone for your clock.
 - Although I have tried my best to produce a reliable clock, **some maintenance may be necessary**.  In particular
   it may be necessary once every few years, or more often, to lubricate the bearings and brass tubes.
+- **PLEASE DO NOT TURN THE SECONDS HAND COUNTER-CLOCKWISE!!** The hands are merely compression fitted to the
+  brass tubes, and the seconds hand was intentionally designed to be a tighter fit.  It is not intended to
+  move relative to the tube and gears, whereas the hour and minute hands ARE intended to be moved
+  relative to the tubes and gears, in order to for you to be able to set the time.
+  **When moving the seconds hand** please always turn it **clockwise**!!  It should smoothly go
+  "clickity-clack" as the pawls slide over the seconds wheel.
+= **ANY FLASHING LEDS ARE INDICATIVE OF A PROBLEM**.  If you see any LEDS that are flashing
+  regularly (once per second or so) it means something is wrong!!   Please see the online
+  **[Trouble Shooting](trouble.md)** guide, or contact me if you see flashing LEDs!
+
 
 ## 1. Quick Start
 
@@ -52,12 +62,166 @@ A few notes:
 -- Change Default Password
 -- Specify Wifi SSID and password
 -- Verify Connection
+- Reboot
 - Start Clock Synchronized
 - Stop the Clock
 
+### 1A. Unpacking
+
+- Open the box and remove the top piece of styrofoam
+- Remove the **power supply** and **baggy with allen wrench** from the lower portion of the clock.
+- Remove **the Clock** from the box and place it on a flat level surface
+- Remove the **three pieces of cardboard at the top of the clock**
+  labelled 1,2, and 3, that are securing the mechanism by following the arrows that are drawn on them.
+- From the back **remove the piece of green tape** securing the pendulum to the bottom cardboard inserts.
+- Remove **the two bottom cardboard inserts** by following the arrows drawn on them.
+
+### 1B. Preparation
+
+Efforts were made to ensure that the clock would not be damaged during transport.
+However, some shifting may have taken place, and so, before anything else we need
+to make sure that the mechanism is properly aligned and engaged, that the pendulum
+swings freely, that the gears turn correctly, and that the hands are aligned so
+that they don't collide.
+
+- From the top of the clock, the two **pawls should be resting on top of the seconds wheel**
+- The **pawls and arms should move freely**.
+- The **bearings should be riding on the cam**
+- The **hands** should be square to the tubes they are connected too with approximately equal spacing between them.
+  Adjust them slightly as necessary to ensure that they don't hit each other as they turn.
+- You should be able to **move the seconds hand clockwise** and the pawls should go "clickity-clack" as the second hand moves.
+- There should be **very little resistance** when moving the second hand!!
+- As you move the second hand clockwise multiple revolutions, the minute hand and hour hand should move
+  slightly, but noticably.
+- The **penduluum** should swing freely **in the middle of the channel** and not touch the plastic at any point.
+- The **pendulum should swing 4-5 times** back and forth when released from an extreme posision.  It should NOT
+  swing only once or twice and then stop.
+
+
+At that point you should be able to swing the pendulum back and forth, and the clock should tick-tock,
+with each pawl, in turn, grabbing and turning the seconds wheel clockwise.  You can put your index finger
+into the hole on the top of the clock and move the pendulum back and forth and it should not take
+much force to keep the pendulum moving and the clock ticking.
+
+
+### 1C. Power Up
+
+When the clock is mechanically ok and everything is nice and loosy-goosey it is time to connect the
+power supply and boot it for the first time.
+
+You can connect the USB power supply from the left, or right of the clock as you desire.
+
+When the USB power supply is connected the computer will boot, and you will (should) see
+the five LEDs on the front of the clock light up in **cyan** from left to right, followed
+by various other LED colors as the clock boots.
+
+When the clock has sucessfully booted for the first time, the **left most LED should be
+purple** and no other LEDs should be lit, and particularly **NO LEDS SHOULD BE FLASHING!!**
+Please see the online **[Trouble Shooting](trouble.md)** guide, or contact me if you see flashing LEDs!
+
+The meaning of the LEDs is described more fully below, but for now suffice it to say
+that the **Left Purple LED** indicates that the clock is in **AP (Access Point)) Mode**
+which means that you can connect to it via Wifi.
+
+
+### 1D. Connect to the Clock (in Access Point Mode)
+
+When the clock is in **AP (Access Point)) Mode** (the left-most LED is **purple**)
+it will show up on your home computer or phone as a **Wifi Network** to which you can attach.
+
+You will **connect** to the clock, be required to **change it's wifi password**, and then
+will tell it how to **connect to your home Wifi network**.  By connecting to your home
+Wifi network (and presumably to the internet via that) the clock will have access to
+the **NTP (Network Time Protocol)** from which it can find the correct time.
+
+**APART FROM CONNECTING TO NTP THE CLOCK DOES NOT USE OR PRESENT ITSELF IN ANY WAY TO THE INTERNET**
+
+However, once it is connected to your home Wifi network, **YOU** will be able to access it
+via a browser based **WebUI**.
+
+Please perform the following steps to connect the clock to your Wifi network.
+
+- From a laptop or home computer (preferable) or phone/tablet connect to **theClock3** wifi network
+- The default password is **11111111**  (eight ones).
+
+![11-ConnectAP.png](images/08-user_manual/11-ConnectAP.png)
+
+- After a few seconds your system **browser should automatically pop up** with
+  a (redirect page and then) a page which requires you to set a **new password**.
+- Enter (and re-enter) and **remember!!** a new password for your clock's AP Mode.
+
+![12-SetPassword.png](images/08-user_manual/12-SetPassword.png)
+
+- After you set the AP Mode password, you will be presented with a page that allows you to
+  tell the clock the **SSID** and **password** of your home wifi network.
+- These credentials are stored in an encrypted form on the clock's computer and
+  will never be presented to anyone in a human readable form.
+
+![13-ConnectWifi.png](images/08-user_manual/13-ConnectWifi.png)
+
+- **Enter the SSID and password of your home Wifi network** and press the **Connect
+  Button**.
+
+That's it!   The only thing that can be done from **AP Mode** is to tell the clock
+a wifi network to connect to.
+
+**If, after 15 seconds or so, you do NOT receive an error message, then everything worked ok!!**
+
+When the clock is connected to your home wifi network, it is said to be in **Station (STA) Mode**.
+
+The clock *tries* to report when it has sucessfully connected to your home wifi network, but
+because it cannot be connected in both AP and STA mode at the same time (unless your home
+wifi network *happens* to be on the same "channel" as the clock's AP mode), typically
+it is not able to report to the browser that it connected successfully.  However, you
+may get lucky and see a message of the form "theClock3 succesfully connected to YOUR_SSID
+at IP Addresss XXX.XXX.XXX.XXX".
+
+![14-Connected.png](images/08-user_manual/14-Connected.png)
+
+In any case, **if you DONT see an error message at this point**, the clock has succesfully connected
+to your home wifi network.
+
+If you **DO RECEIVE AN ERROR MESSAGE** please re-enter the SSID and password and try again. You
+can reboot the clock (disconnect and reconnect the power supply) and try this again.  You may
+need to reboot your laptop/tablet/phone, although everything *should* work the first time through.
+
+
+### 1E. Reboot
+
+Once you have connected the clock to your Wifi network, you may reconnect your Laptop/Tablet/Phone
+to your home wifi network.  When you do so, after about 15 seconds, the leftmost LED should change
+from **purple to green**.    When the leftmost LED is **green** it indicates the the clock is
+correctly attached to your home wifi network in **STA Mode**.
+
+If after 15 seconds or so the LED does NOT turn green, you may need to reboot the clock by
+disconnecting and reconnecting the USB power supply.
+
+**It is not a bad idea to reboot the clock in any case at this point**.
+
+When you reboot now, the same pattern of LEDs (five LEDS light up in **cyan**,
+and then varioius other LED color show) should occur, except for now the
+left-most LED should be **green** after the clock has sucessfully booted
+and attached to your wifi network.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## 2. Meaning of the LEDs
 
-There are two **LED Modes** that the clock can have, and as well, you can turn the LED's entirely off.
 
 When you first start the clock, it will show a certain pattern of LEDs as it boots and possibly
 connects to your Wifi network. It flashes all 5 LEDs **cyan** from left to right at initial start
@@ -206,3 +370,6 @@ allow you to use the clock without needing to access the WebUI.
 ### Appendix D - Tuning the Clock
 
 ### Appendix E - Mechanical Maintenance
+
+
+**Next:** [**Trouble Shooting**](troubles.md) potential problems with the clock ...
