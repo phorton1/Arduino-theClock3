@@ -236,7 +236,7 @@ void theClock::doPixels()
 			uint32_t button_dur = now - button_time;
 			new_pixels[PIXEL_SYNC] =
 				button_dur >= LONG_PRESS ? MY_LED_MAGENTA :
-				button_dur >= MEDIUM_PRESS ? MY_LED_PURPLE :
+				button_dur >= MEDIUM_PRESS ? MY_LED_CYAN :
 				MY_LED_WHITE;
 		}
 
