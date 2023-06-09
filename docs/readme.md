@@ -32,6 +32,10 @@ Furthermore the computer can connect to the internet to use Network Time Protoco
 to synchronize it's RTC within a few milliseconds of the *correct* international
 **standard time**.
 
+
+https://github.com/phorton1/Arduino-theClock3/assets/8419959/39dde78d-e1eb-45eb-9a4f-d103ad6d818e
+
+
 Roughly stated, the goal of this project is to produce a **wooden geared clock**
 that will be accurate to within one second per day, or, when connected to the
 internet, within one second at any given time over it's working lifetime.
