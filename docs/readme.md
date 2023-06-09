@@ -8,7 +8,6 @@
 **[Coils](coils.md)** --
 **[Assembly](assembly.md)** --
 **[Tuning](tuning.md)** --
-**[Quick Start](quick_start.md)** --
 **[User Manual](user_manual.md)** --
 **[Trouble Shooting](trouble.md)** --
 **[Notes](notes.md)**
@@ -21,11 +20,15 @@ pendulum, an **electromagnet** and **permanent magnet** to provide pulses of ene
 to the pendulum to keep it moving, as well as a **magnetic spring** to
 to speed up, or slow down the pendulum.
 
+
+![Untitled.mp4](images/Untitled.mp4)
+
 **TODO: ANIMATED GIF OF ACTUAL CLOCK AS LINK TO (TheClock3 - Ticking!!) YouTube Video**
 
-It has a computer (an **ESP32**) in it, with a *Real Time Clock* (**RTC**)
-that is fairly accurate (to within about 1 second per day).  Furthermore
-the computer can connect to the internet to use Network Time Protocol (**NTP**)
+It has a computer (an [**ESP32**](https://en.wikipedia.org/wiki/ESP32))
+in it, with a *Real Time Clock* (**RTC**) that is fairly accurate (to within about 1 second per day).
+Furthermore the computer can connect to the internet to use Network Time Protocol
+([**NTP**](https://en.wikipedia.org/wiki/Network_Time_Protocol))
 to synchronize it's RTC within a few milliseconds of the *correct* international
 **standard time**.
 
@@ -40,12 +43,11 @@ one of these clocks. Though it is not a trivial task, this repository should
 contain all of the information needed for you to build one.
 
 If you have received one of these clocks as a gift, please see the
-**[User Manual](user_manual.md)** for information on how to unpack,
-setup, start, run, and maintain your clock.  Also please see the
-**[Unpacking and Using the Clock](TODO)** YouTube video.
+**[Quick Start Guide](QuickStartGuide.pdf)** and
+**[User Manual](user_manual.md.pdf)** for information on how to unpack,
+setup, start, and run your clock.
 
-
-Otherwise (or in addition), on these pages you will find the following:
+On these pages you will find the following:
 
 - **[Design](design.md)** - An overview of the **design** and **build process** for the clock
 - **[Wood](wood.md)** - **Laser Cutting** the wood and building the gear train and frame
@@ -54,32 +56,28 @@ Otherwise (or in addition), on these pages you will find the following:
 - **[Coils](coils.md)** - **Winding the Electromagnet** coils and various other minor electrical details
 - **[Assembly](assembly.md)** - **Final Assembly** of the clock, lubrication, alignment, etc.
 - **[Tuning](tuning.md)** - **Installing the Software**, **Initial Boot**, and details on getting the clock **Running Accurately** for makers
-- **[Quick Start Guide](quick_start.md)** - a guide to **unpacking and using** the clock the first time
 - **[User Manual](user_manual.md)** - a more detailed guide to using the clock
 - **[Trouble Shooting](trouble.md)** - Some **common potential problems** and possible solutions
 - **[Notes](notes.md)** - Other notes and information about the clock, the design and development process, and personal notes
 
 TODO: In addition to designing and building this clock, and writing and publishing
-this plethora of documentation, I have also created a number of YouTube videos
-about it.   These videos are linked in various places in this documenttion, but
-for completeness, here is a list of all of the related videos:
+this documentation, I have also created a number of YouTube videos
+about it.   These videos are linked in various places in this documentation, but
+for completeness, here is a list of related videos:
 
 - **TheClock3 - Ticking!!**
 - **TheClock3 - Design Overview**
-- **TheClock3 - Basic Assembly**
 - **How I Make PCBs using a cheap 3018 CNC Machine**
 - **TheClock3 - Winding Electromagnet Coils**
-- **TheClock3 - Final Assembly**
 - **TheClock3 - Tuning the Clock**
-- **TheClock3 - Unpacking and Using the Clock**
 
 
 ## Files Available in this repository
 
-This clock was mostly *designed* using the **Fusion 360** CAD program and
-the **KiCAD** schematic and PCB design program.  The main outputs from
-Fusion 360 are the **DXF Files** (drawings) used to laser cut the wood,
-and the **STL Files** (3D models) used to 3D print the plastic parts.
+This clock was *designed* using the **Fusion 360** CAD program and
+the [**KiCAD**](https://www.kicad.org/) schematic and PCB design program.
+The main outputs from Fusion 360 are the **DXF Files** (drawings) used to laser
+cut the wood, and the **STL Files** (3D models) used to 3D print the plastic parts.
 
 The clock was mostly *implemented* by using the **Lightburn** laser CNC machine
 control software to cut the wood from the Fusion DXF files using my
@@ -89,7 +87,8 @@ them to my **Prusa MK3S 3d printer** to make the plastic parts.
 
 The PCB (printed circuit board) is almost it's own subproject.
 The outputs from *KiCad* include the basic **schematic**, and
-the **Gerber** and **Excellon** files. The program **FlatCAM** was
+the **Gerber** and **Excellon** files. The program
+[**FlatCAM**](https://bitbucket.org/jpcgt/flatcam/downloads/) was
 used to generate the GCODE files from them
 for running my [**cnc3018**](https://github.com/phorton1/Arduino-esp32_cnc3018)
 to **mill,epoxy coat, drill, and cutout** the PCB (printed circuit board.
@@ -149,6 +148,8 @@ I would like to thank the countless individuals who have contributed to making t
 development tools, source codes, and documentation available for free public use, including,
 but not limited to:
 
+- [KiCad](https://www.kicad.org/)
+- [FlatCAM](https://bitbucket.org/jpcgt/flatcam/downloads/) by **Juan Pablo Caram**
 - [Arduino IDE and Libraries](https://www.arduino.cc/)
 - [Espressif Systems](https://www.espressif.com/en/products/socs/esp32)
 - [Adafruit NeoPixel Library](https://github.com/adafruit/Adafruit_NeoPixel)

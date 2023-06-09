@@ -8,7 +8,6 @@
 **Coils** --
 **[Assembly](assembly.md)** --
 **[Tuning](tuning.md)** --
-**[Quick Start](quick_start.md)** --
 **[User Manual](user_manual.md)** --
 **[Trouble Shooting](trouble.md)** --
 **[Notes](notes.md)**
