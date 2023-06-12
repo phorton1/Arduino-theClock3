@@ -89,7 +89,7 @@ control software to cut the wood from the Fusion DXF files using my
 and the **Prusa Slicer** and **OctoPrint** to slice the Fusion STL files and send
 them to my **Prusa MK3S 3d printer** to make the plastic parts.
 
-The PCB (printed circuit board) is almost it's own subproject.
+The PCB (printed circuit board) is almost it's own sub-project.
 The outputs from *KiCad* include the basic **schematic**, and
 the **Gerber** and **Excellon** files. The program
 [**FlatCAM**](https://bitbucket.org/jpcgt/flatcam/downloads/) was
@@ -97,14 +97,14 @@ used to generate the GCODE files from them
 for running my [**cnc3018**](https://github.com/phorton1/Arduino-esp32_cnc3018)
 to **mill,epoxy coat, drill, and cutout** the PCB (printed circuit board.
 
-The following subfolders and their children can be found within this 'docs' folder
+The following sub-folders and their children can be found within this 'docs' folder
 
 - **fusion** - contains the main *Fusion 360* design **clock3.2.f3z**, as well as a few
    other files that support the design, including a CSV file containing parameters for
    the design, and a couple of **pyjoints** animations (which make use of the
    Fusion 360 [pyJoints Animation Plugin](https://github.com/phorton1/fusionAddIns-pyJoints)
    I wrote) that allowed me to visually test the design before implementing it.
-  - **dxf** - contains all of the DXF files used with **Lightburn** to laser cut the woodden parts
+  - **dxf** - contains all of the DXF files used with **Lightburn** to laser cut the wooden parts
   - **stl** - contains STL files of all the plastic parts that I 3D printed
 - **kicad/pcb3.1** - contains the **kiCAD** project, schematics, and PCB design files
   - **plot** - contains the Gerber/Excelon files output from kiCAD, along with the
@@ -123,13 +123,13 @@ If you are a **maker** you do not necessarily need to mill your own PCB as I did
 You can implement this simple circuit using **perfboard**, or can use the
 kicad files to (fairly quickly) design your own PCB to be created
 from your favorite PCB supplier.   I simply choose to mill my own PCB's
-because I and don't live in a good place for shipments and am too impatien
+because I and don't live in a good place for shipments and am too impatient
 to wait weeks (or months) to get a PCB.  You might be able to get one
 from China in a few days, but it takes much longer for me where I live.
 
 Another example is that you don't **need** to laser cut the wooden parts.
 It should be possible to use a small CNC machine (3018) to mill the gears, and
-either a slighly larger CNC machine to mill the frame parts, or they could
+either a slightly larger CNC machine to mill the frame parts, or they could
 even be cut using templates and a jigsaw or scroll saw.
 
 **HOW YOU BUILD IT IS UP TO YOU !!**
