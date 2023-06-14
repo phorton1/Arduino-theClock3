@@ -1,11 +1,13 @@
-# Accurate Wooden Geared Clock with Electromagnetic Pendulum
+# theClock3 - Accurate Wooden Geared Clock with Electromagnetic Pendulum
 
 **Home** --
 **[Design](design.md)** --
+**[Build](build.md)** --
 **[Wood](wood.md)** --
-**[Plastic](plastic.md)** --
-**[Electronics](electronics.md)** --
 **[Coils](coils.md)** --
+**[Electronics](electronics.md)** --
+**[Firmware](firmware.md)** --
+**[Plastic](plastic.md)** --
 **[Assembly](assembly.md)** --
 **[Tuning](tuning.md)** --
 **[User Manual](user_manual.md)** --
@@ -15,30 +17,26 @@
 This clock uses wooden gears and a simple electromagnetically driven pendulum
 with the goal of keeping accurate time.
 
-It uses an **angle sensor** to detect the position of the
-pendulum, an **electromagnet** and **permanent magnet** to provide pulses of energy
+It uses an **angle sensor** to detect the position of the pendulum,
+an **electromagnet** and **permanent magnet** to provide pulses of energy
 to the pendulum to keep it moving, as well as a **magnetic spring** to
 to speed up, or slow down the pendulum.
 
+It uses a specially designed **cam driven pawl** mechanism to
+reliably convert the motion of the pendulum in each direction
+to the rotation of the **seconds wheel** and **gear train*.
 
-![Untitled.mp4](images/Untitled.mp4)
-
-**TODO: ANIMATED GIF OF ACTUAL CLOCK AS LINK TO (TheClock3 - Ticking!!) YouTube Video**
-
-It has a computer (an [**ESP32**](https://en.wikipedia.org/wiki/ESP32))
-in it, with a *Real Time Clock* (**RTC**) that is fairly accurate (to within about 1 second per day).
+It has a computer (an [**ESP32**](https://en.wikipedia.org/wiki/ESP32)) in it,
+with a *Real Time Clock* (**RTC**) that is fairly accurate (to within about 1 second per day).
 Furthermore the computer can connect to the internet to use Network Time Protocol
 ([**NTP**](https://en.wikipedia.org/wiki/Network_Time_Protocol))
 to synchronize it's RTC within a few milliseconds of the *correct* international
 **standard time**.
 
-
-https://github.com/phorton1/Arduino-theClock3/assets/8419959/39dde78d-e1eb-45eb-9a4f-d103ad6d818e
-
-
 Roughly stated, the goal of this project is to produce a **wooden geared clock**
 that will be accurate to within one second per day, or, when connected to the
 internet, within one second at any given time over it's working lifetime.
+
 
 ## Documentation Outline
 
@@ -53,27 +51,27 @@ setup, start, and run your clock.
 
 On these pages you will find the following:
 
-- **[Design](design.md)** - An overview of the **design** and **build process** for the clock
-- **[Wood](wood.md)** - **Laser Cutting** the wood and building the gear train and frame
-- **[Plastic](plastic.md)** - **3D Printing** the plastic parts
-- **[Electronics](electronics.md)** - **Milling** the custom PCB (printed circuit board), Schematics, Soldering, etc
-- **[Coils](coils.md)** - **Winding the Electromagnet** coils and various other minor electrical details
-- **[Assembly](assembly.md)** - **Final Assembly** of the clock, lubrication, alignment, etc.
+- **[Design](design.md)** - An overview of the **requirements** and **design** of the clock
+- **[Build](build.md)** - An overview of **build process** of the clock
+- **[Wood](wood.md)** - **Laser Cutting** the wood and building the *frame* and *gear train*
+- **[Coils](coils.md)** - **Winding** the *electromagnet coils*
+- **[Electronics](electronics.md)** - **Milling** the custom *PCB* (printed circuit board) and creating *Cables and Connectors*
+- **[Firmware](firmware.md)** - compiling and installing the **Firmware** and doing a submodule test of the electronics
+- **[Plastic](plastic.md)** - **3D Printing** the plastic parts and assembling the *box*
+- **[Assembly](assembly.md)** - **Final Assembly** of the clock
 - **[Tuning](tuning.md)** - **Installing the Software**, **Initial Boot**, and details on getting the clock **Running Accurately** for makers
 - **[User Manual](user_manual.md)** - a more detailed guide to using the clock
 - **[Trouble Shooting](trouble.md)** - Some **common potential problems** and possible solutions
 - **[Notes](notes.md)** - Other notes and information about the clock, the design and development process, and personal notes
 
-TODO: In addition to designing and building this clock, and writing and publishing
-this documentation, I have also created a number of YouTube videos
-about it.   These videos are linked in various places in this documentation, but
-for completeness, here is a list of related videos:
-
-- **TheClock3 - Ticking!!**
-- **TheClock3 - Design Overview**
-- **How I Make PCBs using a cheap 3018 CNC Machine**
-- **TheClock3 - Winding Electromagnet Coils**
-- **TheClock3 - Tuning the Clock**
+TODO: In my initial builds of this clock I did not take enough photographs and videos
+to properly document this project.  So, at this time there are **no YouTube videos**
+and only a limited number of actual **photographs** of the build process on these
+pages.   It is my plan to build *another* instance of this clock in the near future,
+solely for the purpose of obtaining photographs and videos for this project documentation.
+Until then I will attempt to make use of Fusion 360 screen grabs and animated gifs to
+facilitate the documentation, but will ask you to **please check back**
+once I publish the updated version with YouTube videos.
 
 
 ## Files Available in this repository
@@ -123,7 +121,7 @@ If you are a **maker** you do not necessarily need to mill your own PCB as I did
 You can implement this simple circuit using **perfboard**, or can use the
 kicad files to (fairly quickly) design your own PCB to be created
 from your favorite PCB supplier.   I simply choose to mill my own PCB's
-because I and don't live in a good place for shipments and am too impatient
+because I don't live in a good place for shipments and am too impatient
 to wait weeks (or months) to get a PCB.  You might be able to get one
 from China in a few days, but it takes much longer for me where I live.
 
@@ -145,7 +143,7 @@ one of your own!
 ## Credits
 
 This project directly relies upon the public open source Arduino development system,
-the Espressif ESP32 online documentation and additions to the Arduino ID, as
+the Espressif ESP32 online documentation and additions to the Arduino IDE, as
 well as a number open source Arduino libraries
 
 I would like to thank the countless individuals who have contributed to making these

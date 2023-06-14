@@ -1,11 +1,13 @@
-# The Clock - Basic Mechanical Assembly
+# theClock3 - Final Assembly
 
 **[Home](readme.md)** --
 **[Design](design.md)** --
+**[Build](build.md)** --
 **[Wood](wood.md)** --
-**[Plastic](plastic.md)** --
-**[Electronics](electronics.md)** --
 **[Coils](coils.md)** --
+**[Electronics](electronics.md)** --
+**[Firmware](firmware.md)** --
+**[Plastic](plastic.md)** --
 **Assembly** --
 **[Tuning](tuning.md)** --
 **[User Manual](user_manual.md)** --

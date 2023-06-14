@@ -1,4 +1,4 @@
-# theClock3 - Trouble Shooting the clock (common problems)
+# theClock3 - Installing the Firmware (Build Continued)
 
 **[Home](readme.md)** --
 **[Design](design.md)** --
@@ -6,13 +6,13 @@
 **[Wood](wood.md)** --
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
-**[Firmware](firmware.md)** --
+**Firmware** --
 **[Plastic](plastic.md)** --
 **[Assembly](assembly.md)** --
 **[Tuning](tuning.md)** --
 **[User Manual](user_manual.md)** --
-**Trouble Shooting** --
+**[Trouble Shooting](trouble.md)** --
 **[Notes](notes.md)**
 
 
-**Next:** Various [**Notes**](notes.md) about the clock ...
+**Next:** 3D printing the [**Plastic Parts**](plastic.md) of the clock ...

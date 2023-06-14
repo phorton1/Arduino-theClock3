@@ -1,11 +1,13 @@
-# The Clock - User Manual
+# theClock3 - User Manual
 
 **[Home](readme.md)** --
 **[Design](design.md)** --
+**[Build](build.md)** --
 **[Wood](wood.md)** --
-**[Plastic](plastic.md)** --
-**[Electronics](electronics.md)** --
 **[Coils](coils.md)** --
+**[Electronics](electronics.md)** --
+**[Firmware](firmware.md)** --
+**[Plastic](plastic.md)** --
 **[Assembly](assembly.md)** --
 **[Tuning](tuning.md)** --
 **User Manual** --
