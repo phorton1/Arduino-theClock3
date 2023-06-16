@@ -148,14 +148,16 @@ even the **baking soda and super glue** trick to repair individual teeth on
 gears before and during the sanding process.
 
 (B) **Make sure the ends of your brass tubes are sanded and smooth** before
-inserting them into parts! Make sure **pendulum, gears, cam,** and **hands**
-go onto the appropriate sized *brass tubes* so that they **fit snugly**.
+inserting them into parts so that they don't damage the holes!
+Test fit all the pieces onto their appropriate brass tubes.
+Make sure the **pendulum, gears, cam,** and **hands** fit onto
+the correct sized brass tubes so that they **fit snugly**.
 You *may* need to lightly sand the holes so that the tubes go in, but,
 **DONT OVERDO IT!!**
 
 It is better if the *cam and pendulum* are a little easier to move
 when later adjusting the clock but it is particularly important that
-the **hands are snug** when compression fit on their appropiate brass tubes.
+the **hands are snug** when compression fit on their particular brass tubes.
 
 ![wood-gears1.jpg](images/wood-gears1.jpg)
 ![wood-gears2.jpg](images/wood-gears2.jpg)
@@ -168,7 +170,8 @@ For the **big gears**, after sanding the teeth, sand the **interior openings**
 then clean everything with a paper towel before sanding the **back** and **face**
 of each gear until they are clean enough to clear-coat.  This is an *art* more
 than it is a *science*.  **Do your best!!** ... you won't regret taking the
-time needed to make the gears as nice as possible.
+time needed to make the gears as functionally and aestheditally as
+nice as possible.
 
 (D) The **faces of the pawls** and the **contact points** on the cam will also need
 to be smooth.  The process varies with my feelings.  Sometimes I clear-coat them
@@ -195,7 +198,7 @@ Each **gear assembly** consists of one large gear with two smaller *pinon gears*
 ![wood-gears0.jpg](images/wood-gears0.jpg)
 
 The following picture shows the big gears and each pair of smaller gears
-(or the single spacer) to be glued to the big gears in their **proper orientation**.
+(or the single spacer) to be glued to the big gears, in their **proper orientation**.
 
 - the **seconds wheel** is glued to the two (smallest) **min1a** gears
 - the (largest) **min1b** gear is glued to the two (2nd smallest) **min2a** gears

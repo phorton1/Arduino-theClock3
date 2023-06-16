@@ -197,9 +197,12 @@ ESP32 based CNC controller software, and include my
 [**other extensions**](https://github.com/phorton1/Arduino-libraries-FluidNC_Extensions)
 that I added to the FluidNC library.
 
-There is also a [Fusion 360 Plugin](https://github.com/phorton1/fusionAddIns-pyJoints)
-I created which allowed me to do animations of the clock to visually see how the
-mechanism might work before actually building it.  That took about 3 weeks :-)
+There is also a quick and dirty
+[**Coil Winding Machine**](https://github.com/phorton1/Arduino-CoilWindingMachine)
+project repository for the machine I made to wind the coils for these clocks and
+a [Fusion 360 Plugin](https://github.com/phorton1/fusionAddIns-pyJoints)
+thatI created which allowed me to do animations of the clock to visually see how the
+mechanism might work before actually building it.
 
 I hope you will take a few minutes to check out some of these other pages too!!
 
