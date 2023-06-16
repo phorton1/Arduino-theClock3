@@ -20,11 +20,11 @@ with the goal of keeping accurate time.
 It uses an **angle sensor** to detect the position of the pendulum,
 an **electromagnet** and **permanent magnet** to provide pulses of energy
 to the pendulum to keep it moving, as well as a **magnetic spring** to
-to speed up, or slow down the pendulum.
+to speed up, or slow down, the pendulum.
 
 It uses a specially designed **cam driven pawl** mechanism to
 reliably convert the motion of the pendulum in each direction
-to the rotation of the **seconds wheel** and **gear train*.
+to the rotation of the **seconds wheel** and **gear train**.
 
 It has a computer (an [**ESP32**](https://en.wikipedia.org/wiki/ESP32)) in it,
 with a *Real Time Clock* (**RTC**) that is fairly accurate (to within about 1 second per day).
@@ -52,24 +52,24 @@ setup, start, and run your clock.
 On these pages you will find the following:
 
 - **[Design](design.md)** - An overview of the **requirements** and **design** of the clock
-- **[Build](build.md)** - An overview of **build process** of the clock
+- **[Build](build.md)** - An overview of the process of **building** the clock
 - **[Wood](wood.md)** - **Laser Cutting** the wood and building the *frame* and *gear train*
 - **[Coils](coils.md)** - **Winding** the *electromagnet coils*
-- **[Electronics](electronics.md)** - **Milling** the custom *PCB* (printed circuit board) and creating *Cables and Connectors*
-- **[Firmware](firmware.md)** - compiling and installing the **Firmware** and doing a submodule test of the electronics
-- **[Plastic](plastic.md)** - **3D Printing** the plastic parts and assembling the *box*
+- **[Electronics](electronics.md)** - Creating the custom **PCB** (printed circuit board), **Cables**, and **Connectors**
+- **[Firmware](firmware.md)** - Compiling and installing the **Firmware** and doing a submodule **test** of the electronics
+- **[Plastic](plastic.md)** - **3D Printing** the plastic parts and assembling the **Box**
 - **[Assembly](assembly.md)** - **Final Assembly** of the clock
-- **[Tuning](tuning.md)** - **Installing the Software**, **Initial Boot**, and details on getting the clock **Running Accurately** for makers
-- **[User Manual](user_manual.md)** - a more detailed guide to using the clock
-- **[Trouble Shooting](trouble.md)** - Some **common potential problems** and possible solutions
-- **[Notes](notes.md)** - Other notes and information about the clock, the design and development process, and personal notes
+- **[Tuning](tuning.md)** - Describes the process of getting the clock to **run accurately**
+- **[User Manual](user_manual.md)** - A more detailed guide to the **WebUI** and software for the clock
+- **[Trouble Shooting](trouble.md)** - Some common potential **problems** and possible **solutions**
+- **[Notes](notes.md)** - Personal and Other Notes and information about the clock
 
 TODO: In my initial builds of this clock I did not take enough photographs and videos
 to properly document this project.  So, at this time there are **no YouTube videos**
 and only a limited number of actual **photographs** of the build process on these
 pages.   It is my plan to build *another* instance of this clock in the near future,
 solely for the purpose of obtaining photographs and videos for this project documentation.
-Until then I will attempt to make use of Fusion 360 screen grabs and animated gifs to
+Until then I will attempt to make use of Fusion 360 **screen grabs** and **animated gifs** to
 facilitate the documentation, but will ask you to **please check back**
 once I publish the updated version with YouTube videos.
 
@@ -93,7 +93,7 @@ the **Gerber** and **Excellon** files. The program
 [**FlatCAM**](https://bitbucket.org/jpcgt/flatcam/downloads/) was
 used to generate the GCODE files from them
 for running my [**cnc3018**](https://github.com/phorton1/Arduino-esp32_cnc3018)
-to **mill,epoxy coat, drill, and cutout** the PCB (printed circuit board.
+to **mill, epoxy coat, drill, and cut out** the PCB (printed circuit board.
 
 The following sub-folders and their children can be found within this 'docs' folder
 
@@ -104,7 +104,7 @@ The following sub-folders and their children can be found within this 'docs' fol
    I wrote) that allowed me to visually test the design before implementing it.
   - **dxf** - contains all of the DXF files used with **Lightburn** to laser cut the wooden parts
   - **stl** - contains STL files of all the plastic parts that I 3D printed
-- **kicad/pcb3.1** - contains the **kiCAD** project, schematics, and PCB design files
+- **kicad/pcb3.1** - contains the **kiCAD** project, electronics schematics, and PCB design files
   - **plot** - contains the Gerber/Excelon files output from kiCAD, along with the
     **FlatCAM** project used to produce the gcode files for milling, epoxy coating,
 	drilling, and cutting out the PCB
@@ -179,9 +179,9 @@ This project directly or indirectly brings together a number of other projects o
 
 It makes direct use of my
 [**MyIOT**](https://github.com/phorton1/Arduino-libraries-myIOT)
-("my internet of things*) repository
-as the basis for the ESP32 firmware which provides a generalized approach to building parameter driven ESP32 devices that
-include a Web UI.  Another project that also make user of the *myIOT* repository is the
+("my internet of things*) repository, which provides a generalized approach to building parameter
+driven ESP32 devices that include a Web UI as the basis for the software.
+Another project that also make user of the *myIOT* repository is the
 [**Bilge Alarm**](https://github.com/phorton1/Arduino-bilgeAlarm)
 that I built for my boat.
 

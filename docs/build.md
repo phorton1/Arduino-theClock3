@@ -39,18 +39,18 @@ to this one.
 - Burn the **[Firmware](firmware.md)** and do a
 	- **submodule test** of PCB with secondary micro USB, LEDs, Coils, and Angle Sensor
 - 3D print the **[Plastic](plastic.md)** parts, clean them up and
-    - glue the coils into the box
-	- glue LED lenses into the box
-	- glue the LEDs into the box
+    - epoxy glue the coils into the box
+	- epoxy glue LED lenses into the box
+	- hot glue the LEDs into the box
 	- screw the PCB and secondary micro-usb into the box
 - [Final Assembly](assembly.md) includes:
-	- glue the *magnets* into the **pendulum** and assemble it
-	- glue the *magnets* into the **magnetic spring**
+	- epoxy glue the *magnets* into the **pendulum** and assemble it
+	- epoxy glue the *magnets* into the **magnetic spring**
 	- cut and sand the **brass tubes** and **threaded rods** to length
-	- glue the *tubes* into the **gears**
+	- epoxy glue the *tubes* into the **gears**
 	- press the *bearings* into the **frame**
 	- attach the *angle sensor* to the **frame**
-	- assemble the **gear train** and **rider**
+	- assemble the **gear train** and add the **bridge**
 	- assemble the **arms and weights** and attach them to the frame
 	- test and adjust the **mechanics**
 	- attach the **face** and **box** to finish the clock
@@ -61,6 +61,10 @@ the clock and will be prepared to present the **[User Manual](user_manual.md)**
 and **[Trouble Shooting Guide](trouble.md)** on subsquent pages.
 
 ## Bill of Materials
+
+It is probably best to try to gather as many of the materials and parts
+before starting to build the clock.  Tberefore in this section I detail
+a list of the materials and parts that are needed to build one of these.
 
 The clock is made mostly of 3/16" and 1/8" plywood which I measured as 4.8mm and 3.175mm thick, respectively.
 You can probably swap 5mm plywood for 3/16" with no design changes.
@@ -83,7 +87,7 @@ $5 for 50!!   When I am sourcing these small cheap parts I usually prefer to buy
 so that I have them on hand for other projects.
 
 I also used brand new 30 guage magnet wire for the coils, but this could easily be
-replaced with reclaimed wire from an old wall-wart transormer or similar.
+replaced with reclaimed wire from an old wall-wart transformer or similar.
 
 Without further adoo, here is the **BOM** (Bill of Materials):
 
@@ -95,11 +99,11 @@ td {
 
 <table>
 <tr>
-	<th>Category</td>
-	<th>Descrip</td>
-	<th>Qty</td>
-	<th>Cost</td>
-	<th>Notes</td>
+	<th>Category</th>
+	<th>Descrip</th>
+	<th>Qty</th>
+	<th>Cost</th>
+	<th>Notes</th>
 </tr>
 
 <tr>
@@ -109,7 +113,7 @@ td {
 	<td></td>
 	<td>
 		frame parts:  back, middle, front,
-		rider, frame top, house top, house bottom,
+		bridge, frame top, house top, house bottom,
 		and box top
 	</td>
 	<td></td>

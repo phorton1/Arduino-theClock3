@@ -265,11 +265,11 @@ mag_front_back,		mm, 	pendulum_front - ply_thin
 mag_front_front,	mm,		mag_front_back - ply_medium
 
 
-main_back,			mm,		mag_front_front - ply_medium
-main_front,			mm,		main_back - ply_medium
+middle_back,		mm,		mag_front_front - ply_medium
+middle_front,		mm,		middle_back - ply_medium
 
 
-arm_back,			mm,		main_front - ply_medium - washer3_thick
+arm_back,			mm,		middle_front - ply_medium - washer3_thick
 arm_front,			mm,		arm_back - ply_medium
 
 wheel_back,			mm,		arm_front - washer3_thick
@@ -302,15 +302,15 @@ hour2b_front,		mm,		hour2b_back - ply_medium
 hour_spacer_back,	mm,		hour2b_front
 hour_spacer_front,	mm,		hour_spacer_back - ply_medium
 
-rider_back,			mm,		hour_spacer_front - ply_thin
-rider_front,		mm,		rider_back - ply_medium
+bridge_back,		mm,		hour_spacer_front - ply_thin
+bridge_front,		mm,		bridge_back - ply_medium
 
-front_back,			mm,		rider_back + ply_medium
+front_back,			mm,		bridge_back + ply_medium
 front_front,		mm,		front_back - ply_medium
 
-face_front,			mm,		rider_front - ply_thin
+face_front,			mm,		bridge_front - ply_thin
 
-hours_hand,			mm,		rider_front - ply_medium - 0.5 mm
+hours_hand,			mm,		bridge_front - ply_medium - 0.5 mm
 minutes_hand,		mm,		hours_hand - ply_thin - 2 mm
 seconds_hand,		mm,		minutes_hand - ply_thin - 2 mm
 
@@ -322,7 +322,7 @@ top_tube_start,		mm,		back_back + 2 * ply_medium
 top_tube_end,		mm,		-68.8
 top_tube_len,		mm,		top_tube_end - top_tube_start,  	78.4
 
-secs_tube_start,	mm,		main_back
+secs_tube_start,	mm,		middle_back
 secs_tube_end,		mm,		seconds_hand - ply_thin - 2 mm
 secs_tube_len,		mm,		secs_tube_end - secs_tube_start,	85.70
 
@@ -334,11 +334,11 @@ hours_tube_start,	mm,		hour1a_front - washer5_thick
 hours_tube_end,		mm,		hours_hand - ply_thin - 1mm
 hours_tube_len,		mm,		hours_tube_end - hours_tube_start,	27.60
 
-thr_rod_start,		mm,		main_back
+thr_rod_start,		mm,		middle_back
 thr_rod_end,		mm,		rider_front
 thr_rod_len,		mm,		thr_rod_end - thr_rod_start,		64.875 pendulum bolt 73.5
 
-idler1_start,		mm,		main_front - 2 * washer3_thick - nut3_thick
+idler1_start,		mm,		middle_front - 2 * washer3_thick - nut3_thick
 idler1_end,			mm,		min2a_front
 idler1_len,			mm,		idler1_end - idler1_start,			29.475
 
