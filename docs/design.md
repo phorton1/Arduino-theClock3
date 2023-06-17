@@ -7,7 +7,7 @@
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
 **[Firmware](firmware.md)** --
-**[Plastic](plastic.md)** --
+**[Box](box.md)** --
 **[Assembly](assembly.md)** --
 **[Tuning](tuning.md)** --
 **[User Manual](user_manual.md)** --
@@ -206,15 +206,17 @@ The wooden part also has an extension below the weight which contains the **meta
 so our full pendulum is somewhat longer than the ideal pendulum at **322.5 mm**.
 The (center of the) lead weight can be adjusted so that the weight can be anywhere
 from about **230** to **270** mm from the pivot point to allow us to adjust the
-weight so that the pendulum swings *slightly slower* than one second (1000ms),
-or **about 1010ms**, per full swing.
+weight up or down +/- 20mm or so from the ideal length.
+
+We will adjust it to swing *slightly slower* than one second (1000ms),
+or at a rate of **about 1010ms** per full swing at the *minimum angle*
+and a *bit quicker*, at about **990ms** per swing when it comes under
+the influence of the magnetic spring at the *maximum angle*.
 
 
-## 3. Electronics Design
+## 3. Coil Calculations
 
 The clock uses two 5x5x2mm *neodynium* magnets in the pendulum.
-
-### Coils
 
 The coils run at **5V** (USB power supply) and I have **30 guage magnet wire** on hand.
 
@@ -240,30 +242,6 @@ the coil into the box, I ended up actually winding the coils with 440 turns
 resulting in a calculated resistance of 5.75 ohms and a current draw
 of about 0.9 amps at 4.94 volts.   The resistance I measured was roughtly about
 6 ohms.
-
-The **L293D** integrated circuit is rated at **600ma** from 4 to 36 volts,
-so I am **pushing the chip past it's design specs**, sigh. However,
-it is worth noting that the typical parameterized driving impulse
-is only **120 ms** in duration, so the **overal duty cycle** of the circuit
-is about only 10%.  and the **PWM output** from the ESP32 typically
-runs at about 50%, so (for the time being) I am using this circuit.
-There is a [note](notes.md) about upgrading this in the future.
-
-### PCB (Printed Circuit Board) and Fusion 360
-
-It is worth noting that I have modified my **KiCAD** environment a
-bit, generating custom *symbols* and *footprints* with *3D components*
-so that when I design the PCB, I can also export a *3D Model* (**STEP file**)
-of it from KiCad.
-
-I used to have to keep track of, and manually redraw, all of the dimensions
-of the PCB in Fusion 360, but now, with the STEP file from KiCad,
-I am then able to import that 3D model *directly into my Fusion 360 design*
-which makes it **much easier** to do things like creating screw holes for
-the PCB mount and things like locating the cutouts in the box for the
-USB connector.
-
-
 
 
 **Next:** An overview of the [**Build Process**](build.md) for the clock ...

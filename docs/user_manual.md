@@ -7,7 +7,7 @@
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
 **[Firmware](firmware.md)** --
-**[Plastic](plastic.md)** --
+**[Box](box.md)** --
 **[Assembly](assembly.md)** --
 **[Tuning](tuning.md)** --
 **User Manual** --

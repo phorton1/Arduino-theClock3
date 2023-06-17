@@ -7,7 +7,7 @@
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
 **Firmware** --
-**[Plastic](plastic.md)** --
+**[Box](box.md)** --
 **[Assembly](assembly.md)** --
 **[Tuning](tuning.md)** --
 **[User Manual](user_manual.md)** --
@@ -15,4 +15,4 @@
 **[Notes](notes.md)**
 
 
-**Next:** 3D printing the [**Plastic Parts**](plastic.md) of the clock ...
+**Next:** 3D printing and assembling the [**Box**](box.md) for the clock ...

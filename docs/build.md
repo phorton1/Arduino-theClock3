@@ -5,7 +5,7 @@
 **[Design](design.md)** --
 **[Build](build.md)** --
 **[Wood](wood.md)** --
-**[Plastic](plastic.md)** --
+**[Box](box.md)** --
 **[Electronics](electronics.md)** --
 **[Firmware](firmware.md)** --
 **[Coils](coils.md)** --
@@ -38,7 +38,7 @@ to this one.
 	  and secondary micro-usb connector.
 - Burn the **[Firmware](firmware.md)** and do a
 	- **submodule test** of PCB with secondary micro USB, LEDs, Coils, and Angle Sensor
-- 3D print the **[Plastic](plastic.md)** parts, clean them up and
+- 3D Printing and Assemble the [**Box**](box.md) for the clock
     - epoxy glue the coils into the box
 	- epoxy glue LED lenses into the box
 	- hot glue the LEDs into the box
@@ -257,4 +257,3 @@ td {
 
 
 **Next:** Laser cutting the [**Wooden Parts**](wood.md) of the clock ...
-
