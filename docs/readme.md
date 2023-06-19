@@ -6,7 +6,7 @@
 **[Wood](wood.md)** --
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
-**[Firmware](firmware.md)** --
+**[Software](software.md)** --
 **[Box](box.md)** --
 **[Assembly](assembly.md)** --
 **[Tuning](tuning.md)** --
@@ -56,7 +56,7 @@ On these pages you will find the following:
 - **[Wood](wood.md)** - **Laser Cutting** the wood and building the *frame* and *gear train*
 - **[Coils](coils.md)** - **Winding** the *electromagnet coils*
 - **[Electronics](electronics.md)** - Creating the custom **PCB** (printed circuit board), **Cables**, and **Connectors**
-- **[Firmware](firmware.md)** - Compiling and installing the **Firmware** and doing a submodule **test** of the electronics
+- **[Software](software.md)** - Compiling and installing the **Software** and doing a submodule **test** of the electronics
 - **[Plastic](plastic.md)** - **3D Printing** the plastic parts and assembling the **Box**
 - **[Assembly](assembly.md)** - **Final Assembly** of the clock
 - **[Tuning](tuning.md)** - Describes the process of getting the clock to **run accurately**
@@ -176,11 +176,12 @@ Please see [LICENSE.TXT](../LICENSE.TXT) for more information.
 ## Please Also See
 
 This project directly or indirectly brings together a number of other projects of mine.
-
-It makes direct use of my
+It supersedes my previous clock projects: [**theClocks 1&2**](https://github.com/phorton1/Arduino-theClock)
+and makes direct use of my
 [**MyIOT**](https://github.com/phorton1/Arduino-libraries-myIOT)
 ("my internet of things*) repository, which provides a generalized approach to building parameter
 driven ESP32 devices that include a Web UI as the basis for the software.
+
 Another project that also make user of the *myIOT* repository is the
 [**Bilge Alarm**](https://github.com/phorton1/Arduino-bilgeAlarm)
 that I built for my boat.

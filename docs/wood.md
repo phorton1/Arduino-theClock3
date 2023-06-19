@@ -6,7 +6,7 @@
 **Wood** --
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
-**[Firmware](firmware.md)** --
+**[Software](software.md)** --
 **[Box](box.md)** --
 **[Assembly](assembly.md)** --
 **[Tuning](tuning.md)** --
@@ -15,7 +15,7 @@
 **[Notes](notes.md)**
 
 Note that there are no *wood stains* used in this project.  All I use is a
-laquer based **clear coat** on the parts and let the natural colors of the
+lacquer based **clear coat** on the parts and let the natural colors of the
 different types of wood show through.
 
 
@@ -33,7 +33,7 @@ project showing and naming all of the wooden parts that are laser cut.
 - <font color='orange'><b>orange</b></font> parts are cut from **1/8" walnut** hardwood
 
 I specifically cut the **pendulum** out of better **3/16 walnut plywood** that
-I happen to have.  It is more rigid and a bit thicker than the birch or cheap plywoods.
+I happen to have.  It is more rigid and a bit thicker than the birch or cheap plywood.
 
 I usually sand both sides of the frame *plywood* pieces with an electric
 **palm sander** before cutting the parts out.  I sand the smaller pieces
@@ -65,7 +65,7 @@ pieces of wood that I cut.
 Where possible, for all the big parts, immediately after cutting
 I rub down the laser cuts with a **paper towel** to remove as much
 of the charcoal as is easily done before moving them to my work table.
-The process of cleaning and sanding the laser cut parts is surprisignly
+The process of cleaning and sanding the laser cut parts is surprisingly
 *messy* and I find that I need to wash my hands often to prevent the
 oil from my hands combining with the charcoal dust and leaving marks
 in the wood.
@@ -86,21 +86,21 @@ may be necessary to get the tabs to go into the slots.
 
 Glue the frame together, in *one fell swoop*, with **wood glue** before
 clamping it together!! The order of assembly of the frame is important,
-is shown in the below **animaged GIF**, and it is necessary that **all
+is shown in the below **animated GIF**, and it is necessary that **all
 pieces are in place, and square** before any **glue sets up** !!!
 
 ![wood-frame_assembly.gif](images/wood-frame_assembly.gif)
 
 Starting the with the **middle** frame piece, glue the
 **house top**, **house bottom**, and **frame top** to it. Then,
-while holding those pieces roughtly in place, turn it on it's side
+while holding those pieces roughly in place, turn it on it's side
 and glue **one of the frame sides to that**, then flip it over and
 glue the **other frame side to that**. Then glue
 the **frame back**, and, finally, **the frame front**.
 
-**Clamp** the frame together and let it dry thouroughly ...
+**Clamp** the frame together and let it dry thoroughly ...
 
-When it is thouroughly dry, lightly finish sand **the assembled frame**,
+When it is thoroughly dry, lightly finish sand **the assembled frame**,
 and the separate **bridge piece** before applying 2-3 clear-coats to the interior
 of the frame and back of the bridge, and 3-4 coats to the
 exterior and front.
@@ -125,7 +125,7 @@ them during the face assembly.
 I place the **face** downwards on a sheet of wax paper and glue
 the numbers in with **white glue**, inserting them from the back
 so that they are *flush with the front of the face*.  Then
-after the glue is thouroughly dry, I rough sand the back as needed
+after the glue is thoroughly dry, I rough sand the back as needed
 and sand the face with 220 and 320 grit sand paper until it
 looks clean.
 
@@ -170,7 +170,7 @@ For the **big gears**, after sanding the teeth, sand the **interior openings**
 then clean everything with a paper towel before sanding the **back** and **face**
 of each gear until they are clean enough to clear-coat.  This is an *art* more
 than it is a *science*.  **Do your best!!** ... you won't regret taking the
-time needed to make the gears as functionally and aestheditally as
+time needed to make the gears as functionally and aesthetically as
 nice as possible.
 
 (D) The **faces of the pawls** and the **contact points** on the cam will also need
@@ -179,11 +179,11 @@ first and then only sand these pieces once afterwards to minimize the
 amount of material removed.
 
 (E) In any case, it is important to **apply several clear-coats** to the gears,
-particularly *saturating the **teeth** snd **contact points***.
+particularly *saturating the **teeth** and **contact points***.
 The clear coat adds significant strength and **wear resistance** to these
 parts.
 
-(F) After clear coating and allowing to dry thouroughly, **re-sand each tooth**
+(F) After clear coating and allowing to dry thoroughly, **re-sand each tooth**
 and all **contact points** to minimize friction.  I like to do the second
 sanding of the small (pinon) gears by aligning each pair of pinon gears
 on a **brass tube** and then doing the second pass at sanding their teeth
@@ -229,7 +229,7 @@ during this process.
 the tube, **spin** them, and **adjust** them get them as **square as possible**
 before the epoxy sets up.
 
-Any *wobbles* introduced at this point will be permananent (as I learned
+Any *wobbles* introduced at this point will be permanent (as I learned
 the hard way a few times) so **take your time** and glue and **align**
 each gear sub-assembly on the (raw) brass tubes. If you end up with
 a **wobbly gear** it is probably better to just re-cut, re-sand,

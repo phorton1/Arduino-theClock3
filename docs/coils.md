@@ -6,7 +6,7 @@
 **[Wood](wood.md)** --
 **Coils** --
 **[Electronics](electronics.md)** --
-**[Firmware](firmware.md)** --
+**[Software](software.md)** --
 **[Box](box.md)** --
 **[Assembly](assembly.md)** --
 **[Tuning](tuning.md)** --
@@ -104,7 +104,7 @@ tape for the rod to pass through.
 
 ### 3. Assemble Tools and Bobbin
 
-PRH TODO:  The photos in this secction of the process and
+PRH TODO:  The photos in this section of the process and
 some subsequent ones are the opposite of what I do now.
 I need to make new photos and videos.
 
@@ -132,7 +132,7 @@ while we are winding the coil!!
 ![coils-assembly3.jpg](images/coils-assembly3.jpg)
 
 You should now have the entire assembly in your hands, with the wire freely passing through
-the innner hole.
+the inner hole.
 
 
 ### 4. Insert assembly into Winding Machine and do First Turns
@@ -203,7 +203,7 @@ move the coil 1/2 turn by hand to put epoxy on the other side.
 
 The coil should be wound until the wire *just reaches the **notch*** but no further!!
 This should be **about 440 turns**.  More important than the exact number of turns
-is that you wind appoximately the **same number of turns on both coils!**.
+is that you wind approximately the **same number of turns on both coils!**.
 
 Also, it is important to **get as little epoxy as possible** on the
 **Left Tool** in the process.
@@ -243,7 +243,7 @@ still turning*.  Scrub-a-dub!
 it to setup enough so that when we disassemble the tool it doesn't come apart.
 
 
-### 8. Remove and Unwind the assembly from the mahcine
+### 8. Remove and Unwind the assembly from the machine
 
 So, after **about 3-5 more minutes** for the epoxy to setup, but while it is still **tacky** ....
 
@@ -261,7 +261,7 @@ So, after **about 3-5 more minutes** for the epoxy to setup, but while it is sti
 
 ### 9. Disassemble and free the coil
 
-Finally we dissasemble the whole thing and pop the coil out of the tools
+Finally we disassemble the whole thing and pop the coil out of the tools
 
 - remove the **lock nuts** from the long end of the tool
 - unscrew the entire glued **tool-bobbin assembly** from the threaded rod
@@ -292,10 +292,10 @@ I found that the kapton tape came nicely free from the epoxy.  I have not tried 
 
 Congratulations!
 
-You shouold now have a finished coil in your hand. Carefully set it aside.
+You should now have a finished coil in your hand. Carefully set it aside.
 It is a good idea to **immediately detail clean the tools with rubbing alcohol**
 scrubbing them to remove any epoxy that might be on them.  I also take a
-moment with a **toothpick** and the alchohol towel to clean any excess epoxy
+moment with a **toothpick** and the alcohol towel to clean any excess epoxy
 from the finished coil itself.
 
 

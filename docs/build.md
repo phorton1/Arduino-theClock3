@@ -5,10 +5,10 @@
 **[Design](design.md)** --
 **[Build](build.md)** --
 **[Wood](wood.md)** --
-**[Box](box.md)** --
-**[Electronics](electronics.md)** --
-**[Firmware](firmware.md)** --
 **[Coils](coils.md)** --
+**[Electronics](electronics.md)** --
+**[Software](software.md)** --
+**[Box](box.md)** --
 **[Assembly](assembly.md)** --
 **[Tuning](tuning.md)** --
 **[User Manual](user_manual.md)** --
@@ -30,19 +30,22 @@ to this one.
     - sand the gears and certain mechanism parts again
 	- align and glue to the **pairs of gears** together
 - Wind the electromagnet **[Coils](coils.md)**
-- Create the **[PCB](electronics.md)** (printed circuit board)
-    - isolation routing, epoxy coating, laser curing, drilling, milling, and cutout
+- Create the **[electronics](electronics.md)** **PCB** (printed circuit board) and cables/connectors
+    - PCB isolation routing, epoxy coating, laser curing, drilling, milling, and cutout
 	- **continuity test** the PCB
 	- **solder components** to the PCB
 	- **make cables/connectors** for the LEDs, Coils, AS5600 angle sensor
 	  and secondary micro-usb connector.
-- Burn the **[Firmware](firmware.md)** and do a
-	- **submodule test** of PCB with secondary micro USB, LEDs, Coils, and Angle Sensor
-- 3D Printing and Assemble the [**Box**](box.md) for the clock
+- Install and Build the **[Software](software.md)**
+	- install the *Arduino IDE* and necessary **libraries**
+    - build the **code** and upload it, and the *SPIFFS file system* to the ESP32
+	- a quick *introduction and overview* of the **Software**
+	- a quick **submodule test** of PCB (Buttons, LEDs, Coils, and Angle Sensor, etc)
+- 3D Print and Assemble the [**Box**](box.md) for the clock
     - epoxy glue the coils into the box
 	- epoxy glue LED lenses into the box
 	- hot glue the LEDs into the box
-	- screw the PCB and secondary micro-usb into the box
+	- screw the PCB and secondary micro-usb module into the box
 - [Final Assembly](assembly.md) includes:
 	- epoxy glue the *magnets* into the **pendulum** and assemble it
 	- epoxy glue the *magnets* into the **magnetic spring**
@@ -58,12 +61,12 @@ to this one.
 After the clock is physically assembled and roughly working, then
 we can proceed to a step by step guide to **[Tuning](tuning.md)**
 the clock and will be prepared to present the **[User Manual](user_manual.md)**
-and **[Trouble Shooting Guide](trouble.md)** on subsquent pages.
+and **[Trouble Shooting Guide](trouble.md)** on subsequent pages.
 
 ## Bill of Materials
 
 It is probably best to try to gather as many of the materials and parts
-before starting to build the clock.  Tberefore in this section I detail
+before starting to build the clock.  Therefore in this section I detail
 a list of the materials and parts that are needed to build one of these.
 
 The clock is made mostly of 3/16" and 1/8" plywood which I measured as 4.8mm and 3.175mm thick, respectively.
@@ -86,7 +89,7 @@ the parts.   For example, the tiny 3x9x4mm bearings probably cost about $3 for 1
 $5 for 50!!   When I am sourcing these small cheap parts I usually prefer to buy the larger packages
 so that I have them on hand for other projects.
 
-I also used brand new 30 guage magnet wire for the coils, but this could easily be
+I also used brand new 30 gauge magnet wire for the coils, but this could easily be
 replaced with reclaimed wire from an old wall-wart transformer or similar.
 
 Without further adoo, here is the **BOM** (Bill of Materials):
@@ -217,7 +220,7 @@ td {
 	<tr><td></td><td>AS5600 magnetic angle sensor	</td><td>1	</td><td>$4.00</td><td></td></tr>
 	<tr><td></td><td>PCB							</td><td>1	</td><td>$2.00</td><td>copper board, UV epoxy</td></tr>
 	<tr><td></td><td>LEDs							</td><td>5	</td><td>$0.50</td><td>1/12th of a WS2812b (60/meter) LED strip</td></tr>
-	<tr><td></td><td>Coils							</td><td>2	</td><td>$1.00</td><td>approx 18' 30 guage wire each</td></tr>
+	<tr><td></td><td>Coils							</td><td>2	</td><td>$1.00</td><td>approx 18' 30 gauge wire each</td></tr>
 	<tr><td></td><td>Buttons						</td><td>2	</td><td>$1.00</td><td></td></tr>
 	<tr><td></td><td>L293D driver IC				</td><td>1	</td><td>$1.00</td><td></td></tr>
 	<tr><td></td><td>10K resistor					</td><td>7	</td><td>$0.40</td><td></td></tr>
@@ -241,7 +244,7 @@ td {
 	<tr><td></td><td>5x5x2 mm magnet				</td><td>2	</td><td>$0.50</td><td>bought 50 for $12.50</td></tr>
 	<tr><td></td><td>3x3x2 mm magnet				</td><td>3  </td><td>$0.54</td><td>bought 50 for $9.00</td></tr>
 	<tr><td></td><td>6mm diametric magnet			</td><td>1	</td><td>		</td><td>included with as5600 sensors</td></tr>
-	<tr><td></td><td>30 guage wire					</td><td>	</td><td>$0.50	</td><td>approx 36'</td></tr>
+	<tr><td></td><td>30 gauge wire					</td><td>	</td><td>$0.50	</td><td>approx 36'</td></tr>
 	<tr><td></td><td>power supply					</td><td>1	</td><td>$7.00  </td><td></td></tr>
 
 <tr>

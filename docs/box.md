@@ -6,7 +6,7 @@
 **[Wood](wood.md)** --
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
-**[Firmware](firmware.md)** --
+**[Software](software.md)** --
 **Box** --
 **[Assembly](assembly.md)** --
 **[Tuning](tuning.md)** --

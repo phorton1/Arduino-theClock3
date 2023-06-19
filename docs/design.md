@@ -6,7 +6,7 @@
 **[Wood](wood.md)** --
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
-**[Firmware](firmware.md)** --
+**[Software](software.md)** --
 **[Box](box.md)** --
 **[Assembly](assembly.md)** --
 **[Tuning](tuning.md)** --
@@ -22,7 +22,7 @@ of building those earlier clocks.  Some of the most important changes from those
 - The *cam driven mechanism* moves the pawls so that the pendulum does *work* in **both directions** as it swings
 - It uses **smaller gears** to lessen the *mass*, *friction* and amount of *work* the clock must do.
 - It uses an **angle sensor** instead of *hall sensors* for more accuracy in controlling the pendulum.
-- It uses a **box-joint assembly** rather than *wooden dowls* to provide a more rigid and accurate frame.
+- It uses a **box-joint assembly** rather than *wooden dowels* to provide a more rigid and accurate frame.
 - More care was taken to **balance** the *center of mass* of the **hands** so that they don't add extra *work* for the clock as they spin
 - It has an **adjustable pendulum** weight for more accuracy in *tuning* the clock
 - The **magnetic spring** has been separated from the *main driving magnet* to prevent *twisting moments* on the *pendulum*
@@ -33,7 +33,7 @@ of building those earlier clocks.  Some of the most important changes from those
 ## 1. Basics
 
 There is an **angle sensor** on the pendulum.  By comparing successive
-measurments we can determine the pendulum's *direction*, when it *crosses zero*,
+measurements we can determine the pendulum's *direction*, when it *crosses zero*,
 and the extreme *maximum angle* it achieves during any given swing.
 
 The pendulum has a **magnet** in it that passes between a pair of **electromagnetic coils**
@@ -53,12 +53,12 @@ regardless of how far the pendulum swings.
 There is another **pair of magnets**, one in the stem of the pendulum, and one
 that is affixed to the clock that is adjustable, that together, via magnetic
 repulsion, act as a **magnetic spring**. Because of this spring, the pendulum
-swings *faster* when it swings sufficently far to **bounce** off of this spring,
+swings *faster* when it swings sufficiently far to **bounce** off of this spring,
 and it swings *slower* when it swings less and the spring does not come into play.
 
 ### How it Works
 
-We establish a **working minumum angle** at which the clock functions, by which we
+We establish a **working minimum angle** at which the clock functions, by which we
 mean that it actually *ticks* and *tocks* reliably. For prudence we set this to a
 few degrees wider than the *minimum design angle* at approximately **8 degrees**
 about center, or 16 degrees overall.
@@ -73,7 +73,8 @@ We **adjust the weight** on the pendulum so that the pendulum swings a little
 We then **adjust the spring** so that it swings a little *faster* than one
 second (about 990 ms) when it swings at the maximum angle.
 
-The clock (code) works by using a **primary PID controller** to swing at a
+The clock (code) works by using a **primary
+[PID controller](https://en.wikipedia.org/wiki/PID_controller)** to swing at a
 **given ANGLE** by increasing or decreasing the amount of power fed to the
 coil during each swing.  We call this angle the **target angle**, and when working
 correctly, the clock will reliably swing within a few tenths of a degree
@@ -105,37 +106,37 @@ and increased the accuracy of the clock.
 The swing error is based on subsequent calls to the millis() function, rather
 than comparing the time directly to the RTC clock.  This means that the algorithm
 itself can drift from RTC time.  We allow this to happen and provide a separate
-synchronization method, **onSyncRTC()**, to occasionally (once per hour, parameterized)
+synchronization method, **onSyncRTC()**, to occasionally (once per hour, parametrized)
 correct for this potential drift. This allows us to keep track of the drift between
 the algorithm and the RTC and isolates the basic swing PID controllers
 from changes in the RTC.
 
 Finally, if connected to the internet, we occasionally (once every three hours,
-parameterized) synchronize the RTC to **NTP** (Network Time Protocol) to correct
+parametrized) synchronize the RTC to **NTP** (Network Time Protocol) to correct
 for the ESP32 clock drift via another method **onSyncNTP()**.
 
 
-### [myIOT framework](https://github.com/phorton1/Arduino-libraries-myIOT) and parameterization
+### [myIOT framework](https://github.com/phorton1/Arduino-libraries-myIOT) and parametrization
 
 The clock makes use of a library that I created, called
 [myIOT](https://github.com/phorton1/Arduino-libraries-myIOT) for
-creating parameterized devices with ESP32's.   By using this library
+creating parametrized devices with ESP32's.   By using this library
 the clock presents a **User Interface** over the **Serial Port** and/or
 a browser based **WebUI** and/or **Telnet** UI via **Wi-Fi** that
 lets you control and monitor the clock.
 
 Much of the **behavior** of the clock can be modified using these UI's.
 For instance, the **minimum and maximum working angle** and the
-**duration of the pulses** are parameterized and can be modified
+**duration of the pulses** are parametrized and can be modified
 at run-time in order to better [Tune](tuning.md) the clock.
 
 Likewise, the **PID controller values** for both PID controllers are also
-parameterized. as well as things like **the interval for syncing
+parametrized. as well as things like **the interval for syncing
 the RTC and NTP clocks**.  In fact the firmware can even be **re-compiled
-and uploaded** to the ESP32 via Wifi with **OTA** (Over the Air) updates.
+and uploaded** to the ESP32 via WiFi with **OTA** (Over the Air) updates.
 
 Please see the **[User Manual](user_manual.md)** for more details on
-the capabilites of the software and the various user interfaces.
+the capabilities of the software and the various user interfaces.
 
 ## 2. Mechanical Calculations
 
