@@ -7,7 +7,7 @@
 **Coils** --
 **[Electronics](electronics.md)** --
 **[Software](software.md)** --
-**[Box](box.md)** --
+**[Other](other.md)** --
 **[Assembly](assembly.md)** --
 **[Tuning](tuning.md)** --
 **[User Manual](user_manual.md)** --
@@ -70,7 +70,7 @@ through which the initial wire is fed.  At the end of winding, there is a
 through which the final wire is *cinched* for the final coat of epoxy to fix it
 in place.
 
-**It is a good idea to dry the bobbin to the tool and expand the holes with a pin
+**It is a good idea to dry fit the bobbin to the tool and expand the holes with a pin
 or exacto knife** as needed so that you can easily and reliably feed the
 wire through them when the bobbin is on the tool. Especially the final
 hole, as you will be feeding the wire through it *while the bobbin is
@@ -223,7 +223,7 @@ the other side.  It's like threading a needle, that has been dipped in epoxy glu
 ![coils-done2.jpg](images/coils-done2.jpg)
 
 - Affix the wire to the adapter with **another small piece of masking tape**.
-- type **R10** to change back to 10 revolutions per space bar
+- type **R10** into the laptop to change back to 10 revolutions per space bar
 - press the **space bar** and wind the *remainder* of the **free end** of the wire around the adapter.
 - put another, final small piece of masking tape on the free end to affix it to the adapter
 

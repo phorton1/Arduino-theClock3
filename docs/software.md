@@ -7,7 +7,7 @@
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
 **Software** --
-**[Box](box.md)** --
+**[Other](other.md)** --
 **[Assembly](assembly.md)** --
 **[Tuning](tuning.md)** --
 **[User Manual](user_manual.md)** --
@@ -423,7 +423,4 @@ the clock.
 
 
 
-
-
-
-**Next:** 3D printing and assembling the [**Box**](box.md) for the clock ...
+**Next:** - Finish the [**other sub-assemblies**](other.md) of the clock, including the **box, pendulum,** and **cutting the tubes**

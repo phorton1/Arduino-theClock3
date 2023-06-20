@@ -7,7 +7,7 @@
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
 **[Software](software.md)** --
-**[Box](box.md)** --
+**[Other](other.md)** --
 **[Assembly](assembly.md)** --
 **[Tuning](tuning.md)** --
 **[User Manual](user_manual.md)** --
@@ -119,7 +119,7 @@ for the ESP32 clock drift via another method **onSyncNTP()**.
 ### [myIOT framework](https://github.com/phorton1/Arduino-libraries-myIOT) and parametrization
 
 The clock makes use of a library that I created, called
-[myIOT](https://github.com/phorton1/Arduino-libraries-myIOT) for
+[myIOT](https://github.com/phorton1/Arduino-libraries-myIOT), for
 creating parametrized devices with ESP32's.   By using this library
 the clock presents a **User Interface** over the **Serial Port** and/or
 a browser based **WebUI** and/or **Telnet** UI via **Wi-Fi** that
@@ -170,10 +170,10 @@ td,th {
 	<th>Modulus</th>
 	<th>Ratio</th>
 </tr>
-<tr><td><b>min1a and min1b</b></td>		<td>8</td>	<td>64</td>	<td>1.6667</td>	<td>8:1</td>
-<tr><td><b>min2a and min2b</b></td>		<td>8</td>	<td>60</td>	<td>1.7647</td>	<td>7.5:1</td>
-<tr><td><b>hour1a and hour1b</b></td>	<td>10</td>	<td>40</td>	<td>2.4</td>	<td>4:1</td>
-<tr><td><b>hour2a and Hour2b</b></td>	<td>12</td>	<td>36</td>	<td>2.5</td>	<td>3:1</td>
+<tr><td><b>min1a and min1b</b></td>		<td>8</td>	<td>64</td>	<td>1.6667</td>	<td>8:1</td></tr>
+<tr><td><b>min2a and min2b</b></td>		<td>8</td>	<td>60</td>	<td>1.7647</td>	<td>7.5:1</td></tr>
+<tr><td><b>hour1a and hour1b</b></td>	<td>10</td>	<td>40</td>	<td>2.4</td>	<td>4:1</td></tr>
+<tr><td><b>hour2a and Hour2b</b></td>	<td>12</td>	<td>36</td>	<td>2.5</td>	<td>3:1</td></tr>
 </table>
 
 By multiplying the gear ratios we can see that the **minutes gears** have an overall
@@ -200,7 +200,7 @@ back and forth, per second.  The math predicts that a pendulum of approximately 
 in today's units is **0.994 meters**, so an ideal 1/2 second pendulum would have a
 length of **248.5 mm**.
 
-Our pendulum is designed to utilized **threads drilled and tapped** through a
+Our pendulum is designed to utilize **threads drilled and tapped** through a
 **lead fishing weight** and, by affixing that to the shaft via a threaded rod so that
 turning the weight will move it up or down, the pendulum can be adjusted.
 The wooden part also has an extension below the weight which contains the **metal magnet**

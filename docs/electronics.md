@@ -7,7 +7,7 @@
 **[Coils](coils.md)** --
 **Electronics** --
 **[Software](software.md)** --
-**[Box](box.md)** --
+**[Other](other.md)** --
 **[Assembly](assembly.md)** --
 **[Tuning](tuning.md)** --
 **[User Manual](user_manual.md)** --
@@ -83,6 +83,10 @@ From the KiCad PCB design program I export a **STEP file** (3D model of the PCB)
 and the **Gerber** and **Excelon** files that I will use in **FlatCam** to
 generate the **gcode** to mill, laser, drill, and cut out the PCB.
 
+It is beyond the scope of this document to describe how the **Flatcam**
+project, and the resulting **gcode files** are produced.  However,
+the *project and all of the output files* are included in this
+repository if you want to explore them.
 
 
 ### Creating the PCB
@@ -120,19 +124,31 @@ and there are no short circuits.
 
 ### Soldering the PCB
 
-After that I solder the wires, resistors, headers, and connectors to the PCB.
+I usually take a half hour or so, under a magnifying glass, with a
+tiny piece of fine grit sandpaper to **clean the pads** to remove
+any *epoxy film* left over from above before doing any soldering.
+I then wipe them off with a paper towel and some *rubbing alcohol*.
+
+After that I gather all the parts together and then I *cut, strip and bend* the
+**connecting wires**, heat up the soldering iron, and solder them to the board.
+Proceeding in *order of height* I next solder the **resistors** and **IC** to the
+board, then the **connectors** and **headers** and finally, I solder on the
+**switches** and **capacitors** last.
 
 ![elec-toSolder.jpg](images/elec-toSolder.jpg)
 
+While still setup for soldering, I *test the PCB* with a *multi-meter* to ensure there are
+no **short circuits** (particularly between the voltage rails and ground), and do any
+*spot corrections* if I find a short or a component that is not conducting well.
 
 When finished, it looks something like this:
 
 ![elec-soldered.jpg](images/elec-soldered.jpg)
 
+
 *Note: The open holes are where I only soldered resistors for one of the **voltage** dividers onto the
 above PCB, and intentionally added **extra pads** for unconnected pins on the
 ESP32 to allow for future modifications.*
-
 
 **Important Note:** As *designed* the circuit keeps the **5V** and **VBUS** (usb power)
 rails **separate** to allow for the later incorporation of a *battery backup power supply*.
@@ -150,10 +166,21 @@ center pins of the power supply connector when soldering the board.
 
 In addition to the PCB
 
-- **solder** a wired 3 pin JST connector to a strip of *five WS3812b LEDs*
-- **solder** a wired 4 pin JST connector to the **secondary micro usb power port** (not shown)
-- **crimp** two 4 pin JST connectors onto a 18" four conductor cable (not shown) for the *AS560 angle sensor* (shown)
-- **solder** wires and **crimp** 2 pin dupont connectors to the coils.
+- **solder** a wired 3 pin JST connector to a strip of *five WS3812b LEDs*.
+  I usually put a bit of *hot glue* on the solder joints for *stress relief*
+- (not shown) **solder** two pins of a wired 4 pin JST connector to the
+   **optional secondary micro usb power port** (and remove the other two
+   wires) to provide an alternative way to get ground and 5V to the circuit
+- **crimp** two 4 pin JST connectors onto an 18" shielded **three conductor** cable
+   (not shown), for the *AS560 angle sensor* (shown) connecting **ground** to the
+   *shield* on both sides, applying *heat shrink tubing* to the exposed ground wires.
+- **solder** wires, apply *heat shrink tubing*, and **crimp** 2 pin dupont connectors
+   to the coils.
+
+When I solder the wires to the coils, I then usually also put them flat face down,
+press the heat shrink tubing down and **put a drop of 5 minute epoxy**
+to glue the wires and and tubing for to the coil *for stress relief* to
+prevent damage while working with them.
 
 ![elec-other.jpg](images/elec-other.jpg)
 
@@ -169,9 +196,10 @@ The **L293D** integrated circuit is rated at **600ma** from 4 to 36 volts,
 so I am **pushing the chip past it's design specs**, sigh. However,
 it is worth noting that the typical parametrized driving impulse
 is only **120 ms** in duration, so the **overall duty cycle** of the circuit
-is about only 10%.  and the **PWM output** from the ESP32 typically
+is about only 25%.  and the **PWM output** from the ESP32 typically
 runs at about 50%, so (for the time being) I am using this circuit.
-There is a [note](notes.md) about potentially upgrading this in the future.
+There is a [note](notes.md) about potentially upgrading this
+to use *mosfets* in the future.
 
 
 **Next:** Installing the **[Software](software.md)** and testing the PCB ...

@@ -8,7 +8,7 @@
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
 **[Software](software.md)** --
-**[Box](box.md)** --
+**[Other](other.md)** --
 **[Assembly](assembly.md)** --
 **[Tuning](tuning.md)** --
 **[User Manual](user_manual.md)** --
@@ -39,17 +39,18 @@ to this one.
 - Install and Build the **[Software](software.md)**
 	- install the *Arduino IDE* and necessary **libraries**
     - build the **code** and upload it, and the *SPIFFS file system* to the ESP32
-	- a quick *introduction and overview* of the **Software**
-	- a quick **submodule test** of PCB (Buttons, LEDs, Coils, and Angle Sensor, etc)
-- 3D Print and Assemble the [**Box**](box.md) for the clock
+	- this page also has a quick *introduction and overview* of the **Software**
+	- do a quick **submodule test** of PCB (Buttons, LEDs, Coils, and Angle Sensor, etc)
+- Finish the **[Other](other.md)** sub-assemblies:
+	- cut and sand the **brass tubes** and **threaded rods** to length
+	- 3D print the **Box**
     - epoxy glue the coils into the box
 	- epoxy glue LED lenses into the box
 	- hot glue the LEDs into the box
 	- screw the PCB and secondary micro-usb module into the box
-- [Final Assembly](assembly.md) includes:
 	- epoxy glue the *magnets* into the **pendulum** and assemble it
 	- epoxy glue the *magnets* into the **magnetic spring**
-	- cut and sand the **brass tubes** and **threaded rods** to length
+- [Final Assembly](assembly.md) includes:
 	- epoxy glue the *tubes* into the **gears**
 	- press the *bearings* into the **frame**
 	- attach the *angle sensor* to the **frame**
@@ -178,33 +179,34 @@ td {
 <tr>
 	<td colspan='5'>Plastic</td>
 </tr>
-	<tr><td></td><td>box			</td><td>1	</td><td>$4.00	</td><td>rough guesses of my plastic filament costs ($20/kg)
-	<tr><td></td><td>sensor housing	</td><td>1	</td><td>$0.50	</td><td></td></tr>
-	<tr><td></td><td>wire tie		</td><td>1	</td><td>$0.25	</td><td></td></tr>
-	<tr><td></td><td>bobbin parts	</td><td>2	</td><td>$0.40	</td><td></td></tr>
-	<tr><td></td><td>LED lenses		</td><td>5	</td><td>$0.25	</td><td>clear</td></tr>
+	<tr><td></td><td>box			</td><td>73.6m</td><td>$6.60</td><td>at $20/kg</td></tr>
+	<tr><td></td><td>coil set       </td><td>4.3m</td><td>$0.39	</td><td></td></tr>
+	<tr><td></td><td>sensor housing	</td><td>3.4m</td><td>$0.30	</td><td></td></tr>
+	<tr><td></td><td>magnet holder  </td><td>1.1m</td><td>$0.10	</td><td></td></tr>
+	<tr><td></td><td>washers        </td><td>0.3m</td><td>$0.03	</td><td></td></tr>
+	<tr><td></td><td>wire tie		</td><td>0.2m</td><td>$0.02	</td><td></td></tr>
+	<tr><td></td><td>LED lenses		</td><td>0.5</td><td>$0.01	</td><td>clear</td></tr>
 
 <tr>
 	<td colspan='5'>Tubes, Bearings, Weights</td>
 </tr>
-	<tr><td></td><td>Brass Tube, 6mm	</td><td>1	</td><td>		</td><td rowspan='3'>you can buy a set of telescoping brass tubes for about $12-14. a single clock uses about 1/2 of a set of 12" tubes</td></tr>
-	<tr><td></td><td>Brass Tube, 5mm	</td><td>2	</td><td>		</td><td></td></tr>
-	<tr><td></td><td>Brass Tube, 4mm	</td><td>3	</td><td>$7.00	</td><td></td></tr>
-	<tr><td></td><td>m3 threaded rod	</td><td>2	</td><td>$2.00  </td><td></td></tr>
-	<tr><td></td><td>Bearing, 394		</td><td>4	</td><td>$1.25	</td><td rowspan='4'>the prices of the bearings depends on how many you buy at a time</td></tr>
-	<tr><td></td><td>Bearing, 4114		</td><td>1	</td><td>$0.50	</td><td></td></tr>
-	<tr><td></td><td>Bearing, 5165		</td><td>2	</td><td>$1.00  </td><td></td></tr>
-	<tr><td></td><td>Bearing, 6155		</td><td>1	</td><td>$1.00  </td><td></td></tr>
-	<tr><td></td><td>Arm Weights		</td><td>2	</td><td>$1.00  </td><td></td></tr>
-	<tr><td></td><td>Pendulum Weight	</td><td>1	</td><td>$2.00  </td><td></td></tr>
-
+	<tr><td></td><td>Brass Tube, 6mm	</td><td>approx 28mm (1.3")</td><td>$7.00</td><td rowspan='3'>you can buy a set of telescoping brass tubes for about $12-14. ang get two clocks per set from them</td></tr>
+	<tr><td></td><td>Brass Tube, 5mm	</td><td>approx 130mm (5.1")</td><td></td><td></td></tr>
+	<tr><td></td><td>Brass Tube, 4mm	</td><td>approx 140mm (5.5")</td><td></td><td></td></tr>
+	<tr><td></td><td>m3 threaded rod	</td><td>approx 140mm (5.5")</td><td>$2.00  </td><td></td></tr>
+	<tr><td></td><td>Bearing, 3x9x4	 mm	</td><td>4	</td><td>$1.25	</td><td rowspan='4'>the prices of the bearings depends on how many you buy at a time</td></tr>
+	<tr><td></td><td>Bearing, 4x11x4 mm	</td><td>1	</td><td>$0.50	</td><td></td></tr>
+	<tr><td></td><td>Bearing, 5x16x5 mm	</td><td>2	</td><td>$1.00  </td><td></td></tr>
+	<tr><td></td><td>Bearing, 6x15x5 mm	</td><td>1	</td><td>$1.00  </td><td></td></tr>
+	<tr><td></td><td>Arm Weights 1/4 oz	</td><td>2	</td><td>$1.00  </td><td>6-8mm in diameter, with hole through center</td></tr>
+	<tr><td></td><td>Pendulum Weight 4 oz</td><td>1	</td><td>$2.00  </td><td>16-17mm in diameter, with hole through center</td></tr>
 <tr>
 	<td colspan='5'>Screws, Washers, Nuts</td>
 </tr>
 	<tr><td></td><td>m3 x 45 machine	</td><td>1	</td><td>$1.00</td>	</td><td>can use M3 threaded rod instead</td></tr>
 	<tr><td></td><td>m3 x 15 machine 	</td><td>6	</td><td></td>		</td><td>weights, arms, box front</td></tr>
 	<tr><td></td><td>m3 x 12 machine	</td><td>8	</td><td></td>		</td><td>cam rollers, pawls, box back</td></tr>
-	<tr><td></td><td>m2 x 8 machine		</td><td>4	</td><td></td>		</td><td>mag holder, sensor housing</td></tr>
+	<tr><td></td><td>m2 x 6 machine		</td><td>4	</td><td></td>		</td><td>mag holder, sensor housing</td></tr>
 	<tr><td></td><td>m3 x 6 wood		</td><td>9	</td><td></td>		</td><td>pcb, sensor</td></tr>
 	<tr><td></td><td>m3 x 12 wood		</td><td>6	</td><td></td>		</td><td>face, front</td></tr>
 	<tr><td></td><td>m3 square nut		</td><td>2	</td><td></td>		</td><td>pendulum rod</td></tr>

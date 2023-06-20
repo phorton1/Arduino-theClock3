@@ -7,7 +7,7 @@
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
 **[Software](software.md)** --
-**[Box](box.md)** --
+**[Other](other.md)** --
 **[Assembly](assembly.md)** --
 **[Tuning](tuning.md)** --
 **[User Manual](user_manual.md)** --
@@ -57,7 +57,7 @@ On these pages you will find the following:
 - **[Coils](coils.md)** - **Winding** the *electromagnet coils*
 - **[Electronics](electronics.md)** - Creating the custom **PCB** (printed circuit board), **Cables**, and **Connectors**
 - **[Software](software.md)** - Compiling and installing the **Software** and doing a submodule **test** of the electronics
-- **[Plastic](plastic.md)** - **3D Printing** the plastic parts and assembling the **Box**
+- **[Other](other.md)** - Finish the **other sub-assemblies** of the clock, including the **box, pendulum,** and **cutting the tubes**
 - **[Assembly](assembly.md)** - **Final Assembly** of the clock
 - **[Tuning](tuning.md)** - Describes the process of getting the clock to **run accurately**
 - **[User Manual](user_manual.md)** - A more detailed guide to the **WebUI** and software for the clock

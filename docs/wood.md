@@ -7,7 +7,7 @@
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
 **[Software](software.md)** --
-**[Box](box.md)** --
+**[Other](other.md)** --
 **[Assembly](assembly.md)** --
 **[Tuning](tuning.md)** --
 **[User Manual](user_manual.md)** --
@@ -77,9 +77,9 @@ It is important to dry fit the frame together and know ahead
 of time how you will assemble and clamp it.  It is also
 is important to understand that there are four tabs
 that *extend out of the frame front* onto which the **bridge** (which
-is NOT glued, but which is attached with screws) are aligned.
+is NOT glued, but which is attached with screws) is aligned.
 
-I usually use a small piece of 1x2 wood as a mallet to tap the
+I usually use a piece of 2x2 wood as a mallet to tap the
 pieces together as I align them.  As is typical with these kinds
 of **box joints**, some tapping, force, and/or slight bending of the pieces
 may be necessary to get the tabs to go into the slots.
@@ -100,40 +100,48 @@ the **frame back**, and, finally, **the frame front**.
 
 **Clamp** the frame together and let it dry thoroughly ...
 
-When it is thoroughly dry, lightly finish sand **the assembled frame**,
-and the separate **bridge piece** before applying 2-3 clear-coats to the interior
+When it is thoroughly dry, lightly sand **the assembled frame**,
+and the separate **bridge piece** with 300 grit sandpaper
+before applying 2-3 clear-coats to the interior
 of the frame and back of the bridge, and 3-4 coats to the
 exterior and front.
 
 
 ## 3. Assemble, sand, and clear-coat the Face
 
+The **hash marks** on the *face* are engraved before cutting.
+**Finish sand** the face **before** cutting it and try to handle
+it as little as possible before clear-coating!
 
-**IT IS IMPORTANT TO KEEP THE LITTLE PIECES INSIDE OF THE NUMBERS
-WHEN CUTTING THE FACE**.  As I result I **do not** print these
-pieces on my honeycomb laser printing surface or else they will
+**IT IS IMPORTANT TO KEEP THE LITTLE PIECES INSIDE OF THE 6,8,9, and 10 NUMBERS
+WHEN CUTTING THE FACE**.  As I result I **do not** print the face
+on my honeycomb laser printing surface or those small pieces will
 fall into the honeycomb, be harder than heck to find, and will likely
-be damaged by the laser.  Instead I cut these pieces **directly
-on the laser table** and carefully keep track of where they come
-from, and go so that I can *match the grain* when I re-insert
-them during the face assembly.
+be damaged by the laser.  Instead I cut the face **directly
+on the laser table** and carefully keep track of where the
+little pieces come from, and where they go, so that I can *match the grain*
+when I re-insert them during the face assembly.
 
 
 ![wood-face_and_numbers.jpg](images/wood-face_and_numbers.jpg)
 ![wood-face_finished.jpg](images/wood-face_finished.jpg)
 
+After wiping it off with a clean paper towel,
 I place the **face** downwards on a sheet of wax paper and glue
 the numbers in with **white glue**, inserting them from the back
 so that they are *flush with the front of the face*.  Then
 after the glue is thoroughly dry, I rough sand the back as needed
-and sand the face with 220 and 320 grit sand paper until it
-looks clean.
+and *gently* sand the face with 320 grit sand paper until it
+looks clean enough to clear coat.  **Vacuum** and wipe the dust
+off with a clean paper towel.
 
 I try to clear coat things as soon after I finish-sand them as
 possible.  I clear coat the important (front) surface first so
 that it is sealed as cleanly as possible before I flip them over
 and paint the backs.  I apply as many as 5-6 clear-coats on the
-face of the clock to get a nice sheen.
+face of the clock, sanding each coat lightly with 320 grit, and
+rubbing the last coat down with a clean paper towel,
+to get a nice sheen.
 
 
 ## 4. **Sand** and clear-coat the **Gears** and **other parts**
@@ -170,7 +178,7 @@ For the **big gears**, after sanding the teeth, sand the **interior openings**
 then clean everything with a paper towel before sanding the **back** and **face**
 of each gear until they are clean enough to clear-coat.  This is an *art* more
 than it is a *science*.  **Do your best!!** ... you won't regret taking the
-time needed to make the gears as functionally and aesthetically as
+time needed to make the gears as functionally and aesthetically
 nice as possible.
 
 (D) The **faces of the pawls** and the **contact points** on the cam will also need
@@ -225,9 +233,9 @@ to glue the **correct gears** together (as shown in the previous image) in their
 **cut the tubes later** and we don't want to damage the tubes
 during this process.
 
-(C) Apply a small amount of glue as needed, press the three gears together on
-the tube, **spin** them, and **adjust** them get them as **square as possible**
-before the epoxy sets up.
+(C) Apply a small amount of **5 minute epoxy** glue as needed,
+press the three gears together on the tube, **spin** them, and **adjust**
+them get them as **square as possible** before the epoxy sets up.
 
 Any *wobbles* introduced at this point will be permanent (as I learned
 the hard way a few times) so **take your time** and glue and **align**
