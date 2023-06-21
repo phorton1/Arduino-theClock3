@@ -290,7 +290,7 @@ private:
 	static float _running_error;		// minimum accumulated angular error for clock to be considered running
 	static int 	 _min_max_ms;			// ms threshold for min/max algorithm
 	static uint32_t _restart_millis;	// millis for automatic restart (0 == off)
-	static uint32_t _start_delay;
+	static int _start_delay;
 
 	static int   _cycle_range;			// range for displaying diag LED for cycles
 	static int   _error_range;			// range for displaying diag LED for cumulative error

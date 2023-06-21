@@ -33,6 +33,7 @@
 	#define DEFAULT_ANGLE_MAX 		11.0
 	#define DEFAULT_DEAD_ZONE		0.5			// dead degrees about zero
 
+	#define DEFAULT_POWER_START     255
 	#define DEFAULT_POWER_MIN		140
 	#define DEFAULT_POWER_PID		210
 	#define DEFAULT_POWER_MAX		240
@@ -71,6 +72,7 @@
 	#define DEFAULT_ANGLE_MAX 		11.5
 	#define DEFAULT_DEAD_ZONE		0.3			// dead degrees about zero
 
+	#define DEFAULT_POWER_START     255
 	#define DEFAULT_POWER_MIN		120
 	#define DEFAULT_POWER_PID		210
 	#define DEFAULT_POWER_MAX		255
@@ -92,24 +94,26 @@
 	#define DEFAULT_ERROR_RANGE 	150
 
 
-#else	// !CLOCK_V1
+#else	// CLOCK_V3
 
 	// MY ORIGINAL CLOCK 3.2 which is now using MOSFET circuit board
-	// has different defaults for ANGLE_MIN and POWER_MIN from version 3 gifts
+	// has different defaults for ANGLE_MIN and POWER_MIN from version 3 gifts.
+	// Note that the coils are wired in series.
 
 	#pragma message "Compiling Clock v3.3"
 
 	#define THE_CLOCK             	"theClock3.3"
 	#define THE_CLOCK_VERSION     	"3.3"
 
-	#define DEFAULT_START_DELAY     100			// now defined as MS BEFORE 0 crossing to start clock
+	#define DEFAULT_START_DELAY     -500			// now defined as MS BEFORE 0 crossing to start clock
 	#define DEFAULT_ANGLE_START 	10.0		// starting value for clock_pid control
 	#define DEFAULT_ANGLE_MIN 		9.0			// !!! MOSFET CIRCUIT BOARD
 	#define DEFAULT_ANGLE_MAX 		11.5
 	#define DEFAULT_DEAD_ZONE		0.3			// dead degrees about zero
 
-	#define DEFAULT_POWER_MIN		40			// !!! MOSFET CIRCUIT BOARD
-	#define DEFAULT_POWER_PID		210
+	#define DEFAULT_POWER_START     255
+	#define DEFAULT_POWER_MIN		60			// !!! MOSFET CIRCUIT BOARD
+	#define DEFAULT_POWER_PID		100
 	#define DEFAULT_POWER_MAX		255
 
 	#define DEFAULT_DUR_PULSE		120
@@ -140,11 +144,10 @@
 #define DEFAULT_ZERO_ANGLE		0			// 0 means it's not yet set
 #define DEFAULT_ZERO_ANGLE_F	0.00		// 0 means it's not yet set
 
-#define DEFAULT_POWER_START     255
 #define DEFAULT_DUR_START		250
 
 #define DEFAULT_MIN_MAX_MS		50
-#define DEFAULT_RESTART_MILLIS  5000
+#define DEFAULT_RESTART_MILLIS  0
 
 #define DEFAULT_STAT_INTERVAL	30
 #define DEFAULT_SYNC_INTERVAL	3600L	// one hour
@@ -385,7 +388,7 @@ float  	theClock::_running_angle;
 float  	theClock::_running_error;
 int	    theClock::_min_max_ms;
 uint32_t theClock::_restart_millis;
-uint32_t theClock::_start_delay;
+int 	theClock::_start_delay;
 
 int	    theClock::_cycle_range;
 int	    theClock::_error_range;

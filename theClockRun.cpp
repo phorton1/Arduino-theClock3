@@ -135,13 +135,26 @@ void theClock::run()
 			int32_t ms = tv.tv_usec / 1000L;
 
 			// calculate the time at which to start
+			// as ms before (or negative ms) after zero crossing
+			// upto 5000 ms in either direction
 
-			int32_t start_secs = 60;
-			int32_t start_ms = 0;
-			timeAddMS(&start_secs,&start_ms,-_start_delay);
+			bool start_it = 0;
+			if (_start_delay < 0)
+			{
+				int32_t start_secs = 0;
+				int32_t start_ms = 0;
+				timeAddMS(&start_secs,&start_ms,-_start_delay);
+				start_it = secs < 6 && secs >= start_secs && ms >= start_ms;
+			}
+			else
+			{
+				int32_t start_secs = 60;
+				int32_t start_ms = 0;
+				timeAddMS(&start_secs,&start_ms,-_start_delay);
+				start_it = secs >= start_secs && ms >= start_ms;
+			}
 
-			if (secs >= start_secs &&
-				ms >= start_ms)
+			if (start_it)
 			{
 				LOGI("start_sync at %d:%03d delay=%d",secs,ms,_start_delay);
 				the_clock->setBool(ID_RUNNING,1);	    // set the UI bool
