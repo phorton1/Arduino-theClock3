@@ -292,6 +292,9 @@ void theClock::setup()	// override
 	pinMode(PIN_BUTTON2,INPUT_PULLUP);
 #endif
 
+// 1 and 2 use L293D with enable pins
+// 3 uses MOSFET and just PIN_PWM
+
 #if CLOCK_COMPILE_VERSION == 1
 	ledcSetup(0, PWM_FREQUENCY, PWM_RESOLUTION);
 	ledcSetup(1, PWM_FREQUENCY, PWM_RESOLUTION);
@@ -307,7 +310,7 @@ void theClock::setup()	// override
 	digitalWrite(PIN_INA2,0);
 	digitalWrite(PIN_INB1,0);
 	digitalWrite(PIN_INB2,0);
-#else
+#elif CLOCK_COMPILE_VERSION == 2
 	ledcSetup(0, PWM_FREQUENCY, PWM_RESOLUTION);
 	ledcAttachPin(PIN_EN, 0);
 	ledcWrite(0,0);
@@ -315,6 +318,10 @@ void theClock::setup()	// override
 	pinMode(PIN_IN2,OUTPUT);
 	digitalWrite(PIN_IN1,0);
 	digitalWrite(PIN_IN2,0);
+#else
+	ledcSetup(0, PWM_FREQUENCY, PWM_RESOLUTION);
+	ledcAttachPin(PIN_PWM, 0);
+	ledcWrite(0,0);
 #endif
 
 	setPixel(PIXEL_MAIN,MY_LED_ORANGE);

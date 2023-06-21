@@ -6,21 +6,21 @@
 	// 1 == clock 1.3, modified from 1.1 by adding an AS5600 sensor and 5 LEDs
 	// 		it has separate ENA, ENB, INA, and INB pins and one button and
 	//      completely different default (factory reset) parameters
-	//		REQUIRES a 3A power supply ?!?!
-	// 2 == the original clock 3.2 (on my desk)
-	//      that pcb had connectors for hall and optical mouse sensors
-	//      which I repurposed to connect the A5600 sensor to, and
-	//      it does not have the power sense pin.
-	// 3 == the three clocks I made as gifts, which are wired exactly
-	//      the same as clock 3.2 but also have the power sense pins connected
+	//      The pcb had connectors for hall and optical mouse sensors
+	//      which I repurposed to connect the A5600 sensor.
+	//		NOT WORKING!!
+	// 2 == the three clocks I made as gifts, two of which were gifted
+	//      on 2023-06-08, and the previous board in my original clock 3.1
+	// 3 == the original v3 clock with new MOSFET power board
 
 
-// Voltage check on GPIO ala the bilgeAlarm. on the three I made as gifts
+// Voltage check on GPIO ala the bilgeAlarm. turned on for the two I shipped as gifts
+// I AM NO LONGER TURNING THIS ON (until I actually build and test the battery backup)
 // Adds ID_VOLT_INTERVAL and ID_VOLT_XX parameters, which then tells how
 // often to check the voltage, and a separate define (currently 0) on
 // whether to go into m_low_power_mode
 
-#if CLOCK_COMPILE_VERSION == 3
+#if 0	// CLOCK_COMPILE_VERSION == 3
 	#define WITH_VOLT_CHECK   1
 	#define ALLOW_POWER_MODE_CHANGES 0
 #else
@@ -56,10 +56,12 @@
 	#define PIN_ENB		4
 	#define PIN_INB1	17
 	#define PIN_INB2	5
-#else
+#elif CLOCK_COMPILE_VERSION == 2
 	#define PIN_IN1		27
 	#define PIN_IN2		25
 	#define PIN_EN		26
+#else	// MOSFET motor driver
+	#define PIN_PWM		26
 #endif
 
 

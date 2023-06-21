@@ -23,10 +23,12 @@ void theClock::motor(int state, int power)
 	ledcWrite(1, use_power);
 	digitalWrite(PIN_INB1,state == 1  ? 1 : 0);
 	digitalWrite(PIN_INB2,state == -1 ? 1 : 0);
-#else
+#elif CLOCK_COMPILE_VERSION == 2
 	ledcWrite(0, use_power);
 	digitalWrite(PIN_IN1,state == 1  ? 1 : 0);
 	digitalWrite(PIN_IN2,state == -1 ? 1 : 0);
+#else	// MOSFET DRIVER
+	ledcWrite(0, use_power);
 #endif
 }
 

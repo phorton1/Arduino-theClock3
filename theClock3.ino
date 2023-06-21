@@ -17,6 +17,11 @@
 //------------------------
 
 #if CLOCK_COMPILE_VERSION == 1
+
+	// My original clock v1.1 retrofitted with angle sensor and 5 LEDS
+
+	#pragma message "Compiling Clock v1.3"
+
 	#define THE_CLOCK             	"theClock1.3"
 	#define THE_CLOCK_VERSION     	"1.3"
 
@@ -48,11 +53,14 @@
 	#define DEFAULT_CYCLE_RANGE 	80
 	#define DEFAULT_ERROR_RANGE 	300
 
-#else	// !CLOCK_V1
+#elif CLOCK_COMPILE_VERSION == 2
 
-	// ALL VERSION 3 CLOCKS ARE USING DEFAULT CONFIGURATION PARAMETERS
-	// Apart from that, only the clock name has been changed on the most
-	// recent three clocks to 3.21, 3.22, and 3.23, respectively.
+	// PREVIOUS VERSION 3 USING DEFAULT CONFIGURATION PARAMETERS
+	// Thee are the clocks I gifted on 2023-06-08 and my previous
+	// clock 3.1 (though 3.0 did not use the voltage stuff) which
+	// is now turned off in all clocks
+
+	#pragma message "Compiling Clock v3.2"
 
 	#define THE_CLOCK             	"theClock3.2"
 	#define THE_CLOCK_VERSION     	"3.2"
@@ -83,7 +91,45 @@
 	#define DEFAULT_CYCLE_RANGE 	50
 	#define DEFAULT_ERROR_RANGE 	150
 
+
+#else	// !CLOCK_V1
+
+	// MY ORIGINAL CLOCK 3.2 which is now using MOSFET circuit board
+	// has different defaults for ANGLE_MIN and POWER_MIN from version 3 gifts
+
+	#pragma message "Compiling Clock v3.3"
+
+	#define THE_CLOCK             	"theClock3.3"
+	#define THE_CLOCK_VERSION     	"3.3"
+
+	#define DEFAULT_START_DELAY     100			// now defined as MS BEFORE 0 crossing to start clock
+	#define DEFAULT_ANGLE_START 	10.0		// starting value for clock_pid control
+	#define DEFAULT_ANGLE_MIN 		9.0			// !!! MOSFET CIRCUIT BOARD
+	#define DEFAULT_ANGLE_MAX 		11.5
+	#define DEFAULT_DEAD_ZONE		0.3			// dead degrees about zero
+
+	#define DEFAULT_POWER_MIN		40			// !!! MOSFET CIRCUIT BOARD
+	#define DEFAULT_POWER_PID		210
+	#define DEFAULT_POWER_MAX		255
+
+	#define DEFAULT_DUR_PULSE		120
+
+	#define DEFAULT_PID_P			20.0
+	#define DEFAULT_PID_I			0.50
+	#define DEFAULT_PID_D			-9.0
+
+	#define DEFAULT_APID_P			0.2
+	#define DEFAULT_APID_I			0.025
+	#define DEFAULT_APID_D			0.002
+
+	#define DEFAULT_RUNNING_ANGLE   4.0
+	#define DEFAULT_RUNNING_ERROR   2.0
+
+	#define DEFAULT_CYCLE_RANGE 	50
+	#define DEFAULT_ERROR_RANGE 	150
+
 #endif
+
 
 // common
 
