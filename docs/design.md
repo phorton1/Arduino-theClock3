@@ -32,15 +32,21 @@ of building those earlier clocks.  Some of the most important changes from those
 
 ## 1. Basics
 
-There is an **angle sensor** on the pendulum.  By comparing successive
-measurements we can determine the pendulum's *direction*, when it *crosses zero*,
-and the extreme *maximum angle* it achieves during any given swing.
 
 The pendulum has a **magnet** in it that passes between a pair of **electromagnetic coils**
 on each swing.   The coils *repulse* (push) the pendulum a little on each swing,
 providing the energy to keep it moving.  By increasing the power provided to the coil
 we can make the pendulum swing further, and by decreasing it, we can generally make it swing
 less widely.
+
+There is an **angle sensor** on the pendulum.  By comparing successive
+measurements we can determine the pendulum's *direction*, when it *crosses zero*,
+and the extreme *maximum angle* it achieves during any given swing.
+
+![design-02-magnet_pulse.gif](images/design-02-magnet_pulse.gif)
+![design-01-angle_sensor.gif](images/design-01-angle_sensor.gif)
+
+
 
 The **cam mechanism** has a **minimum design angle** of **5 degrees** (about the center,
 or 10 degrees overall).  It is designed such that if the pendulum swings at least this far,
@@ -56,7 +62,11 @@ repulsion, act as a **magnetic spring**. Because of this spring, the pendulum
 swings *faster* when it swings sufficiently far to **bounce** off of this spring,
 and it swings *slower* when it swings less and the spring does not come into play.
 
-### How it Works
+![design-03-cam_mechanism.gif](images/design-03-cam_mechanism.gif)
+![design-04-magnetic_spring.gif](images/design-04-magnetic_spring.gif)
+
+
+### How it Keeps Time
 
 We establish a **working minimum angle** at which the clock functions, by which we
 mean that it actually *ticks* and *tocks* reliably. For prudence we set this to a
@@ -103,15 +113,16 @@ and increased the accuracy of the clock.
 
 ### Synchronization
 
-The swing error is based on subsequent calls to the millis() function, rather
-than comparing the time directly to the RTC clock.  This means that the algorithm
+The swing error is based on calls to the ESP32 **millis()** function, which returns
+the *milliseconds* since the clock was booted, rather than comparing the time
+directly to the RTC clock.  This means that the algorithm
 itself can drift from RTC time.  We allow this to happen and provide a separate
 synchronization method, **onSyncRTC()**, to occasionally (once per hour, parametrized)
 correct for this potential drift. This allows us to keep track of the drift between
 the algorithm and the RTC and isolates the basic swing PID controllers
 from changes in the RTC.
 
-Finally, if connected to the internet, we occasionally (once every three hours,
+Finally, if connected to the internet, we occasionally (once every four hours,
 parametrized) synchronize the RTC to **NTP** (Network Time Protocol) to correct
 for the ESP32 clock drift via another method **onSyncNTP()**.
 

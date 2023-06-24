@@ -17,10 +17,9 @@
 This clock uses wooden gears and a simple electromagnetically driven pendulum
 with the goal of keeping accurate time.
 
-It uses an **angle sensor** to detect the position of the pendulum,
-an **electromagnet** and **permanent magnet** to provide pulses of energy
-to the pendulum to keep it moving, as well as a **magnetic spring** to
-to speed up, or slow down, the pendulum.
+It uses an an **electromagnet** and **permanent magnet** to provide pulses of energy
+to the pendulum to keep it moving, an **angle sensor** to detect the position
+of the pendulum, and a **magnetic spring** to to speed up, or slow down, the pendulum.
 
 It uses a specially designed **cam driven pawl** mechanism to
 reliably convert the motion of the pendulum in each direction
