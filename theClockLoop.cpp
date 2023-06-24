@@ -450,7 +450,7 @@ void theClock::loop()	// override
 		showStats();
 	}
 
-#if WITH_VOLT_CHECK
+#if WITH_VOLTAGES
 
 	static int32_t last_volt_check = 0;
 	if (_volt_interval &&
@@ -465,7 +465,7 @@ void theClock::loop()	// override
 	if (m_low_power_time && millis() - m_low_power_time >= LOW_POWER_DELAY)
 	{
 		m_low_power_time = 0;
-		setActualLowPowerMode(1);
+		setLowPowerMode(1);
 	}
 
 #endif

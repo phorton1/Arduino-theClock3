@@ -26,8 +26,8 @@ extern void updateStatsPowerAngle(int power, float angle_error);
 
 // used in loop()
 
-#if WITH_VOLT_CHECK
-	extern void setStatLowPowerMode(bool low);
+#if WITH_VOLTAGES
+	extern void setStatsPower(int low_power_mode, float volts_5v, float volts_vbus);
 #endif
 
 
@@ -38,4 +38,3 @@ extern const char *getStatBufMain();
 extern const char *getStatBufAll();
 extern const char *getStatBufRecent();
 extern void initRecentStats();
-

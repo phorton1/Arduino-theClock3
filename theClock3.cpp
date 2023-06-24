@@ -110,13 +110,80 @@ bool     theClock::m_force_pixels;
 bool     theClock::m_setting_zero;
 
 
-#if WITH_VOLT_CHECK
+#if WITH_VOLTAGES
 
-	bool theClock::m_low_power_mode ;
+	float theClock::m_volts_5v;
+	float theClock::m_volts_vbus;
+	int theClock::m_low_power_mode;
 	uint32_t theClock::m_low_power_time;
 
+	float getVolts(const char * what, int pin, float calib)
+	{
+		#define NUM_VOLT_SAMPLES 4
+			// alogorithm skips 1st sample
 
-	void theClock::setActualLowPowerMode(bool low)
+		uint32_t val = 0;
+		for (int i=0; i<NUM_VOLT_SAMPLES+1; i++)
+		{
+			int j = analogRead(pin);
+			if (i) val += j;
+			delayMicroseconds(100);
+		}
+		float raw = (val / NUM_VOLT_SAMPLES);
+		float pct = raw / 4096.0;
+		float scaled = pct * 6.6;
+		float full = scaled * calib;
+		float volts = (full * 100.0) + 0.5;
+		volts = floor(volts);
+		volts /= 100.0;
+
+		// LOGD("Volts(%s) val(%d) raw(%0.3f) pct=(%0.3f) scaled(%0.3f) full(%0.3f)  volts=%0.3f",what,val,raw,pct,scaled,full,volts);
+
+		return volts;
+	}
+
+
+	void theClock::checkVoltage()
+		// With equal resistors ~ 0.5, ao it should be good to 6.6V or so 0..4095 = 0-6.6V
+		// We round to two places and only update when the value changes
+	{
+		static float last_5v;
+		static float last_vbus;
+		m_volts_5v = getVolts(" 5V ",PIN_VOLTS_5V,_volt_calib);
+		m_volts_vbus = getVolts("VBUS",PIN_VOLTS_VBUS,_volt_calib);
+
+		if (last_5v != m_volts_5v ||
+			last_vbus != m_volts_vbus)
+		{
+			last_5v = m_volts_5v;
+			last_vbus = m_volts_vbus;
+
+			// note that the boolean m_low_power_mode is set on transitions
+			// but we only actually go into low power mode if _low_power_enable is set
+
+			if (!m_low_power_mode && m_volts_vbus < _volt_cutoff)
+			{
+				LOGU("low power detected");
+				m_low_power_mode = VOLT_DETECT_LOW;
+				if (_low_power_enable)
+					m_low_power_time = millis();
+			}
+			else if (m_low_power_mode && m_volts_vbus >= _volt_restore)
+			{
+				LOGU("restore power detected");
+				m_low_power_time = 0;
+				if (m_low_power_mode == VOLT_MODE_LOW)
+					setLowPowerMode(0);
+				m_low_power_mode = VOLT_MODE_NORMAL;
+			}
+
+			setStatsPower(m_low_power_mode, m_volts_5v, m_volts_vbus);
+			setString(ID_STAT_MSG0,getStatBufMain());
+		}
+	}
+
+
+	void theClock::setLowPowerMode(bool low)
 	{
 		static bool save_wifi;
 		static int save_brightness;
@@ -124,6 +191,8 @@ bool     theClock::m_setting_zero;
 		LOGU("ENTERING %s POWER MODE",low?"LOW":"NORMAL");
 		if (low)
 		{
+			m_low_power_mode = VOLT_MODE_LOW;
+
 			// change variables in memory
 			// so if reboot, the prefs will be re-read
 			// but for the duration, wifi and brightness can change
@@ -152,64 +221,12 @@ bool     theClock::m_setting_zero;
 				save_wifi = false;
 			}
 		}
+
+		setStatsPower(m_low_power_mode, m_volts_5v, m_volts_vbus);
+		setString(ID_STAT_MSG0,getStatBufMain());
 	}
 
-
-	void theClock::checkVoltage()
-		// With equal resistors ~ 0.5, ao it should be good to 6.6V or so
-		// 0..4095 = 0-6.6V
-		// we round to two places and only update when the value changes
-	{
-		#define NUM_VOLT_SAMPLES 4
-			// alogorithm skips 1st sample
-
-		static float last_volts;
-		uint32_t val = 0;
-		for (int i=0; i<NUM_VOLT_SAMPLES+1; i++)
-		{
-			int j = analogRead(PIN_VOLT_CHECK);
-			if (i) val += j;
-			delayMicroseconds(100);
-		}
-		float raw = (val / NUM_VOLT_SAMPLES);
-		float pct = raw / 4096.0;
-		float scaled = pct * 6.6;
-		float full = scaled * _volt_calib;
-		float volts = (full * 100.0) + 0.5;
-		volts = floor(volts);
-		volts /= 100.0;
-
-		LOGD("Voltage last(%0.3f) val(%d) raw(%0.3f) pct=(%0.3f) scaled(%0.3f) full(%0.3f)  volts=%0.3f",last_volts,val,raw,pct,scaled,full,volts);
-
-		if (last_volts != volts)
-		{
-			last_volts = volts;
-			setFloat(ID_VOLT_VALUE,volts);
-
-			// power_mode changes are currently NOT compiled in !!!
-
-			#if ALLOW_POWER_MODE_CHANGES
-				if (!m_low_power_mode && volts < _volt_cutoff)
-				{
-					LOGU("low power detected");
-					m_low_power_mode = 1;
-					m_low_power_time = millis();
-					setStatLowPowerMode(1);
-					setString(ID_STAT_MSG0,getStatBufMain());
-				}
-				else if (m_low_power_mode && volts >= _volt_restore)
-				{
-					LOGU("restore power detected");
-					m_low_power_mode = 0;
-					m_low_power_time = 0;
-					setActualLowPowerMode(0);
-					setStatLowPowerMode(0);
-					setString(ID_STAT_MSG0,getStatBufMain());
-				}
-			#endif
-		}
-	}
-#endif
+#endif	// WITH_VOLTAGES
 
 
 //-----------------------------------------------
@@ -370,8 +387,9 @@ void theClock::setup()	// override
 
 	// sample and set the voltage
 
-	#if WITH_VOLT_CHECK
-		pinMode(PIN_VOLT_CHECK,INPUT);
+	#if WITH_VOLTAGES
+		pinMode(PIN_VOLTS_5V,INPUT);
+		pinMode(PIN_VOLTS_VBUS,INPUT);
 		if (_volt_interval)
 			checkVoltage();
 	#endif

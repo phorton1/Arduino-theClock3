@@ -14,17 +14,16 @@
 	// 3 == the original v3 clock with new MOSFET power board
 
 
-// Voltage check on GPIO ala the bilgeAlarm. turned on for the two I shipped as gifts
-// I AM NO LONGER TURNING THIS ON (until I actually build and test the battery backup)
-// Adds ID_VOLT_INTERVAL and ID_VOLT_XX parameters, which then tells how
-// often to check the voltage, and a separate define (currently 0) on
-// whether to go into m_low_power_mode
+// VOLTAGE CHECKS and associated LOW_POWER_MODE are only
+// compiled in for specific clocks.
 
-#if 0	// CLOCK_COMPILE_VERSION == 3
-	#define WITH_VOLT_CHECK   1
-	#define ALLOW_POWER_MODE_CHANGES 0
+#if 1
+	#define WITH_VOLTAGES   	1
+	#define VOLT_MODE_NORMAL    0
+	#define VOLT_DETECT_LOW     1
+	#define VOLT_MODE_LOW		2
 #else
-	#define WITH_VOLT_CHECK   0
+	#define WITH_VOLTAGES   	0
 #endif
 
 
@@ -41,10 +40,9 @@
 // pin assignments
 //---------------------------------
 
-#if WITH_VOLT_CHECK
-	#define PIN_VOLT_CHECK	39
-		// The 3 gift clock boards DO NOT have resistors soldered in
-		// for SBUS or SBATT, only for pin 39 S5V !!!
+#if WITH_VOLTAGES
+	#define PIN_VOLTS_5V		39
+	#define PIN_VOLTS_VBUS  	35
 #endif
 
 // L293D motor driver
@@ -196,12 +194,12 @@
 	#define ID_SYNC_NTP		"SYNC_NTP"
 #endif
 
-#if WITH_VOLT_CHECK
-	#define ID_VOLT_VALUE	 "VOLT_VALUE"
-	#define ID_VOLT_INTERVAL "VOLT_INTERVAL"
-	#define ID_VOLT_CALIB	 "VOLT_CALIB"
-	#define ID_VOLT_CUTOFF	 "VOLT_CUTOFF"
-	#define ID_VOLT_RESTORE	 "VOLT_RESTORE"
+#if WITH_VOLTAGES
+	#define ID_VOLT_INTERVAL 	"VOLT_INTERVAL"		// seconds between voltage checks, default 0=off
+	#define ID_VOLT_CALIB	 	"VOLT_CALIB"		// calibration of voltages
+	#define ID_VOLT_CUTOFF	 	"VOLT_CUTOFF"		// vbus volts at which to enter low power mode
+	#define ID_VOLT_RESTORE	 	"VOLT_RESTORE"		// vbus volts at which to leave low power mode
+	#define ID_LOW_POWER_ENABLE "LOW_POWER_EN"	    // enables actually going into low power mode
 #endif
 
 
@@ -295,12 +293,12 @@ private:
 	static int   _cycle_range;			// range for displaying diag LED for cycles
 	static int   _error_range;			// range for displaying diag LED for cumulative error
 
-#if WITH_VOLT_CHECK
-	static float    _volt_value;
+#if WITH_VOLTAGES
 	static uint32_t _volt_interval;
 	static float	_volt_calib;
 	static float	_volt_cutoff;
 	static float	_volt_restore;
+	static bool		_low_power_enable;
 #endif
 
 	static String 	_stat_msg0;		// messages
@@ -403,11 +401,14 @@ private:
 	void doButtons();
 	void showStats();
 
-	#if WITH_VOLT_CHECK
-		void checkVoltage();
-		void setActualLowPowerMode(bool low);
-		static bool m_low_power_mode;
+	#if WITH_VOLTAGES
+		static float m_volts_5v;
+		static float m_volts_vbus;
+		static int m_low_power_mode;
 		static uint32_t m_low_power_time;
+
+		void checkVoltage();
+		void setLowPowerMode(bool low);
 	#endif
 
 };	// class theClock

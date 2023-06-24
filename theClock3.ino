@@ -153,11 +153,11 @@
 #define DEFAULT_SYNC_INTERVAL	3600L	// one hour
 #define DEFAULT_NTP_INTERVAL	14400L	// four hours
 
-#if WITH_VOLT_CHECK
+#if WITH_VOLTAGES
 	#define DEFAULT_VOLT_INTERVAL	30
 	#define DEFAULT_VOLT_SCALE		1.03
-	#define DEFAULT_VOLT_CUTOFF		3.90
-	#define DEFAULT_VOLT_RESTORE    4.10
+	#define DEFAULT_VOLT_CUTOFF		4.00
+	#define DEFAULT_VOLT_RESTORE    5.00
 #endif
 
 
@@ -166,9 +166,6 @@
 static valueIdType dash_items[] = {
 	ID_START_SYNC,
 	ID_RUNNING,
-#if WITH_VOLT_CHECK
-	ID_VOLT_VALUE,
-#endif
 	ID_CLOCK_MODE,
 	ID_PLOT_VALUES,
 	ID_LED_BRIGHTNESS,
@@ -186,7 +183,6 @@ static valueIdType dash_items[] = {
 	ID_SET_ZERO_ANGLE,
 	ID_ZERO_ANGLE,
 	ID_ZERO_ANGLE_F,
-
 #endif
 	ID_TEST_MOTOR,
 	ID_DIDDLE_CLOCK,
@@ -225,11 +221,12 @@ static valueIdType device_items[] = {
 #if CLOCK_WITH_NTP
 	ID_NTP_INTERVAL,
 #endif
-#if WITH_VOLT_CHECK
+#if WITH_VOLTAGES
 	ID_VOLT_INTERVAL,
 	ID_VOLT_CALIB,
 	ID_VOLT_CUTOFF,
 	ID_VOLT_RESTORE,
+	ID_LOW_POWER_ENABLE,
 #endif
 	0
 };
@@ -317,12 +314,12 @@ const valDescriptor theClock::m_clock_values[] =
 	{ ID_DIAG_CYCLE_RANGE,  VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,   	   (void *) &_cycle_range,	 NULL, { .int_range = { DEFAULT_CYCLE_RANGE,   	    10, 1000}} },
 	{ ID_DIAG_ERROR_RANGE,  VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,   	   (void *) &_error_range,	 NULL, { .int_range = { DEFAULT_ERROR_RANGE,   	    10, 5000}} },
 
-#if WITH_VOLT_CHECK
-	{ ID_VOLT_VALUE,      	VALUE_TYPE_FLOAT,     VALUE_STORE_PUB,      VALUE_STYLE_READONLY,  (void *) &_volt_value, 		NULL,  { .float_range = { 0,  0,  120}} },
+#if WITH_VOLTAGES
 	{ ID_VOLT_INTERVAL,  	VALUE_TYPE_INT,       VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,  (void *) &_volt_interval, 	NULL,  { .int_range = { DEFAULT_VOLT_INTERVAL, 0, 86400}} },
 	{ ID_VOLT_CALIB,      	VALUE_TYPE_FLOAT,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,      (void *) &_volt_calib, 		NULL,  { .float_range = { DEFAULT_VOLT_SCALE,  0,  2}} },
 	{ ID_VOLT_CUTOFF,      	VALUE_TYPE_FLOAT,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,  	   (void *) &_volt_cutoff, 		NULL,  { .float_range = { DEFAULT_VOLT_CUTOFF,  0,  120}} },
 	{ ID_VOLT_RESTORE,      VALUE_TYPE_FLOAT,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,  	   (void *) &_volt_restore, 	NULL,  { .float_range = { DEFAULT_VOLT_RESTORE,  0,  120}} },
+	{ ID_LOW_POWER_ENABLE,  VALUE_TYPE_BOOL,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,      (void *)&_low_power_enable,  NULL,  },
 #endif
 
 	{ ID_CLEAR_STATS,       VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    (void *) clearStats },
@@ -394,12 +391,12 @@ int	    theClock::_cycle_range;
 int	    theClock::_error_range;
 
 
-#if WITH_VOLT_CHECK
-	float    theClock::_volt_value;
+#if WITH_VOLTAGES
 	uint32_t theClock::_volt_interval;
 	float	 theClock::_volt_calib;
 	float	 theClock::_volt_cutoff;
 	float	 theClock::_volt_restore;
+	bool	 theClock::_low_power_enable;
 #endif
 
 
@@ -419,7 +416,7 @@ uint32_t theClock::_sync_interval;
 
 // remember, 'int' is 32 bits on ESP32 !!
 
-int 	 theClock::_test_motor;
+int 	theClock::_test_motor;
 int		theClock::_diddle_clock;
 
 

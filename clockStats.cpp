@@ -119,7 +119,10 @@ static  int32_t stat_last_ntp_change = 0;
 static  int32_t stat_total_ntp_changes = 0;
 static uint32_t stat_total_ntp_changes_abs = 0;
 
-#if WITH_VOLT_CHECK
+#if WITH_VOLTAGES
+	static float stat_volts_5v;
+	static float stat_volts_vbus;
+	static int stat_low_power_mode;
 	static int stat_num_low_powers;
 	static int32_t last_low_power_time;
 	static int32_t last_restore_power_time;
@@ -139,9 +142,12 @@ void initClockStats(int how)
 		stat_num_restarts = 0;
 	}
 
-	#if WITH_VOLT_CHECK
+	#if WITH_VOLTAGES
 		if (how == INIT_STATS_ALL)
 		{
+			stat_volts_5v = 0;
+			stat_volts_vbus = 0;
+			stat_low_power_mode = 0;
 			stat_num_low_powers = 0;
 			last_low_power_time = 0;
 			last_restore_power_time = 0;
@@ -342,26 +348,6 @@ void updateStatsPowerAngle(int power, float angle_error)
 
 
 //=====================================
-// power mode stats
-//=====================================
-
-#if WITH_VOLT_CHECK
-	void setStatLowPowerMode(bool low)
-	{
-		if (low)
-		{
-			stat_num_low_powers++;
-			last_low_power_time = time(NULL);
-		}
-		else
-		{
-			last_restore_power_time = time(NULL);
-		}
-	}
-#endif
-
-
-//=====================================
 // used in loop()
 //=====================================
 
@@ -400,12 +386,18 @@ const char *getStatBufMain()
 		stat_num_bad_reads,
 		stat_num_restarts);
 
-	#if WITH_VOLT_CHECK
+	#if WITH_VOLTAGES
+		char *b = &msg_buf[strlen(msg_buf)];
+		sprintf(b," %s volts(%0.2f) vbus(%0.2f) num_low_powers(%d) %s",
+			stat_low_power_mode == VOLT_MODE_LOW ? "LOW_POWER_MODE!!" :
+			stat_low_power_mode == VOLT_DETECT_LOW ? "low power!" :
+			"NORMAL",
+			stat_volts_5v,
+			stat_volts_vbus,
+			stat_num_low_powers,
+			stat_num_low_powers ? "<br>" : "");
 		if (stat_num_low_powers)
 		{
-			LOGD("adding low power stuff to main message");
-			char *b = &msg_buf[strlen(msg_buf)];
-			sprintf(b," LOW_POWER(%d)<br>",stat_num_low_powers);
 			formatTimeToStatBuf("LAST_DOWN", last_low_power_time, 0, last_restore_power_time);
 			if (last_restore_power_time)
 				formatTimeToStatBuf("LAST_UP", last_restore_power_time, 0, false);
@@ -475,3 +467,35 @@ void initRecentStats()
 	stat_recent_min_total_ang_err = MAX_INT;
 	stat_recent_max_total_ang_err = MIN_INT;
 }
+
+
+
+//=====================================
+// power mode stats
+//=====================================
+
+#if WITH_VOLTAGES
+
+	void setStatsPower(int low_power_mode, float volts_5v, float volts_vbus)
+	{
+		stat_volts_5v = volts_5v;
+		stat_volts_vbus = volts_vbus;
+
+		LOGD("setStatsPower(%d,%0.2f,%02f) current=%d",low_power_mode,volts_5v,volts_vbus,stat_low_power_mode);
+
+		if (stat_low_power_mode != low_power_mode)
+		{
+			if (!stat_low_power_mode && low_power_mode)
+			{
+				stat_num_low_powers++;
+				last_low_power_time = time(NULL);
+			}
+			else if (stat_low_power_mode && !low_power_mode)
+			{
+				last_restore_power_time = time(NULL);
+			}
+			stat_low_power_mode = low_power_mode;
+		}
+	}
+
+#endif	// WITH_VOLTAGES
