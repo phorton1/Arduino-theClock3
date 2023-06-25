@@ -111,8 +111,27 @@ void theClock::doButtons()
 						setZeroAngle();
 					}
 
-					// button2 short press = change pixel brightness
-					// use smaller increments near zero
+					#if WITH_VOLTAGES
+						// button2 short press in low power mode,
+						// disable VOLT_INTERVAL and LOW_POWER_EN
+						// and restore the power.
+
+						else if (m_low_power_mode == VOLT_MODE_LOW)
+						{
+							LOGU("RESTORE POWER FROM BUTTON");
+							setBool(ID_LOW_POWER_ENABLE,0);
+							setInt(ID_VOLT_INTERVAL,0);
+							m_low_power_time = 0;
+							m_low_power_mode = VOLT_MODE_NORMAL;
+							setLowPowerMode(0);
+							setStatsPower(m_low_power_mode, m_volts_5v, m_volts_vbus);
+							setString(ID_STAT_MSG0,getStatBufMain());
+						}
+					#endif
+
+					// button2 short press continued
+					// otherwise, change pixel brightness
+					// using smaller increments near zero
 
 					else
 					{

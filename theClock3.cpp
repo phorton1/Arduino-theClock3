@@ -199,9 +199,9 @@ bool     theClock::m_setting_zero;
 
 			save_wifi = _device_wifi;
 			save_brightness = _led_brightness;
-			if (_led_brightness > 4)
+			if (_led_brightness > 6)
 			{
-				_led_brightness = 4;
+				_led_brightness = 6;
 				onBrightnessChanged(NULL,_led_brightness);
 			}
 			if (_device_wifi)
