@@ -104,7 +104,7 @@ tape for the rod to pass through.
 
 ### 3. Assemble Tools and Bobbin
 
-PRH TODO:  The photos in this section of the process and
+TODO:  The photos in this section of the process and
 some subsequent ones are the opposite of what I do now.
 I need to make new photos and videos.
 

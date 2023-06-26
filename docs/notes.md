@@ -35,37 +35,49 @@ an [**Addin**](https://github.com/phorton1/fusionAddIns-pyJoints)
 to Fusion 360 to allow me to animate the design and visualize
 the actual mechanism in action.
 
-## Ugrade Electronics (L293D current draw problem)
+## Ugraded Electronics (pcb3.3 MOSFET vs previous pcb3.2 L293D circuit)
 
-I think that **pushing the L293D past it's design specs** is probably causing
-heat and degradation problems with the clocks.  I noticed that after a week
-or so they can tend to run at **full power** and **heat up** trying to keep
-the pendulums moving.
+My earliest builds of this clock made use of a circuit that utilized
+an L293D h-bridge integrated circuit to drive the coils, inherited from
+my [previous clock](https://github.com/phorton1/Arduino-theClock) project.
 
-I have also thought, anecdotally, that the problem is with the micro-usb
-connector and/or a diode for the usb power on the ESP32.  I have found
-that unplugging and re-plugging the USB cable in seems to fix this
-sometimes.
+I believe that the coils were occasionally drawing more current than the
+L293D chip was rated for.  I noticed that after a week or more of running
+perfectly, the clocks would start failing.  They seemed unable to push the
+pendulum far enough.  By that point the PID algorithms had worked their way to
+sending full power pulses (255 on a scale of 0 to 255), and yet the pendulum
+was not swinging far enough to speed up, or would even come to a complete
+stop.
 
-With regards to the current draw, there are two potential solutions to
-this.  First, more windings of
-thinner wire would increase the resistance and reduce the current.
-However, the magnetic force is **proportional to the current density**,
-and so this would also reduce the force delivered.
+When this happened, I noticed that the L293D chips were very hot.
+The two coils were wired separately to the two circuits within the
+L293D, and by my calculations the coils could draw upto 0.9 amps
+each in that configuration.  The L293D is only rated to 600 ma.
 
-The second, and likely, solution is to switch to **mosfet** control of the coils.
-**I don't really need the h-bridge capabilities of the L293Ds** and
-it would be relatively simple to design a new PCB with two mosfets (one for each
-coil) in place of the L293D.  Mosfets can easily handle a few amps of current
-**2A of current**, and especially given the *10% overall duty cycle*
-I think that would do the trick.
+Nonetheless I continued trying to work with the L293D circuit.
+I added heat-sinks to the chips, and, after letting them cool down
+and rebooting the clock, it would start working again, where full
+power pulses would correctly swing the pendulum far enough to bang
+against the frame, but after another week, sometimes, the same thing
+would happen.
 
-If I do this, I could **ship a new PCB** (and email any needed firmware
-upgrades) to folks who already have the clock for a **field upgrade**
-of the clock.
+So I decided to redesign the circuit to use a high power MOSFET,
+instead of the L293D, to drive the coils.
 
+## Secondary USB Connector
 
+TODO: Describe 2nd USB option
 
+## Backup USB UPS (Uninteruptable Power Supply)
+
+TODO: Describe UPS option and build of USB UPS
+
+The choice of **batteries** for the UPS makes a **big** difference!
+
+I tested it first with some *cheap yellow* chinese 18650 batteries
+and it was only able to power the clock for about **30-45 minutes**.
+Then I switched to some new *high quality* **LG** batteries, and
+it was able to power the clock for over **4 hours**.
 
 
 

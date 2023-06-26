@@ -23,7 +23,7 @@ of the clock.
   - epoxy glue the coils into the box
   - epoxy glue LED lenses into the box
   - hot glue the LEDs into the box
-  - screw the PCB and secondary micro-usb module into the box
+  - screw the PCB into the box and connect LED and Coils
 - Epoxy glue the *magnets* into the **pendulum** and assemble it
 - Epoxy glue the *magnets* into the **magnetic spring**
 
@@ -95,6 +95,9 @@ remove any stray threads or imperfections.  As the holes tend to print
 a bit *oblong* I also typically run a **4 mm drill** through all the
 *LED* and *button* holes.
 
+*Note:  there are different **optional** versions of the **box**.
+Please see the [Notes](notes.md) page for more details on these options.*
+
 ![other-3D_print_box.jpg](images/other-3D_print_box.jpg)
 
 We also need to 3D print the **small, clear** plastic LED lenses, cut
@@ -157,16 +160,12 @@ and protrude about 1mm out of the front of the box.
 - *add more hot glue* as necessary to fix the led strip
   and it's cable in place
 
-### d. Insert the PCB (and optional 2nd micro usb port)
+### d. Insert the PCB
 
 - Insert the **PCB** into the box
 - Secure the **PCB** with four *M3x8* wood screws
 - Plug the cables for *LEDs* and *Coils* into the PCB
 
-If you have constructed a second micro usb port:
-
-- screw the USB port to the box using two **M2x6** machine screws
-- plug the 2nd USB port cable into the *battery backup* connector on the PCB
 
 
 ## 3. Assemble the Pendulum
@@ -174,6 +173,7 @@ If you have constructed a second micro usb port:
 The **pendulum** is made up of the 3/16" thick *main wooden piece*, four
 1/8" thick *pendulum covers*, the large *lead fishing weight*, the
 M3 threaded *pendulum* rod and two *m3 square nuts*.
+
 
 ### a. Prepare the **lead fishing weight**
 
@@ -184,9 +184,9 @@ M3 threaded *pendulum* rod and two *m3 square nuts*.
 - **Polish** the weight to a shiny surface by *spinning it on an M3 rod
   in a hand drill* and sanding it with 120 and then 220 grit sand paper
 
+
 ### b. Build the **pendulum**
 ![other-assemble_pendulum.gif](images/other-assemble_pendulum.gif)
-
 
 - thread one **M3 square nut** onto the end of the M3 *Pendulum
   threaded rod* until about 1/2 mm of the thread comes out through the nut.
@@ -206,7 +206,14 @@ it and the *super-glued nut* should **NOT** turn.  If you have a problem with
 this you can also add a **drop of 5 minute epoxy** to the top nut sitting
 in the slot.
 
+
 ### c. Glue the **main magnets** to the pendulum
+
+**You *should* have determined the *correct orientation* of the magnets
+previously when testing the Software on the [previous page](software.md).*
+If you don't remember the correct orientation, or if you get it wrong
+**its ok**.  You will merely need to reverse the orientation of the
+coil plugs later when we start [Tuning](tuning.md) the clock.
 
 - put a piece of masking tape on the front of the pendulum over the main magnet
   hole at the end (under the weight).

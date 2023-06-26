@@ -48,17 +48,18 @@ connectors.
 The **schematic** for the PCB is pretty simple.  Around the **ESP32 Dev Module**
 SBC (Single Board Computer) we have
 
-At the top, five **connectors**:
+At the top, a bunch of **connectors**:
 
 - a **four pin connector** for a potential future battery backup power supply
-- two **two pin connectors** for the coils
-- a **four pin connector** for the *AS5600* angle sensor
+- two **two pin connectors** for wiring the coils in *parallel*
+- two **two pin connectors** for wiring the coils in *series*
+- a **four pin connector** for the *AS5600* angle sensor, along with a 10K pullup resistor on SCL
 - a **three pin connector** for the *WS2812B* LED strip
 
-On the upper left are two electrolyte **capacitors**:
+On the left are two electrolyte **capacitors**:
 
-- a **100uf** capacitor on the *5V rail* and
-- a **470uf** capacitor on the *3.3V rail*
+- a **330uf** capacitor on the *5V rail* and
+- a **100uf** capacitor on the *3.3V rail*
 
 On the lower left are two *buttons* from ESP32 pins to Ground
 
@@ -66,11 +67,20 @@ In the middle are three **voltage dividers** to *analog input*
 pins on the ESP32 for monitoring the VBUS. 5V, and (future)
 Battery voltages.
 
-On the right is the **L293D** *h-bridge motor driver* IC with a
-**10K resistor** to ground on the *Enable* pin.
+On the right is the circuit that drives the coils.
+The *gate* of the **IRF9540N** *N-Channel Mosfet* is normally
+pulled *high* via a *10K resistor*, preventing any current from
+flowing through the mosfet.
+The **PWM** signal from the ESP32 passes through a *10K
+resistor* to the gate of a **BC458** *NPN transistor*.
+When the transistor recieves a pulse, it pulls the gate of
+the mosfet *low*, allowing the mosfet to transfer the full
+5V to the coil(s).
+There is also a **1N4741** flyback *zener diode* to dissipate
+the currents from the coil when they are de-energeized and
+the magnetic fields collapse.
 
-*The **10 uf electrolyte capacitor** on the ESP32 **EN** pin is
-intended to make it work better with serial port programming.*
+
 
 ### PCB (KiCad) Design
 
@@ -124,16 +134,16 @@ and there are no short circuits.
 
 ### Soldering the PCB
 
-I usually take a half hour or so, under a magnifying glass, with a
+I usually take a few minutes, under a magnifying glass, with a
 tiny piece of fine grit sandpaper to **clean the pads** to remove
 any *epoxy film* left over from above before doing any soldering.
 I then wipe them off with a paper towel and some *rubbing alcohol*.
 
 After that I gather all the parts together and then I *cut, strip and bend* the
 **connecting wires**, heat up the soldering iron, and solder them to the board.
-Proceeding in *order of height* I next solder the **resistors** and **IC** to the
-board, then the **connectors** and **headers** and finally, I solder on the
-**switches** and **capacitors** last.
+Proceeding in *order of height* I next solder the **resistors** and **wires** to the
+board, then the **connectors** and **headers** and **switches**, then finally,
+I solder on the **transistor**, **mosfet**, and **capacitors** last.
 
 ![elec-toSolder.jpg](images/elec-toSolder.jpg)
 
@@ -146,60 +156,81 @@ When finished, it looks something like this:
 ![elec-soldered.jpg](images/elec-soldered.jpg)
 
 
-*Note: The open holes are where I only soldered resistors for one of the **voltage** dividers onto the
-above PCB, and intentionally added **extra pads** for unconnected pins on the
-ESP32 to allow for future modifications.*
-
-**Important Note:** As *designed* the circuit keeps the **5V** and **VBUS** (usb power)
-rails **separate** to allow for the later incorporation of a *battery backup power supply*.
-Because of this, in the absence of such a backup
-power supply, **the two center pins of the four pin "battery backup" connector
-must be connected!!** for it to work properly .  You can attach a jumper
-between the two pins or **create a solder bridge** between the two
-center pins of the power supply connector when soldering the board.
-
-![elec-jumper.jpg](images/elec-jumper.jpg)
-![elec-solder_bridge.jpg](images/elec-solder_bridge.jpg)
+*Note: I only soldered resistors for two of the **voltage dividers** and
+dupont connectors for the **serial coils** onto the above PCB.
 
 
 ### Solder and Create other Cables
 
-In addition to the PCB
-
-- **solder** a wired 3 pin JST connector to a strip of *five WS3812b LEDs*.
-  I usually put a bit of *hot glue* on the solder joints for *stress relief*
-- (not shown) **solder** two pins of a wired 4 pin JST connector to the
-   **optional secondary micro usb power port** (and remove the other two
-   wires) to provide an alternative way to get ground and 5V to the circuit
-- **crimp** two 4 pin JST connectors onto an 18" shielded **three conductor** cable
-   (not shown), for the *AS560 angle sensor* (shown) connecting **ground** to the
-   *shield* on both sides, applying *heat shrink tubing* to the exposed ground wires.
-- **solder** wires, apply *heat shrink tubing*, and **crimp** 2 pin dupont connectors
-   to the coils.
-
-When I solder the wires to the coils, I then usually also put them flat face down,
-press the heat shrink tubing down and **put a drop of 5 minute epoxy**
-to glue the wires and and tubing for to the coil *for stress relief* to
-prevent damage while working with them.
+In addition to the PCB we need to **solder** and **crimp** some cables
+for the electronics.
 
 ![elec-other.jpg](images/elec-other.jpg)
 
-When creating the cables be sure to get the **pin alignments** correct!!
-Please refer to the *schematic* and *pcb* designs and **carefully
-match the pins and orientations of the cables and connectors**
-when creating the cables!
+TODO: Better images for each of these cables and connectors
+
+#### WS2812b cable
+
+Solder a **wired 3 pin JST connector** to a strip of *five WS3812b LEDs*.
+The wired connectors I purchased have the *correct orientation* with regards to
+the socket on the PCB.  **Red** goes to the **5V** on the strip,
+**Black** goes to **ground** on the strip, and the
+middle **White** goes to the strip's **data in** connector.
+
+**DOUBLE CHECK** the orientation of the pins on the connector and
+LED strip versus the **PCB and schematic** BEFORE plugging the LED's
+in!!!  You may *burn out the power supply* on the ESP32 if you have
+them backwards!
+
+#### AS5600 cable
+
+The **AS5600 cable** has a *regular* **2.54mm** pitch female JST connector
+on one side, and a smaller **2.0mm** pitch female JST connector on the
+other side.
+
+I use an **18"** length shielded **three conductor** cable (not shown).
+Carefully extract about 1" length of the conductors and shield from
+each end of the cable and strip 3mm from the ends of the conductors.
+Twist the ends of the conductors and the entirety of the *shield cable* and
+put a small piece of *heat shrink tubing* on the shield cable, leaving
+about 3mm at the end exposed.  Then **Crimp** the **female pins** onto
+each end of the cable, with the larger pins on one side, and smaller
+ones on the other side.
+
+Make sure the **orientation of the pins** are correct and slide
+and click them into the appropriate white nylon connectors.
+
+**DOUBLE CHECK** the orientation of the pins on each end
+of the cable versus the PCB/schematic and pinout of your
+AS5600 module before inserting them in the white nylon parts!!
 
 
-### Design Note
+#### Coils
 
-The **L293D** integrated circuit is rated at **600ma** from 4 to 36 volts,
-so I am **pushing the chip past it's design specs**, sigh. However,
-it is worth noting that the typical parametrized driving impulse
-is only **120 ms** in duration, so the **overall duty cycle** of the circuit
-is about only 25%.  and the **PWM output** from the ESP32 typically
-runs at about 50%, so (for the time being) I am using this circuit.
-There is a [note](notes.md) about potentially upgrading this
-to use *mosfets* in the future.
+
+When soldering the wires to the coils, I usually use a **red** wire to the
+center of each coil and a **black** wire to the outer lead of each coil. I use
+about 6" of *stranded 22 gauge wire* for these leads, stripping about
+1/4" off each end and twisting the end strands.
+
+Then trim the leads of the 30 gauge wire from the coils to about 3/4"
+in length, and **burn** about 1/4" of the laquer off the wires with a lighter.
+After burning off the laquer, **sand** the ends to expose *clean copper* for soldering.
+It is **important** that you have carefully cleaned the 30 guage wire before attempting
+to solder to it!
+
+Then solder the bigger wires to the coils and cover the solder joints
+with a small piece of *heat shrink tubing*. After soldering,  provide *stress
+relief* by placing the coils face down, and gluing the the heat shrink tubing
+to the coil with a drop or two of **5 minute epoxy**.
+
+Finally, **crimp** some standard **male dupont** pins onto the ends of the cables
+and put a two pin dupont connector housing on each coil.  It is **important**
+that the solder connection and epoxy **do not extend more than 3mm** above
+the coils.  The tolerance for the **back coil** is very tight and we don't
+want the *frame* to damage the *back coil* once it is glued into the *box*
+and we slide the *frame* onto the *box*.
+
 
 
 **Next:** Installing the **[Software](software.md)** and testing the PCB ...

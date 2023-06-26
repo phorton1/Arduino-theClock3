@@ -363,20 +363,27 @@ CONNECTING THEM TO THE CIRCUIT**!!!
 
 Have a **magnet** handy.
 
-We will in turn plug each of the coils separately into the two **coil** connectors.  Their
-orientation does not matter at this point, we just want to make sure they do *something, anything*!!
+TODO: image of plugging the coils in
 
-Type the command **"motor=1"** into the Serial Monitor.  This command tells the coils to *attract*
-the magnet (at the **POWER_MIN** parameter).  You should be able to hold the magnet near the coil and feel
-it attracted or repulsed by each coil, from each connector, in turn.
+We plug the coils **in series** into the two **serial coil** connectors.
+The orientation of the plugs depends on and/or determines the orientation of the magnets
+that will be glued into the pendulum.  Plug the coils in such that the
+same colors are on each side, with **reds** on the left and **blacks** on the right.
 
-The command **motor=0** will turn the (PWM to the L293D) **off**.  **DO NOT LEAVE THE "MOTOR" RUNNING!**.
+Type the command **"motor=1"** into the Serial Monitor.  This command energizes the coils
+(at the **POWER_MIN** parameter).  You should be able to hold the
+magnet near the face of each coil and feel a repulsion or attraction.
 
-The command **motor=-1** will *repulse* the magnet.
+What we want to do here is determine the orientation of the magnet such that
+it is repulsed by each coil when the coils are facing each other and the magnet
+is in between them.   Once you have determined that, **mark** the **front coil** with
+a piece of tape or felt marker, and **mark the front** of the magnet.
 
-Later, after we have glued the magnet into the pendulum and assembled the clock, we will use the
-**motor=-1** command and **change the orientation of the coil plugs** as necessary to ensure that
-*both coils* are **repelling** the magnet when *motor* is -1 (negative one).
+**Remember** (write down) the orientation of the coils, plugs, and magnets, so that
+you can glue the magnets in the pendulum in the correct orientation in the
+next steps of assembly!
+
+De-energize the coils by typing **motor=0** into the Serial Monitor.
 
 
 ### 5. Test the AS5600
@@ -391,11 +398,10 @@ screwing down the sensor and sensor housing.
 
 **Plug the AS5600 in** and **power up the ESP32**.
 
-This time, in the *serial monitor*, you should see a message indicating
-that the AS5600 *initialized correctly*.  It will still (most likely)
+This time, in the *serial monitor*, you *should* see a message indicating
+that the AS5600 **initialized correctly**.  It will still (most likely)
 get an error when it tries to set the *zero angle*, but at least we
 will have confirmed that the **cable and module** are basically working.
-
 
 **YOU WILL PROBABLY WANT UNPLUG THE SENSOR AND TO DO ANOTHER FACTORY RESET**
 after this, just in case a **zero angle** happened to get set.
@@ -403,15 +409,6 @@ The actual *zero angle* of the clock will be set when the clock is
 first rebooted after a factory reset and the **pendulum
 is hanging motionless straight down!!**
 
-
-### 6. Test the 2nd micro usb connector
-
-If you created a second micro usb connector you can now plug it into the
-*backup battery* connector and test that the clock can obtain power from it.
-*Unplug* the ESP32 from your computer and **plug it into the 2nd micro-usb
-connector*.
-
-It should boot normally and the LEDs should flash as before.
 
 
 ## D. Summary

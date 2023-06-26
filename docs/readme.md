@@ -61,7 +61,7 @@ On these pages you will find the following:
 - **[Tuning](tuning.md)** - Describes the process of getting the clock to **run accurately**
 - **[User Manual](user_manual.md)** - A more detailed guide to the **WebUI** and software for the clock
 - **[Trouble Shooting](trouble.md)** - Some common potential **problems** and possible **solutions**
-- **[Notes](notes.md)** - Personal and Other Notes and information about the clock
+- **[Notes](notes.md)** - Other Notes and information about the clock
 
 TODO: In my initial builds of this clock I did not take enough photographs and videos
 to properly document this project.  So, at this time there are **no YouTube videos**

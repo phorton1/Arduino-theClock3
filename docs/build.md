@@ -34,8 +34,7 @@ to this one.
     - PCB isolation routing, epoxy coating, laser curing, drilling, milling, and cutout
 	- **continuity test** the PCB
 	- **solder components** to the PCB
-	- **make cables/connectors** for the LEDs, Coils, AS5600 angle sensor
-	  and secondary micro-usb connector.
+	- **make cables/connectors** for the LEDs, Coils and AS5600 angle sensor
 - Install and Build the **[Software](software.md)**
 	- install the *Arduino IDE* and necessary **libraries**
     - build the **code** and upload it, and the *SPIFFS file system* to the ESP32
@@ -47,7 +46,7 @@ to this one.
     - epoxy glue the coils into the box
 	- epoxy glue LED lenses into the box
 	- hot glue the LEDs into the box
-	- screw the PCB and secondary micro-usb module into the box
+	- screw the PCB into the box
 	- epoxy glue the *magnets* into the **pendulum** and assemble it
 	- epoxy glue the *magnets* into the **magnetic spring**
 - [Final Assembly](assembly.md) includes:
