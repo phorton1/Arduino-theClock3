@@ -141,23 +141,24 @@ I then wipe them off with a paper towel and some *rubbing alcohol*.
 
 After that I gather all the parts together and then I *cut, strip and bend* the
 **connecting wires**, heat up the soldering iron, and solder them to the board.
-Proceeding in *order of height* I next solder the **resistors** and **wires** to the
-board, then the **connectors** and **headers** and **switches**, then finally,
+Proceeding in *order of height* I next solder the **resistors** to the
+board, then the **connectors**, **headers** and **switches**, then finally,
 I solder on the **transistor**, **mosfet**, and **capacitors** last.
 
 ![elec-toSolder.jpg](images/elec-toSolder.jpg)
 
 While still setup for soldering, I *test the PCB* with a *multi-meter* to ensure there are
 no **short circuits** (particularly between the voltage rails and ground), and do any
-*spot corrections* if I find a short or a component that is not conducting well.
+*spot corrections* if I find a short or a component that is not conducting well while
+the soldering iron is still hot.
 
 When finished, it looks something like this:
 
 ![elec-soldered.jpg](images/elec-soldered.jpg)
 
-
-*Note: I only soldered resistors for two of the **voltage dividers** and
-dupont connectors for the **serial coils** onto the above PCB.
+*Note: The **resistors** for the voltage dividers and the **4 pin JST** *battery backup*
+connector are only for the [optional](notes.md) **UPS** (Uninteruptable Power Supply) option
+and you don't need to solder them if you are not using that option.*
 
 
 ### Solder and Create other Cables
