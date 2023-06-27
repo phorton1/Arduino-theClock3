@@ -265,7 +265,7 @@ of the frame) that they **repel** the magnet in the shaft of the
 pendulum!  Here is a diagram showing the *pendulum* and *magnet holder*
 **from the back** of the clock:
 
-### a. Glue the moving **spring magnet** into the Shaft of the {endulum
+### a. Glue the moving **spring magnet** into the Shaft of the Pendulum
 
 - put a drop of **5 minute epoxy** into the *indent* on the pendulum shaft.
 - set one **3x3x2mm magnet** into the slot so that it's *magnetic face*
@@ -275,7 +275,7 @@ pendulum!  Here is a diagram showing the *pendulum* and *magnet holder*
 
 ![other-must_repulse.jpg](images/other-must_repulse.jpg)
 
-### b. Glue the **stationary magnets** into the Magnet Spring
+### b. Glue the **stationary magnets** into the Magnet Holder
 
 - *3D print* the **magnet holder**.
 - *Press two* **3x3x2mm magnets** into the holder. They should go down
