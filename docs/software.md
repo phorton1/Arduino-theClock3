@@ -21,11 +21,11 @@ and do an initial **test** of the PCB cables and sub components.
 
 ### 1. Install the [**myIOT**](https://github.com/phorton1/Arduino-libraries-myIOT/blob/master/docs/getting_started.md) Library
 
-The software is built within [**Arduino IDE**](https://www.arduino.cc/en/software) development environment and depends
+The software is built within the [**Arduino IDE**](https://www.arduino.cc/en/software) development environment and depends
 on the [**myIOT**](https://github.com/phorton1/Arduino-libraries-myIOT) library.  Please follow the below link for
 instructions on how to *prepare your Arduino IDE to build ESP32 projects* and install the *myIOT library*
 
-[**Getting Started with the myIOT Library**](https://github.com/phorton1/Arduino-libraries-myIOT/blob/master/docs/getting_started.md) Library
+[**Getting Started with the myIOT Library**](https://github.com/phorton1/Arduino-libraries-myIOT/blob/master/docs/getting_started.md)
 
 As described there, you will also need to install the following dependencies:
 
@@ -82,7 +82,7 @@ Start with a **bare ESP32 Dev Module** that is **NOT** plugged into the PCB we c
 
 The software is divided into a number of separate **classes** and **files**.
 
-- **theClock3.ino** - contains the main *Arduino Sketch**, the main **setup()** and **loop()**
+- **theClock3.ino** - contains the main *Arduino Sketch*, with the main **setup()** and **loop()**
   methods, and the *static declarations* of the *user interface* and **parameters**
   of the **theClock** *myIOTDevice*
 - **theClock3.h** - contains all **common defines** and the class declaration of
@@ -97,15 +97,15 @@ The software is divided into a number of separate **classes** and **files**.
   for the **theClock** *myIOTDevice*, which is called from the
   main Arduino loop() method, and which includes the *non time critical*
   functions for handling **pixels** and **buttons**
-- **clockPixels.h and cpp** - are wrappers around the *Adafruit Neopixels** library
+- **clockPixels.h and cpp** - are wrappers around the *Adafruit Neopixels* library
   that minimize it's API, and that also add functions like *blending and averaging* pixels
-- **clockAS5600.h and cpp** - are wrappers around the *AS5600** library
+- **clockAS5600.h and cpp** - are wrappers around the *AS5600* library
   that abstract out it's functionality into a minimized API
 - **clockStats.h and cpp** - contain static variables and methods for
   generating and maintaining **statistics** about how the clock is running
   and to aid in presenting them to the **WebUI**
-- **nptTime.cpp** contains code to use **UDP** packets for obtaining
-  the **NTP** (Network Time Protocol) time with *Seconds mad Milliseconds* accuracy
+- **nptTime.cpp** contains code to send and receive **UDP** packets for obtaining
+  the **NTP** (Network Time Protocol) time with *Seconds and Milliseconds* accuracy
 
 ### 1. Clock State Machine
 
@@ -322,9 +322,8 @@ contents of the SPIFFS filesystem** to a bare ESP32 as described above, and
 be able to connect to it and see, and type input into the **Serial Monitor**.
 
 You should have already (also) checked the PCB out with a *multimeter* to
-make sure there are **no short circuits** particularly between any of the
-power rails and ground, and that you have **jumpered or soldered** the
-*5V* and *VBUS* pins together as described on the [Electronics](electronics.md) page.
+make sure there are **no short circuits**, particularly between any of the
+power rails and ground,.
 
 ### 1. Unpower everything and plug the ESP32 into the PCB
 
@@ -370,12 +369,17 @@ The orientation of the plugs depends on and/or determines the orientation of the
 that will be glued into the pendulum.  Plug the coils in such that the
 same colors are on each side, with **reds** on the left and **blacks** on the right.
 
-Type the command **"motor=1"** into the Serial Monitor.  This command energizes the coils
-(at the **POWER_MIN** parameter).  You should be able to hold the
-magnet near the face of each coil and feel a repulsion or attraction.
+De-power the ESP32 (unplug the serial cable), plug in the coils, and power up
+the ESP32.
 
-What we want to do here is determine the orientation of the magnet such that
-it is repulsed by each coil when the coils are facing each other and the magnet
+After it has finished booting, type the command **"motor=1"** into the Serial Monitor.
+This command energizes the coils (at the **POWER_MIN** parameter).
+You should be able to hold the magnet near the face of each coil and feel a
+repulsion or attraction.
+
+This is a good opportunity to determine the **orientation** of the *magnets and coils*.
+We want to figure out how to arrange the coils and magnets such that
+the magnet is repulsed by each coil when the coils are facing each other and the magnet
 is in between them.   Once you have determined that, **mark** the **front coil** with
 a piece of tape or felt marker, and **mark the front** of the magnet.
 
@@ -388,8 +392,9 @@ De-energize the coils by typing **motor=0** into the Serial Monitor.
 
 ### 5. Test the AS5600
 
-If we plug the AS5600 in with it's cable, it should initialize properly but we will likely
-get a slew of errors as there is no magnet near it, the **zero cannot be set**, and even
+If we plug the AS5600 in with it's cable, and reboot the ESP32, the AS5600 should initialize
+properly but we will likely get a slew of errors as there is no magnet near it,
+the **zero cannot be set**, and even
 if it was, the proper zero is likely not in the prescribed range of *45 to 235 degrees**.
 
 However, it *may* be a good idea to make sure the cable is working properly and that

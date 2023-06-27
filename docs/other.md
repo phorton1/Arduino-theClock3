@@ -47,6 +47,12 @@ do not have any burrs that will *damage the wood* as they are
 inserted into the gears, cam, etc.  The same goes for the
 ends of the threaded rods ... they should be finished so that
 the threads *go easily* into M3 nuts.
+I also **sand** the *inside* of the **Hours and Minutes Tubes** by
+wrapping a piece of 220 grit sandpaper around a length of threaded
+rod and inserting it into the tubes and turning the tube around
+the sandpaper.  It is **important** that the concentric *Hours*,
+*Minutes*, and *Seconds* tubes all fit together nicely and
+**do not grind or bind**!
 
 The final items should be within **1/10th of a mm** of the
 listed lengths for best fitting and operation of the clock.
@@ -78,13 +84,6 @@ td,th {
 <tr><th>M3 threaded rod</th><td>73.50 mm</td><td><b>Pendulum</b> rod</b></td></tr>
 <tr><td></td><td>64.90 mm</td><td><b>Idler</b> rod</b></td></tr>
 </table>
-
-I also **sand** the *inside* of the **Hours and Minutes Tubes** by
-wrapping a piece of 220 grit sandpaper around a length of threaded
-rod and inserting it into the tubes and turning the tube around
-the sandpaper.  It is **important** that the concentric *Hours*,
-*Minutes*, and *Seconds* tubes all fit together nicely and
-**do not grind or bind**!
 
 
 ## 2. 3D print the Box and glue/screw things into it
@@ -138,6 +137,8 @@ not catch or damage the wires or solder joints on the coil.
 able to secure it with a weight at the end, so you may want to have
 a *small clamp* handy and ready to go to clamp the coil into place
 while the glue sets.
+
+TODO: photo montage of assembling the box
 
 ### b. Glue the LED lenses into the box
 
@@ -221,19 +222,42 @@ coil plugs later when we start [Tuning](tuning.md) the clock.
 - press the **two 5x5x2 mm** magnets into the hole.
 - center the magnets, as best as possible, in the hole in the wood.
 
-### d. Glue the moving **spring magnet** into the shaft of the pendulum
 
-- put a drop of **5 minute epoxy** into the *indent* on the pendulum shaft.
-- set one **3x3x2mm magnet** into the slot so that it's *magnetic face*
-  is facing towards the edge (not the front or back!) of the pendulum.
-- try to *center* the magnet in the wood (as it is smaller than the thickness
-  of the wood)
+## 4. Glue the Top Tube Stopper and Magnet for Angle Sensor
+
+We want to glue a **stopper** onto the top tube.  The stopper is necessary
+for the assembly and also provides us with a *handle* to pull the tube out
+if we want to *dis-assemble* the clock.
+
+![other-top_tube.jpg](images/other-top_tube.jpg)
+
+- **Score** about *5mm* of one end of the **top tube** with a file or 80 grit sand paper so the glue will adhere to it.
+- **Slide** the *tightest* wooden **12x4.85mm** *stopper* you have onto the top tube from the smooth end all the
+way down to just before the to the scored region.
+- Using a toothpick, **mix and apply** a thin coat of **5 minute epoxy** on the scored part of the tube.
+- **Slide** the stopper the final 5mm over the glue until it is **flush** with the end of the tube.
+- **Wipe** any remaining epoxy from the assembly and set it aside to dry.
+
+Also, we want to create the **end cap** for the top tube that contains the
+**magnet** for the angle sensor.  This will slide on (but not be glued)
+to the top tube when we assemble the clock.
+
+![other-angle_sensor_magnet.gif](images/other-angle_sensor_magnet.gif)
+
+- **Mix** some **5 minute epoxy** with a toothpick
+- Put a small piece of **masking tape** over one side of the 1/8" thick **12x6** wooden **magnet holder** washer.
+- **Insert the magnet** so that it is flush with the front (stuck to the masking tape)
+- Put a **drop of epoxy** into the spacer so that it completely covers the magnet and seeps in around the edges
+- **Apply** a *thin* coat of epoxy to the back side of the spacer
+- **Carefully center** another **12x4.85mm** wooden *stopper* onto the back side of the
+  spacer and press it down
+- **Wipe off** any stray epoxy and **re-center** the rings **as close as you can**!!
 
 
-## D. Prepare the Magnetic Spring
+## 5. Glue Magnets for the Magnetic Spring
 
-We are going to glue the remaining two **3x3x2mm magnets** into the
-*3D printed* **magnetic spring holder**.
+We are going to glue one of the *small* **3x2x2mm** magnets to the shaft of
+the pendulum and the remaining two into the *3D printed* **magnetic spring holder**.
 
 It is **important** that the two magnets are inserted such that,
 when the spring holder is attached to the frame (on the left rear
@@ -241,10 +265,23 @@ of the frame) that they **repel** the magnet in the shaft of the
 pendulum!  Here is a diagram showing the *pendulum* and *magnet holder*
 **from the back** of the clock:
 
+### a. Glue the moving **spring magnet** into the Shaft of the {endulum
+
+- put a drop of **5 minute epoxy** into the *indent* on the pendulum shaft.
+- set one **3x3x2mm magnet** into the slot so that it's *magnetic face*
+  is facing towards the edge (not the front or back!) of the pendulum.
+- try to *center* the magnet in the wood (as it is smaller than the thickness
+  of the wood)
+
 ![other-must_repulse.jpg](images/other-must_repulse.jpg)
 
+### b. Glue the **stationary magnets** into the Magnet Spring
+
 - *3D print* the **magnet holder**.
-- Glue two **3x3x2mm magnets** into the holder with a drop of **5 minute epoxy**
+- *Press two* **3x3x2mm magnets** into the holder. They should go down
+  about 1mm below the surface.
+- *Add* a  drop of **5 minute epoxy** on top and let it seep down around the
+  magnets
 
 *I can't stress this enough!*  **MAKE SURE THAT THE MAGNETS
 IN THE HOLDER ARE ORIENTED TO REPEL THE MAGNET IN THE PENDULUM
@@ -253,9 +290,6 @@ magnets out without destroying the magnet holder.
 I have, at least twice, gotten this wrong, and had to re-print
 the magnet holder.
 
-
-
-## That's it !!
 
 We are now ready to proceed with the **final assembly** of the clock!
 

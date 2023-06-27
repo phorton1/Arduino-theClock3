@@ -104,9 +104,9 @@ tape for the rod to pass through.
 
 ### 3. Assemble Tools and Bobbin
 
-TODO:  The photos in this section of the process and
-some subsequent ones are the opposite of what I do now.
-I need to make new photos and videos.
+*Note:  The photos in this section of the how I thread the parts
+on the rod are the opposite of what I do now. The instructions
+are correct*.
 
 We need to **cut a 3 inch** or so length of **M3 threaded rod**
 and **lock two M3 nuts onto it** about 1" from one end.  The long end

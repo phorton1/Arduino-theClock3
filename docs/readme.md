@@ -17,6 +17,8 @@
 This clock uses wooden gears and a simple electromagnetically driven pendulum
 with the goal of keeping accurate time.
 
+TODO: Clock3 ticking YouTube Video
+
 It uses an an **electromagnet** and **permanent magnet** to provide pulses of energy
 to the pendulum to keep it moving, an **angle sensor** to detect the position
 of the pendulum, and a **magnetic spring** to to speed up, or slow down, the pendulum.

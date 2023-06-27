@@ -14,6 +14,49 @@
 **[Trouble Shooting](troubles.md)** --
 **Notes**
 
+TODO:
+
+- Write Assemble: Arms and Pawls section
+- Write Assemble: Top Tube, Pendulum, Cam, and End Cap section
+- Write Assemble: Attach Arms and Pawls section
+
+- Write Tuning Page
+- Write User Manual Page
+- Write Trouble Shooting Page
+
+- Notes - add photos and better desription of 2nd USB option
+- Notes - add photos and better desription of USB_UPS option
+
+- Readme.md - Clock3 ticking YouTube Video
+
+Disassemble clock 3.33
+
+- Electronics - elec-CoilConnectors.jpg - photo of current coils glued in box
+- Electronics - better elec-other.jpg parts of cables to be assembled
+- Electronics - elec-AS5600_cable.jpg - Labelled image of ends of AS5600 cable
+- Software - soft-testCoils.jpg - labelled image of coils plugged in
+
+
+
+
+TODO2:
+
+Build 3 more clocks, producing videos/pics along the way
+
+- Wood - Wood Cutting, sanding, and Frame assembly YouTube video
+- Coils - Coil Making YouTube Video
+- Electronics - Making PCB YouTube Video
+- Other/Assembly - Other and Assembly Build Montage YouTube video
+
+Photos:
+
+- Coils - correct rod orientation in coil winding pics
+- Electronics - better pic of coil soldering
+- Electronics - pic of coil heat shrink stress relief glue
+- Electronics - image of completed LED strip
+- Other - photo montage of gluing coils, led lenses, and led strip into the box
+
+
 
 ## Cam Mechanism and Fusion 360 [pyJoints Addin](https://github.com/phorton1/fusionAddIns-pyJoints)
 
@@ -75,9 +118,12 @@ TODO: Describe UPS option and build of USB UPS
 The choice of **batteries** for the UPS makes a **big** difference!
 
 I tested it first with some *cheap yellow* chinese 18650 batteries
-and it was only able to power the clock for about **30-45 minutes**.
+and it was only able to power the clock for about **30-45 minutes**
+before the batteries dropped below 2.9 and the ESP32 would no longer
+boot.
+
 Then I switched to some new *high quality* **LG** batteries, and
-it was able to power the clock for over **4 hours**.
+it was able to power the clock for over **8 hours**.
 
 
 
