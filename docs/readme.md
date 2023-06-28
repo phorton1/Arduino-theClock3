@@ -65,7 +65,7 @@ On these pages you will find the following:
 - **[Trouble Shooting](trouble.md)** - Some common potential **problems** and possible **solutions**
 - **[Notes](notes.md)** - Other Notes and information about the clock
 
-TODO: In my initial builds of this clock I did not take enough photographs and videos
+Note: In my initial builds of this clock I did not take enough photographs and videos
 to properly document this project.  So, at this time there are **no YouTube videos**
 and only a limited number of actual **photographs** of the build process on these
 pages.   It is my plan to build *another* instance of this clock in the near future,

@@ -22,9 +22,7 @@ that is laser cut from the same *cheap plywood* I use for this clock.
 Please follow the link to the repository for the **Fusion 360 design**,
 **DXF Files** and the Arduino Nano **INO Sketch** for that machine.
 
-
-![coils-finished1.jpg](images/coils-finished1.jpg)
-![coils-finished2.jpg](images/coils-finished2.jpg)
+[![coils-Youtube_thumb.jpg](images/coils-Youtube_thumb.jpg)](https://youtu.be/SLoeMC5IGfE)
 
 ### Why opened face, again?
 
@@ -53,6 +51,10 @@ the bobbin**, with a thin (0.4mm) face, that was assembled on the rod
 in two parts, and I would still add epoxy initially to
 glue the two parts together and try to glue the face to the coil
 somehow.
+
+
+![coils-finished1.jpg](images/coils-finished1.jpg)
+![coils-finished2.jpg](images/coils-finished2.jpg)
 
 
 ### 1. 3D Print the Tools and the Bobbin

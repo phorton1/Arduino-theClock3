@@ -362,12 +362,12 @@ CONNECTING THEM TO THE CIRCUIT**!!!
 
 Have a **magnet** handy.
 
-TODO: image of plugging the coils in
-
 We plug the coils **in series** into the two **serial coil** connectors.
 The orientation of the plugs depends on and/or determines the orientation of the magnets
 that will be glued into the pendulum.  Plug the coils in such that the
 same colors are on each side, with **reds** on the left and **blacks** on the right.
+
+![soft-coil_plugs.jpg](images/soft-coil_plugs.jpg)
 
 De-power the ESP32 (unplug the serial cable), plug in the coils, and power up
 the ESP32.

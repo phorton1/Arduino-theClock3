@@ -138,8 +138,6 @@ able to secure it with a weight at the end, so you may want to have
 a *small clamp* handy and ready to go to clamp the coil into place
 while the glue sets.
 
-TODO: photo montage of assembling the box
-
 ### b. Glue the LED lenses into the box
 
 - Mix some **5 minute epoxy** and, on the *inside of the box* put **very small drops**
@@ -148,6 +146,8 @@ at the corners of each of the 5 *indents* where the lenses go.
 tool to get them in all the way. They should *snap* into place
 and protrude about 1mm out of the front of the box.
 - Wipe any excess epoxy off from the indie of the box and let the glue dry.
+
+![other-led_lenses.jpg](images/other-led_lenses.jpg)
 
 ### c. Hot Glue the LED Strip into place
 

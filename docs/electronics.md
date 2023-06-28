@@ -189,7 +189,14 @@ The **AS5600 cable** has a *regular* **2.54mm** pitch female JST connector
 on one side, and a smaller **2.0mm** pitch female JST connector on the
 other side.
 
-I use an **18"** length shielded **three conductor** cable (not shown).
+![elec-AS5600_connector.jpg](images/elec-AS5600_connector.jpg)
+![elec-AS5600_connector.jpg](images/elec-AS5600_module.jpg)
+
+I used three of the four conductors, and the shield, of an **18"**
+length of shielded **four conductor** cable (not shown), cutting
+and not using the **black** conductor.  You could also use shielded
+*three conductor* cable.
+
 Carefully extract about 1" length of the conductors and shield from
 each end of the cable and strip 3mm from the ends of the conductors.
 Twist the ends of the conductors and the entirety of the *shield cable* and
@@ -199,22 +206,28 @@ each end of the cable, with the larger pins on one side, and smaller
 ones on the other side.
 
 Make sure the **orientation of the pins** are correct and slide
-and click them into the appropriate white nylon connectors.
+and click them into the appropriate white nylon connectors. With
+the AS5600 modules I have, the pin orientation is the *same on both plugs*
+
+- pin1 - **red** 3.3V
+- pin2 - **black** (heat shrink over twisted shield) **Ground**
+- pin3 - **white SCL**
+- pin4 - **green SDA**
 
 **DOUBLE CHECK** the orientation of the pins on each end
 of the cable versus the PCB/schematic and pinout of your
-AS5600 module before inserting them in the white nylon parts!!
+AS5600 module *before* inserting them in the white nylon parts!!
 
 
 #### Coils
 
 
-When soldering the wires to the coils, I usually use a **red** wire to the
-center of each coil and a **black** wire to the outer lead of each coil. I use
-about 6" of *stranded 22 gauge wire* for these leads, stripping about
+When soldering the wires to the coils, I used an **orange**  wire to the
+center of each coil and a **white**  wire to the outer lead of each coil.
+I use about 6" of *stranded 22 gauge wire* for these leads, stripping about
 1/4" off each end and twisting the end strands.
 
-Then trim the leads of the 30 gauge wire from the coils to about 3/4"
+Trim the leads of the 30 gauge wire from the coils to about 1/2"
 in length, and **burn** about 1/4" of the laquer off the wires with a lighter.
 After burning off the laquer, **sand** the ends to expose *clean copper* for soldering.
 It is **important** that you have carefully cleaned the 30 guage wire before attempting
@@ -225,12 +238,13 @@ with a small piece of *heat shrink tubing*. After soldering,  provide *stress
 relief* by placing the coils face down, and gluing the the heat shrink tubing
 to the coil with a drop or two of **5 minute epoxy**.
 
+![elec-coil_soldered.jpg](images/elec-coil_soldered.jpg)
+
 Finally, **crimp** some standard **male dupont** pins onto the ends of the cables
 and put a two pin dupont connector housing on each coil.  It is **important**
-that the solder connection and epoxy **do not extend more than 3mm** above
-the coils.  The tolerance for the **back coil** is very tight and we don't
-want the *frame* to damage the *back coil* once it is glued into the *box*
-and we slide the *frame* onto the *box*.
+that the solder connection and epoxy on the *back coil* **do not extend more
+than 3mm** above the coil.  We don't want the *frame* to damage the *back coil*
+once it is glued into the *box* and we slide the *frame* onto the *box*.
 
 
 

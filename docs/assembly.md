@@ -21,8 +21,20 @@ On this page we will assemble the *finished clock*, see it's
 are good before we proceed to [tuning](tuning.md) it to
 run via the electromagnetic coils.
 
+Although *not described* on this page, it is not a bad idea to
+**dry fit** the assembly (Parts **A & B** below) together before
+gluing the Tubes into the Gear Assemblies.  When the clock is
+assembled the **gears should mesh** with the large gears riding
+nicely **in the middle** the small gears - not just barely overlapping!
+There should be some **play** in the mechanism, the gears must be **free**
+and **turn well** with little friction.
 
-## A. Glue Tubes to Gear Assemblies
+You *may* want to **sand** the *wooden spacers* to make them *thinner*,
+and/or sand the *long ends of the tubes* to make sure the gears overlap,
+there is a bit of play, and they turn nicely once the **bridge** is attached.
+
+
+## A. Glue Tubes into Gear Assemblies
 
 Each of the five **gear assemblies** are glued to the appropriate
 tube with *5 minute epoxy*.  The *spacing* of the tubes into the
@@ -101,6 +113,23 @@ bearing with a paper towel lightly wetted with *alcohol*.
 
 We are now ready to insert the **gear assemblies** into the frame.
 
+#### Lubrication
+
+*Apply* **graphite dry lube** liberally to the teeth of all the gears. The
+idea is to *embed* the dry lube in the *laquer* on the teeth.  This will
+significantly **reduce the friction** in the clock and make it run better.
+The powdered graphite is very *messy* to work with,  I literally *cover*
+the teeth in graphite powder, by *dipping* them in piles of the powder,
+or ny using a *small spoon* to dump powder onto all the teeth. I then
+*rub and brush* the powder into the teeth with a coarse 1/2" paint brush.
+Then finally, I *wipe off* the *faces* of each gear with a paper towel
+to make them look nice.
+
+Likewise, when assembling the *tubes* I apply a *thin coat* of **light
+machine oil** (I use the popular "3-in-1" oil) to the **inner tube** in
+each step where a tube will ride on the *threaded rod* or *another tube*.
+
+
 #### Seconds Wheel Assembly
 
 - slide the *two* **12x4.1mm** *wooden washers* onto the back of the **Seconds Wheel Assembly**
@@ -109,14 +138,16 @@ We are now ready to insert the **gear assemblies** into the frame.
 
 #### Min1 Gear Assembly
 
+- **lubricate** the *threaded rod* with a *drop or two* of **light machine oil**
 - slide an **M3** *metal washer* onto the *threaded rod*
-- slide the **Min1 Gear Assembly** onto the threaded rod so that
+- slide the **Min1 Gear Assembly** onto the *threaded rod* so that
   the gear teeth *mesh* with the small gear on the *Seconds Wheel Assembly*
 
 #### Min2 Gear Assembly
 
-- slide an **M4** *metal washer* onto the **Seconds Tube**
-- slide the **Min2 Gear Assembly** onto the Seconds Tube so that
+- **lubricate** the *Seconds Tube* with a drop of *light machine oil*
+- slide an **M4** *metal washer* onto the *Seconds Tube*
+- slide the **Min2 Gear Assembly** onto the *Seconds Tube* so that
   the gear teeth mesh with the small gear on *Min1 Gear Assembly*
 
 ![assem-gears.gif](images/assem-gears.gif)
@@ -129,8 +160,9 @@ We are now ready to insert the **gear assemblies** into the frame.
 
 #### Hour2 Gear Assembly
 
-- slide an **M5** *metal washer* onto the **Minutes Tube**
-- slide the **Hour2 Gear Assembly** onto the Minutes Tube so that
+- **lubricate** the *Minutes Tube* with a drop of *light machine oil*
+- slide an **M5** *metal washer* onto the *Minutes Tube*
+- slide the **Hour2 Gear Assembly** onto the *Minutes Tube* so that
   the gear teeth mesh with the small gear on *Hour1 Gear Assembly*
 
 #### Bridge Assembly
@@ -176,6 +208,9 @@ Then **finally**, when you've got it close,
 
 You can also add a a bit of **hot glue** to keep the straight part out of view.
 
+![assem-as5600_cable_in_corner.jpg](images/assem-as5600_cable_in_corner.jpg)
+![assem-as5600_cable_to_box.jpg](images/assem-as5600_cable_to_box.jpg)
+
 The cable should go straight down into the notch in the **wooden top** of the box,
 and into the **slot** in the 3D printed box, so that, when the top is fitted onto the box,
 it holds the cable nicely in place out of view.
@@ -219,6 +254,3 @@ as they turn.
 
 
 **Next:** Setting up and [**Tuning**](tuning.md) the clock ...
-
-
-
