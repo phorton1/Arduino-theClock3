@@ -230,23 +230,23 @@ coil plugs later when we start [Tuning](tuning.md) the clock.
 - center the magnets, as best as possible, in the hole in the wood.
 
 
-## 4. Glue the Top Tube Stopper and Magnet for Angle Sensor
+## 4. Glue together the Top Tube and Magnetic Sensor Cap
 
-We want to glue a **stopper** onto the top tube.  The stopper is necessary
+We want to glue a **stopper** onto the Top Tube.  The stopper is necessary
 for the assembly and also provides us with a *handle* to pull the tube out
 if we want to *dis-assemble* the clock.
 
 ![other-top_tube.jpg](images/other-top_tube.jpg)
 
-- **Score** about *5mm* of one end of the **top tube** with a file or 80 grit sand paper so the glue will adhere to it.
+- **Score** about *5mm* of one end of the **Top Tube** with a file or 80 grit sand paper so the glue will adhere to it.
 - **Slide** the *tightest* wooden **12x4.85mm** *stopper* you have onto the top tube from the smooth end all the
 way down to just before the to the scored region.
 - Using a toothpick, **mix and apply** a thin coat of **5 minute epoxy** on the scored part of the tube.
 - **Slide** the stopper the final 5mm over the glue until it is **flush** with the end of the tube.
 - **Wipe** any remaining epoxy from the assembly and set it aside to dry.
 
-Also, we want to create the **end cap** for the top tube that contains the
-**magnet** for the angle sensor.  This will slide on (but not be glued)
+Also, we want to create the **Magnetic Sensor Cap** for the top tube that
+contains the **magnet** for the angle sensor.  This will slide on (but not be glued)
 to the top tube when we assemble the clock.
 
 ![other-angle_sensor_magnet.gif](images/other-angle_sensor_magnet.gif)

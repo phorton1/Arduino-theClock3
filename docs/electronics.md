@@ -73,7 +73,7 @@ pulled *high* via a *10K resistor*, preventing any current from
 flowing through the mosfet.
 The **PWM** signal from the ESP32 passes through a *10K
 resistor* to the gate of a **BC458** *NPN transistor*.
-When the transistor recieves a pulse, it pulls the gate of
+When the transistor receives a pulse, it pulls the gate of
 the mosfet *low*, allowing the mosfet to transfer the full
 5V to the coil(s).
 There is also a **1N4741** flyback *zener diode* to dissipate
@@ -226,9 +226,9 @@ I use about 6" of *stranded 22 gauge wire* for these leads, stripping about
 1/4" off each end and twisting the end strands.
 
 Trim the leads of the 30 gauge wire from the coils to about 1/2"
-in length, and **burn** about 1/4" of the laquer off the wires with a lighter.
-After burning off the laquer, **sand** the ends to expose *clean copper* for soldering.
-It is **important** that you have carefully cleaned the 30 guage wire before attempting
+in length, and **burn** about 1/4" of the lacquer off the wires with a lighter.
+After burning off the lacquer, **sand** the ends to expose *clean copper* for soldering.
+It is **important** that you have carefully cleaned the 30 gauge wire before attempting
 to solder to it!
 
 Then solder the bigger wires to the coils and cover the solder joints
