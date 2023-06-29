@@ -22,7 +22,7 @@ that is laser cut from the same *cheap plywood* I use for this clock.
 Please follow the link to the repository for the **Fusion 360 design**,
 **DXF Files** and the Arduino Nano **INO Sketch** for that machine.
 
-[![coils-Youtube_thumb.jpg](images/coils-Youtube_thumb.jpg)](https://youtu.be/SLoeMC5IGfE)
+[![YoutubeThumb_WindingCoils.jpg](images/YoutubeThumb_WindingCoils.jpg)](https://youtu.be/SLoeMC5IGfE)
 
 ### Why opened face, again?
 

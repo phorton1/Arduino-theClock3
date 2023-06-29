@@ -168,8 +168,6 @@ for the electronics.
 
 ![elec-other.jpg](images/elec-other.jpg)
 
-TODO: Better images for each of these cables and connectors
-
 #### WS2812b cable
 
 Solder a **wired 3 pin JST connector** to a strip of *five WS3812b LEDs*.

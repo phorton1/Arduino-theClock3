@@ -15,6 +15,7 @@
 **[Trouble Shooting](trouble.md)** --
 **[Notes](notes.md)**
 
+![ticking.gif](images/ticking.gif)
 
 ## Build Overview
 

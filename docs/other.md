@@ -129,6 +129,9 @@ damaging them.
 - Put a small piece of plywood and a weight on top of the coil to
   press it down as the glue sets up.
 
+![other-coil1.jpg](images/other-coil1.jpg)
+![other-coil2.jpg](images/other-coil2.jpg)
+
 It is **important** that the back coil **does not protrude** more than 3mm
 from the back wall so that when we slide the frame onto it, it does
 not catch or damage the wires or solder joints on the coil.
@@ -161,12 +164,16 @@ and protrude about 1mm out of the front of the box.
 - *add more hot glue* as necessary to fix the led strip
   and it's cable in place
 
+![other-led_strip.jpg](images/other-led_strip.jpg)
+
 ### d. Insert the PCB
 
 - Insert the **PCB** into the box
 - Secure the **PCB** with four *M3x8* wood screws
 - Plug the cables for *LEDs* and *Coils* into the PCB
 
+
+![other-pcb.jpg](images/other-pcb.jpg)
 
 
 ## 3. Assemble the Pendulum
