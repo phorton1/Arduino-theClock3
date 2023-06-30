@@ -14,6 +14,9 @@
 **[Trouble Shooting](trouble.md)** --
 **[Notes](notes.md)**
 
+
+![ticking.gif](images/ticking.gif)
+
 I designed and built **theClock3** after [**clocks #1 and #2**](https://github.com/phorton1/Arduino-theClock).
 This design includes the requirements listed there and makes use of **lessons learned** in the process
 of building those earlier clocks.  Some of the most important changes from those previous clocks include:
@@ -26,27 +29,18 @@ of building those earlier clocks.  Some of the most important changes from those
 - More care was taken to **balance** the *center of mass* of the **hands** so that they don't add extra *work* for the clock as they spin
 - It has an **adjustable pendulum** weight for more accuracy in *tuning* the clock
 - The **magnetic spring** has been separated from the *main driving magnet* to prevent *twisting moments* on the *pendulum*
-- The **number of LEDs** was increased from one to **five** to allow for the display of more diagnostic and state information
+- The **number of LEDs** was increased from one to **five** to allow for the displamy of more diagnostic and state information
 - The **number of buttons** was increased from one to **two** to allow for a few more functions to be available without recourse to the **WebUI**
+- The **L293D IC** driver circuit has been replaced with a new circuit that uses a higher powered **MOSFET** to drive the coils
 
 
 ## 1. Basics
-
 
 The pendulum has a **magnet** in it that passes between a pair of **electromagnetic coils**
 on each swing.   The coils *repulse* (push) the pendulum a little on each swing,
 providing the energy to keep it moving.  By increasing the power provided to the coil
 we can make the pendulum swing further, and by decreasing it, we can generally make it swing
 less widely.
-
-There is an **angle sensor** on the pendulum.  By comparing successive
-measurements we can determine the pendulum's *direction*, when it *crosses zero*,
-and the extreme *maximum angle* it achieves during any given swing.
-
-![design-02-magnet_pulse.gif](images/design-02-magnet_pulse.gif)
-![design-01-angle_sensor.gif](images/design-01-angle_sensor.gif)
-
-
 
 The **cam mechanism** has a **minimum design angle** of **5 degrees** (about the center,
 or 10 degrees overall).  It is designed such that if the pendulum swings at least this far,
@@ -56,14 +50,21 @@ does no further work so that it is impossible for the pawls to grab
 more than one tooth at a time or advance the clock more than one second per swing,
 regardless of how far the pendulum swings.
 
+![design-02-magnet_pulse.gif](images/design-02-magnet_pulse.gif)
+![design-03-cam_mechanism.gif](images/design-03-cam_mechanism.gif)
+
+![design-01-angle_sensor.gif](images/design-01-angle_sensor.gif)
+![design-04-magnetic_spring.gif](images/design-04-magnetic_spring.gif)
+
+There is an **angle sensor** on the pendulum.  By comparing successive
+measurements we can determine the pendulum's *direction*, when it *crosses zero*,
+and the extreme *maximum angle* it achieves during any given swing.
+
 There is another **pair of magnets**, one in the stem of the pendulum, and one
 that is affixed to the clock that is adjustable, that together, via magnetic
 repulsion, act as a **magnetic spring**. Because of this spring, the pendulum
 swings *faster* when it swings sufficiently far to **bounce** off of this spring,
 and it swings *slower* when it swings less and the spring does not come into play.
-
-![design-03-cam_mechanism.gif](images/design-03-cam_mechanism.gif)
-![design-04-magnetic_spring.gif](images/design-04-magnetic_spring.gif)
 
 
 ### How it Keeps Time
@@ -72,8 +73,7 @@ We establish a **working minimum angle** at which the clock functions, by which 
 mean that it actually *ticks* and *tocks* reliably. For prudence we set this to a
 few degrees wider than the *minimum design angle* at approximately **8 degrees**
 about center, or 16 degrees overall.
-
-By design, the pendulum can swing about 12.5 degrees about center or 25 degrees
+By design, the pendulum can swing 12.5 degrees about center or 25 degrees
 overall before it *bangs* up against the frame.  We define a **working maximum angle
 of 11 degrees** about center or 22 degrees overall where the clock will not bang
 on the frame.
@@ -115,7 +115,7 @@ and increased the accuracy of the clock.
 
 The swing error is based on calls to the ESP32 **millis()** function, which returns
 the *milliseconds* since the clock was booted, rather than comparing the time
-directly to the RTC clock.  This means that the algorithm
+directly to the **RTC** (Real Time Clock) on the ESP32.  This means that the algorithm
 itself can drift from RTC time.  We allow this to happen and provide a separate
 synchronization method, **onSyncRTC()**, to occasionally (once per hour, parametrized)
 correct for this potential drift. This allows us to keep track of the drift between

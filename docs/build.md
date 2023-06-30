@@ -15,8 +15,6 @@
 **[Trouble Shooting](trouble.md)** --
 **[Notes](notes.md)**
 
-![ticking.gif](images/ticking.gif)
-
 ## Build Overview
 
 The process of building the clock involves a number of different steps

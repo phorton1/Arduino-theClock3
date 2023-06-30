@@ -150,6 +150,7 @@ The cable should go straight down out the bottom of the clock.
 Mount the magnetic spring using two **M2 x 8** machine screws.
 Mount it as far away from the pendulum as possible and snug, but do not tighten the screws.
 
+![assem-magnetic_spring.jpg](images/assem-magnetic_spring.jpg)
 
 
 ## C. Assemble Gears and Bridge
@@ -216,6 +217,14 @@ each step where a tube will ride on the *threaded rod* or *another tube*.
   the **tabs** fit in the slots in the Bridge, the
   **Hours Tubes** goes through the bearing, and the **threaded rod**
   goes into the hole in the Bridge
+
+There should be some **play** in the *Gear Train* when the
+Bridge is in place.  You may need to **sand** the front *thin 1/8" washer*,
+and or *the ends of the tubes* to make sure that everything turns smoothly,
+and/or **add or change washer combination** at the back of the *Seconds Tube*.
+*Ensure* that the **Gear Train** moves freely without any undue *friction*,
+*binding*, or *slop*, **before** you screw the Bridge into place.
+
 - Secure the Bridge with *five* **M3x12** wood screws and *one*
   **M3x20** wood screw in the **upper left corner**
 
@@ -226,19 +235,20 @@ This is the *hardest* step in the Assembly process to explain.
 
 We are now going to insert the top tube, through the **back** of the Frame,
 through a **Keyed Spacer**, through the **Pendulum**, through the **front** of the Frame,
-a M5 **metal washer**, a 3/16" **wooden washer**, and another *Keyed Spacer**, then
+a M5 **metal washer**, a 3/16" **wooden washer**, and another **Keyed Spacer**, then
 through the **Cam**, and top it off with the **Magnetic Cap** for the Angle Sensor.
 
-**THESE NEXT STEPS are DIFFICULT** !!  You will find that it takes a quite a bit of
-**force** and **twisting and turning** of the Top Tube to get it through all these things!
+You will probably find that it takes a quite a bit of
+**force** and **twisting and turning** to get the Top Tube through all of these parts!
 
-- position the **Pendulum** within the frame
 - add a loose fitting **3/16" 12x5 mm wooden washer** to the **Top Tube**
-- insert the Top Tube into the *back* of the **Frame**
-- hold a **Keyed Spacer** inside the frame
-- *push and turn* the Top Tube to get it through the Keyed Spacer
-- position the **Pendulum** *push and turn* the Top Tube through it
+- position and hold the **Pendulum** within the frame
+- insert the Tube into the *back* of the **Frame** and *push and turn* it through the Pendulum
+- hold a **Keyed Spacer** up against the Pendulum, inside the frame
+- *push and turn* the Top Tube through the Keyed Spacer
 - *push and turn* the Tube out the *front* of the Frame until it protrudes about 1/2"
+
+![assem-top_tube1.gif](images/assem-top_tube1.gif)
 
 It doesn't matter at this point if the *Pendulum* and *Spacer* are *aligned*.
 You just need to get the tube through them and poking a bit out of the front frame.
@@ -250,42 +260,56 @@ After that:
 - position the **Cam**
 - *push and turn* the Tube through the Cam until the Tube comes out about 1/2" past the Cam
 
+![assem-top_tube2.gif](images/assem-top_tube2.gif)
+
 *Note that the **Cam** is **not symmetrical***.  The *higher side* of the
 Cam goes on the **left** and the *lower side* on the *right* !!!
 
-- *add* the **Magnetic Sensor Cap*** to the end of the tube.
-- while holding the **Cam** (and front Spacer) towards the frame,
+- *add* the **Magnetic Sensor Cap** to the end of the tube.
+- **hold** the Cam and its Washers **firmly** against the Frame
 - **push** the tube the rest of the way until the back **Wooden Washer** comes
-  up again the **bearing**
+  up against the **bearing** in the back of the Frame.
 
-![assem-top_tube.gif](images/assem-top_tube.gif)
+![assem-top_tube3.gif](images/assem-top_tube3.gif)
 
-At this point the **Magnetic Cap** should be about **1mm from the Sensor Module**,
-the **Pendulum** will be jammed up against the inside of the Frame.
-and the **Cam** should be tight against the front of the bearing.
+At this point the *Magnetic Cap* should be about **1mm from the Sensor Module**,
+the *Back Washer* should be **snug** up to the *Rear Bearing* and the *Cam, Keyed Spacer,*
+and *Wooden and Metal Washers* should be **snug** up to the *Front Bearing*, and
+the *Cam* should be more or less aligned above the *Seconds Wheel*.
+
+The **Pendulum** will be likely be jammed up against the inside of the Frame.
 We need to move the Pendulum **back** so that it is in the **middle** of the **Channel**.
 
 - While holding the **Pendulum** and it's **Spacer** with your fingers,
 - **turn the Tube** back and forth while **working the Pendulum** back into the middle of the space.
 - *Slide* the assembled **Clock** onto the 3D printed **Box** so that the **Pendulum** is in the **Channel**
-- **Adjust the spacing** of the Pendulum so that it swings freely in the **middle of the channel** and does not touch the sides.
+- **Adjust the spacing** of the Pendulum so that it swings freely in the
+- **middle of the channel** and does not touch the sides.
 
-There should be about **1/2 mm of play** for the Top Tube to move back and forth.
-The Pendulum should **swing freely** and oscillate **at least 5-6 times** when swung from an extreme.
+In the end the
+**Pendulum must swing freely in the middle of the channel**
+and should *oscillate* **at least 5-6 times** when swung from an extreme.
+There should be about **1/2 mm of play** for the Top Tube to move back and forth
+aginst the Front and Rear bearings.
+
 Finally we just have to get the **M3x45mm bolt** through the Pendulum, Spacers, and into the Cam.
 
 - **Align the holes** in the *Pendulum, Keyed Spacers, and Cam* so that
   they are lined up when the pendulum is hanging **straight down**.
-- **Insert** the **M3x45 bolt** into the Pendulum Spacer
+- **Insert** the **M3x45 bolt** into the Pendulum
 - Making sure that the Pendulum Spacer is **flush** up against the Pendulum
-- **screw** the bolt in until it just reaches the *Cam Spacer*
+- **screw** the bolt in through the Pendulum and Spacer
+- Continue **screwing** it in until the bolt *just reaches* the *Cam Spacer*
+
+![assem-top_tube4.gif](images/assem-top_tube4.gif)
 
 When the bolt is up against the Cam Spacer, **double check that everything
 is aligned**, that the **pendulum is still in the middle of the channel**
-and that the Cam Spacer is flush up again the Cam and **screw the bolt**
-in the rest of the way.
+and that the Cam Spacer is flush up again the Cam and
 
-The Cam should be more or less aligned and above the **Seconds Wheel**.
+- **screw the bolt** in the rest of the way.
+
+Ideally it the bolt should protude a small amount out of the front of the Cam.
 
 *Once again*, this will take some *practice* and maybe **several tries**.
 If you need to, *remove the bolt*, get everything spaced and aligned,
@@ -298,7 +322,6 @@ if you need to move the *bottom* of the **Pendulum** backwards in the **Channel*
 once the bolt is screwed in,  you will move the *top* of **Pendulum** forwards, and
 the bottom will move slightly backwards.
 
-
 **You will probably need to mess with this a few times during *Tuning* and *Testing*
 to get it just right** so that the Pendulum swings freely, and the Cam is in the
 correct place.
@@ -310,49 +333,134 @@ Later, after we have finished the assembly, during [Tuning](tuning.md) we will *
 the spacer so that we know how it supposed to be positioned on the Tube.
 
 
+## E. Mount Clock on Box
+
+In the previous step we already put **Assembled Clock** onto the **Box**.
+I usually don't add the screws until I have started [Tuning](tuning.md)
+the clock and I am confident all of the electronics are working correctly.
+
+However, we obviously need to do these things at some point, so they are
+being presented here for completeness:
+
+- **Plug** the *Sensor Cable* into the *PCB*
+- **Screw** two **M3x12** wood screws from the rear of the Clock into the box.
+- **Screw** two **M3x18** wood screws from the front of the Clock into the box.
 
 
 
-## E. Assemble Arms and Pawls
+## F. Assemble Arms and Pawls
+
+The below photo shows the parts that are used in assmbling the *Arms and Pawls*.
+
+![assem-arm_and_pawl_parts.jpg](images/assem-arm_and_pawl_parts.jpg)
+
+Start by expanding the holes in the *two small fishing weights* using a **3mm Drill**.
+
+![assem-assem-hole_in_small_weight.jpg](images/assem-hole_in_small_weight.jpg)
+
+Then assemble each arm as follows:
+
+- put an **M3x10** *machine* **screw** through one of the **3x9x4 bearings**
+- put *two* **M3 washers** behind that
+- *screw* the bearing assembly into the Arm
+- put an **M3x18** *machine* **screw** through a **small fishing weight**
+- *screw* the weight into the Arm
+- put an **M3 washer** on a **M3x12** *machine* **screw**
+- put the screw *through* the appropriate **Pawl**
+- put another **M3 washer** on the screw
+- *screw* the pawl onto the Arm until it is **snug**
+- **back off** the screw by *1/4 turn* so that the **Pawl swings freely**
+
+![assem-assembled_arms.jpg](images/assem-assembled_arms.jpg)
 
 
 
+## G. Attach Arms and Pawls
 
-## F. Attach Arms and Pawls
+The **Pawls must ride on the Seconds Wheel**.  So there
+is some *jiggling* and *adjustment* needed as you screw
+the Arms into place.
 
+![assem-attach_arms1.jpg](images/assem-attach_arms1.jpg)
+![assem-attach_arms2.jpg](images/assem-attach_arms2.jpg)
 
-**FIRST TICK**
+For both arms, do the following:
 
-*Note: alternative pawl dxf files*
+- put a **M3 washer** on an **M3x20** *machine* **screw**.
+- insert the screw into one of the **Arms**
+- put another **M3 washer** on the screw, behind the Arm
+- **lower** the arm into the space *next to the Cam* until it is positioned in
+  front of it's **mounting spacer**.
+- **screw** the Arm in until it is **snug**
+- **back off** the screw by *1/4 turn* so that the **Arm swings freely**
 
+![assem-attach_arms3.jpg](images/assem-attach_arms3.jpg)
+![assem-attach_arms4.jpg](images/assem-attach_arms4.jpg)
 
-## G. Mount Clock on Box
+As you are assembling this part, you will need adjust the *Pawl* so that
+it rides **on top of the Seconds Wheel**.
 
-- Screws
-- Top
-into the notch in the **wooden top** of the box,
-and into the **slot** in the 3D printed box, so that, when the top is fitted onto the box,
-it holds the cable nicely in place out of view.
+**You may need to add additional M3 washers** to the back of the arms
+to get the spacing correct.
+
 
 
 
 ## H. Attach Face and Hands
 
 - align and attach the **Face** with two **M3x12** wood screws
-- slide a 3/16" **10x6mm** *wooden* *stop washer* onto the *Hours Tube*
+- *push and turn* a 3/16" **10x6mm** *wooden stop washer* onto the *Hours Tube*
   so that it is snug up again the *bearing*
 - **compression fit** the **Hour**, **Minutes**, and **Seconds**
 hands on to the tubes so there is about **1-2mm** of space
 between them and they are **square** and won't hit each other
 as they turn.
 
-
 ![assem-face_and_hands.gif](images/assem-face_and_hands.gif)
 
 
+## H. FIRST TICK!!
 
+At this point you should be able to *move* the **Pendulum** and
+the **Pawls** should *correctly engage* the *Seconds Wheel* one
+after the other, advancing the *Gear Train* on each swing!!
 
-## I. Summary of Assembly
+**TAKE A BREAK** !!  Sit back and admire your clock :-)
+
+![assem-full_clock.jpg](images/assem-full_clock.jpg)
+
+This is the time to make **any and all** adjustments to get the clock **ticking correctly**.
+Trust me, it is **worth the time** to get the *Mechanism* working correctly at this point.
+By moving the Pendulum *gently* with your finger through the top hole in the Frame you
+should be able to swing it back and forth and **reliably** and *smoothly* engage and
+advance the *Gear Train*.
+
+You may need to do one or more of the following:
+
+- move the **Pendulum** back or forwards to get it in the middle of the channel
+- adjust **Top Tube** and the *Cam* and *Spacers* on it to get align them
+- *tighten* or *loosen* the *Arm and Pawl* **screws** to get them to swing freely, yet *aligned* with the Seconds Wheel
+- add additional **M3 washers** to the back of the Arms to make sure the *bearings* ride on the Cam
+- add additional **M3 washers** between the Pawls and the Arms to make sure the *Pawls* ride on the Seconds Wheel
+- **cut** and use *slightly modified **Pawls***
+
+It should **tick and tock** and should move the **Seconds Wheel** about the same
+distance as it swings in **each direction**.
+
+If you find that the Seconds Hand moves *mostly* when the Pendulum swings in one
+direction and *hardly at all* when the Pendulum swings in the other direction,
+then you *may* want to **Analyze the motion closely** and **modify the DXF drawings**
+slightly to **cut** and use *slightly modified **Pawls***.
+
+For example, on one clock I built, I found that shortening the **right pawl** by
+**0.5mm** made all the difference in the world in *balancing* out the ticks and
+tocks.  To whit, there is a **alternate_right_pawls.lbrn2** file in the *Lightburn*
+folder in the repository that contains some modified Pawls.
+
+Some **experimentation may be necessary**, but as I said, it is **well worth the time**
+to get the clock **ticking and tocking correctly** before moving on and trying to
+[Tune](tuning.md) it.  You don't want to be modifying the *hardware* once you have
+started configuring the *software*!
 
 
 

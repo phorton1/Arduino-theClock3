@@ -183,6 +183,9 @@ The **pendulum** is made up of the 3/16" thick *main wooden piece*, four
 M3 threaded *pendulum* rod and two *m3 square nuts*.
 
 
+![other-pendulum.jpg](images/other-pendulum.jpg)
+
+
 ### a. Prepare the **lead fishing weight**
 
 - **Drill** to enlarge the hole in the fishing weight to 2.5mm and **Tap**
@@ -199,7 +202,8 @@ M3 threaded *pendulum* rod and two *m3 square nuts*.
 - thread one **M3 square nut** onto the end of the M3 *Pendulum
   threaded rod* until about 1/2 mm of the thread comes out through the nut.
 - apply a drop of **super glue** to the nut/rod to **lock** the nut in place
-- thread the **fishing weight** onto the rod.
+- thread the **fishing weight** onto the middle of the rod.
+- (not shown in the animation) thread a **M3 hex stopper nut** up against the weight.
 - thread the other **M3 square nut** onto the free end so that about 1/2
   mm protrudes through the nut
 - loosely attach the *lower and upper* **front pendulum covers**

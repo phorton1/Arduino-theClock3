@@ -365,7 +365,7 @@ Have a **magnet** handy.
 We plug the coils **in series** into the two **serial coil** connectors.
 The orientation of the plugs depends on and/or determines the orientation of the magnets
 that will be glued into the pendulum.  Plug the coils in such that the
-same colors are on each side, with **reds** on the left and **blacks** on the right.
+same colors are on each side, with **orange** on the left and **white** on the right.
 
 ![soft-coil_plugs.jpg](images/soft-coil_plugs.jpg)
 
@@ -407,12 +407,6 @@ This time, in the *serial monitor*, you *should* see a message indicating
 that the AS5600 **initialized correctly**.  It will still (most likely)
 get an error when it tries to set the *zero angle*, but at least we
 will have confirmed that the **cable and module** are basically working.
-
-**YOU WILL PROBABLY WANT UNPLUG THE SENSOR AND TO DO ANOTHER FACTORY RESET**
-after this, just in case a **zero angle** happened to get set.
-The actual *zero angle* of the clock will be set when the clock is
-first rebooted after a factory reset and the **pendulum
-is hanging motionless straight down!!**
 
 
 

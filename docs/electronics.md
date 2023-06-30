@@ -168,13 +168,15 @@ for the electronics.
 
 ![elec-other.jpg](images/elec-other.jpg)
 
-#### WS2812b cable
+#### LED cable
 
 Solder a **wired 3 pin JST connector** to a strip of *five WS3812b LEDs*.
 The wired connectors I purchased have the *correct orientation* with regards to
 the socket on the PCB.  **Red** goes to the **5V** on the strip,
 **Black** goes to **ground** on the strip, and the
 middle **White** goes to the strip's **data in** connector.
+
+![other-led_strip.jpg](images/other-led_strip.jpg)
 
 **DOUBLE CHECK** the orientation of the pins on the connector and
 LED strip versus the **PCB and schematic** BEFORE plugging the LED's
@@ -218,7 +220,6 @@ AS5600 module *before* inserting them in the white nylon parts!!
 
 
 #### Coils
-
 
 When soldering the wires to the coils, I used an **orange**  wire to the
 center of each coil and a **white**  wire to the outer lead of each coil.

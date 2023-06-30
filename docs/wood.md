@@ -57,10 +57,8 @@ twice as many as I need and select the better looking ones for the assembly.
 There are separate **Lightburn Projects** in this repository for each of the different
 pieces of wood that I cut.
 
-
 ![wood-big_pieces.jpg](images/wood-big_pieces.jpg)
 ![wood-mechanism_and_gears.jpg](images/wood-mechanism_and_gears.jpg)
-![wood-spacers_and_washers.jpg](images/wood-spacers_and_washers.jpg)
 
 Where possible, for all the big parts, immediately after cutting
 I rub down the laser cuts with a **paper towel** to remove as much
@@ -70,8 +68,19 @@ The process of cleaning and sanding the laser cut parts is surprisingly
 oil from my hands combining with the charcoal dust and leaving marks
 in the wood.
 
+It is **important** to keep track of, and to use the correct **wooden washers and spacers**
+throughout the build process.  For example, there is only a *slight difference* between
+the **12x2.85mm** spacers that support the arms, and are glued to the frame, and
+the **11x3mm** washers that are glued to the front of the arms:
 
-## 2. Assemble, sand, and clear-coat the Frame
+![wood-arm_and_frame_spacers.jpg](images/wood-arm_and_frame_spacers.jpg)
+![wood-spacers_and_washers.jpg](images/wood-spacers_and_washers.jpg)
+
+The **sizes** of the various washers and spacers is included as a
+*non-cutting layer* in the various **Lightburn** projects so that
+can see them, but it is **up to you** to keep track of them!
+
+## 2. Assemble the Frame
 
 It is important to dry fit the frame together and know ahead
 of time how you will assemble and clamp it.  It is also
@@ -101,13 +110,26 @@ the **frame back**, and, finally, **the frame front**.
 **Clamp** the frame together and let it dry thoroughly ...
 
 When it is thoroughly dry, lightly sand **the assembled frame**,
-and the separate **bridge piece** with 300 grit sandpaper
-before applying 2-3 clear-coats to the interior
+and the separate **bridge piece** with 300 grit sandpaper.
+
+
+### Glue the Arm Spacers to the Frame
+
+- *thread* **M3x8 machine screws** through the two **12x2.85mm** Arm Spacers
+- *apply* **Wood Glue** to the back of the spacers
+- *screw* them into the *Frame* until they are **tight** and let the glue *dry thoroughly*
+- *remove* the screws
+
+![wood-arm_spacers_glued.jpg](images/wood-arm_spacers_glued.jpg)
+
+### Clear Coat the Frame and Bridge
+
+**Clear Coat the Frame and Bridge** by applying 2-3 clear-coats to the interior
 of the frame and back of the bridge, and 3-4 coats to the
 exterior and front.
 
 
-## 3. Assemble, sand, and clear-coat the Face
+## 3. Assemble the Face
 
 The **hash marks** on the *face* are engraved before cutting.
 **Finish sand** the face **before** cutting it and try to handle
@@ -121,7 +143,6 @@ be damaged by the laser.  Instead I cut the face **directly
 on the laser table** and carefully keep track of where the
 little pieces come from, and where they go, so that I can *match the grain*
 when I re-insert them during the face assembly.
-
 
 ![wood-face_and_numbers.jpg](images/wood-face_and_numbers.jpg)
 ![wood-face_finished.jpg](images/wood-face_finished.jpg)
@@ -142,6 +163,22 @@ and paint the backs.  I apply as many as 5-6 clear-coats on the
 face of the clock, sanding each coat lightly with 320 grit, and
 rubbing the last coat down with a clean paper towel,
 to get a nice sheen.
+
+
+## 4. Glue the Arm Washers to the Arms
+
+- Apply **wood glue** to the back of the two **11x3mm** *Arm Washers*
+- **Align** and *press* the Washers onto the Arms
+
+It is **important** that the Washers are *aligned* with the holes in the *Arms*.
+They need to be aligned such that they **turn freely** on **M3 machine screws**
+
+This is best done **by eye** and by **holding the parts together** with your
+*fingers* until the glue has gotten to the point where you can, perhaps,
+apply a *clamp* (or lay them down and put a small *weight* on top of them).
+
+![wood-glue_washers_to_arms.jpg](images/wood-glue_washers_to_arms.jpg)
+
 
 
 ## 4. **Sand** and clear-coat the **Gears** and **other parts**
@@ -197,6 +234,10 @@ sanding of the small (pinon) gears by aligning each pair of pinon gears
 on a **brass tube** and then doing the second pass at sanding their teeth
 *before* doing any gluing.
 
+I also give a *light sand* with *320 grit** paper to all of the **faces**
+of the *gears, arms, pawls,* and *arm supports* .. any place where two
+pices of wood will be facing each other.
+
 
 ##  5. Align and glue to the **sets of gears** together
 
@@ -228,6 +269,10 @@ then rig it up with a protruding (fixed) 4mm tube so that I can spin the
 *note: this photo is an assembly from a previous clock.  Be sure
 to glue the **correct gears** together (as shown in the previous image) in their
 **proper orientation!!***
+
+Also ***note*** that, wheras there are always **two** small *pinon gears* glued
+to the larger gears, there is **only one** *3/16" spacer* glued to the front
+of the *Hours2b* gear.
 
 (B) **BE CAREFUL NOT TO GLUE THE GEARS TO THE TUBES!!**.  We will
 **cut the tubes later** and we don't want to damage the tubes

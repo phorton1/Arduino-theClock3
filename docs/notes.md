@@ -137,6 +137,29 @@ Then I switched to some new *high quality* **LG** batteries, and
 it was able to power the clock for over **8 hours**.
 
 
+## Bigger Holes and 4mm Tubes for Arms && Washers
+
+It is difficult to align the Washers onto the Arms for gluing.
+The are supposed to fit *loosely* on an M3 machine screw.
+If you use an M3 machine screw for the alighment, you are
+likely to **not center** the holes correctly.
+
+One solution would be to make the holes 3.85mm, and to
+align them using a 9.6mm piece of 4mm tubing. They could
+be clamped.
+
+## 3D printed spacer for Top Tube Assembly
+
+It is difficult to align the Pendulum in the Channel while
+assembling the Top Tube.   The Pendulum ends up smashed
+against the front frame and has to be moved back which
+is difficult.  One solution would be to 3D print a U-shaped
+spacer that could be inserted while pushing the Tube through,
+and then removed for final acjustment of the spacing.
+
+Another solution would be to laser cut, and glue, the
+correct thicknesses of U shaped wooden pieces.
+
 
 -----------------------------------------------
 
