@@ -1,18 +1,19 @@
-# theClock3 - Laser Cut Wood and sub-assemble (Build Continued)
+# theClock3 - Laser Cut and Assemble Wooden Parts (Build Continued)
 
 **[Home](readme.md)** --
 **[Design](design.md)** --
-**[Build](build.md)** --
+**[Plan](plan.md)** --
 **Wood** --
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
 **[Software](software.md)** --
-**[Other](other.md)** --
-**[Assembly](assembly.md)** --
+**[Assemble](assemble.md)** --
+**[Build](build.md)** --
 **[Tuning](tuning.md)** --
-**[User Manual](user_manual.md)** --
-**[Trouble Shooting](trouble.md)** --
+**[UI](ui.md)** --
+**[Troubles](troubles.md)** --
 **[Notes](notes.md)**
+
 
 Note that there are no *wood stains* used in this project.  All I use is a
 lacquer based **clear coat** on the parts and let the natural colors of the
@@ -181,7 +182,7 @@ apply a *clamp* (or lay them down and put a small *weight* on top of them).
 
 
 
-## 4. **Sand** and clear-coat the **Gears** and **other parts**
+## 5. **Sand** and clear-coat the **Gears** and **other parts**
 
 My *least favorite* part of the entire build process is **sanding the gears**
 and the rest of the small parts.
@@ -239,7 +240,7 @@ of the *gears, arms, pawls,* and *arm supports* .. any place where two
 pices of wood will be facing each other.
 
 
-##  5. Align and glue to the **sets of gears** together
+##  6. Align and glue to the **sets of gears** together
 
 Each **gear assembly** consists of one large gear with two smaller *pinon gears*
 (or one *spacer*) glued together in a *stack*.  I use *5 minute epoxy* to glue the gears together.

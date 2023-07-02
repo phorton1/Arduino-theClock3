@@ -2,17 +2,18 @@
 
 **[Home](readme.md)** --
 **[Design](design.md)** --
-**[Build](build.md)** --
+**[Plan](plan.md)** --
 **[Wood](wood.md)** --
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
 **Software** --
-**[Other](other.md)** --
-**[Assembly](assembly.md)** --
+**[Assemble](assemble.md)** --
+**[Build](build.md)** --
 **[Tuning](tuning.md)** --
-**[User Manual](user_manual.md)** --
-**[Trouble Shooting](trouble.md)** --
+**[UI](ui.md)** --
+**[Troubles](troubles.md)** --
 **[Notes](notes.md)**
+
 
 This page describes how to install and build the **software**, upload it to the **ESP32**
 and do an initial **test** of the PCB cables and sub components.
@@ -44,7 +45,7 @@ the **File - Preferences** menu.
 I have set mine to *C:\src\Arduino*, but yours will probably be something like **C:\Users\YOUR_NAME\Documents\Arduino**
 (**Arduino** under your **documents** folder).
 
-To install it from the **Zip File** go to the [main repository page](https://github.com/phorton1/Arduino-theClock2)
+To install it from the **Zip File** go to the [main repository page](https://github.com/phorton1/Arduino-theClock3)
 and press the green **CODE** button.  Download the **Arduino-theClock3-master.zip** file, and copy it's inner
 folder (*Arduino-theClock3-master*) into your *Arduino Sketch Directory* and **rename the folder to "theClock3"**.
 
@@ -268,7 +269,7 @@ into the serial monitor, the clock will display a list of all of it's
 
 There are a **lot** of different parameters available for controlling
 and understanding the clock.  They will be described more fully on
-the [Tuning](tuning.md) and [User Manual](user_manual.md) pages,
+the [Tuning](tuning.md) and [User Interface](ui.md) pages,
 but for now it is good to know that you can **set parameters**
 by typing their **name**, followed by an **equals sign**, followed
 by the **value** you want to set them to.
@@ -419,4 +420,4 @@ the clock.
 
 
 
-**Next:** - Finish the [**other sub-assemblies**](other.md) of the clock, including the **box, pendulum,** and **cutting the tubes**
+**Next:** - Finish the other [**Sub-Assemblies**](assemble.md) of the clock, including the **gears, pendulum, and box**

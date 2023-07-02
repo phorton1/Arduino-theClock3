@@ -2,17 +2,18 @@
 
 **[Home](readme.md)** --
 **[Design](design.md)** --
-**[Build](build.md)** --
+**[Plan](plan.md)** --
 **[Wood](wood.md)** --
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
 **[Software](software.md)** --
-**[Other](other.md)** --
-**[Assembly](assembly.md)** --
+**[Assemble](assemble.md)** --
+**[Build](build.md)** --
 **Tuning** --
-**[User Manual](user_manual.md)** --
-**[Trouble Shooting](troubles.md)** --
+**[UI](ui.md)** --
+**[Troubles](troubles.md)** --
 **[Notes](notes.md)**
+
 
 
 - Sensor

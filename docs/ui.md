@@ -1,18 +1,19 @@
-# theClock3 - User Manual
+# theClock3 - User Interface
 
 **[Home](readme.md)** --
 **[Design](design.md)** --
-**[Build](build.md)** --
+**[Plan](plan.md)** --
 **[Wood](wood.md)** --
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
 **[Software](software.md)** --
-**[Other](other.md)** --
-**[Assembly](assembly.md)** --
+**[Assemble](assemble.md)** --
+**[Build](build.md)** --
 **[Tuning](tuning.md)** --
-**User Manual** --
-**[Trouble Shooting](troubles.md)** --
+**UI** --
+**[Troubles](troubles.md)** --
 **[Notes](notes.md)**
+
 
 Welcome to theClock v3.2 !!
 

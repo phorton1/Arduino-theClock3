@@ -2,16 +2,16 @@
 
 **Home** --
 **[Design](design.md)** --
-**[Build](build.md)** --
+**[Plan](plan.md)** --
 **[Wood](wood.md)** --
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
 **[Software](software.md)** --
-**[Other](other.md)** --
-**[Assembly](assembly.md)** --
+**[Assemble](assemble.md)** --
+**[Build](build.md)** --
 **[Tuning](tuning.md)** --
-**[User Manual](user_manual.md)** --
-**[Trouble Shooting](trouble.md)** --
+**[UI](ui.md)** --
+**[Troubles](troubles.md)** --
 **[Notes](notes.md)**
 
 This clock uses wooden gears and a simple electromagnetically driven pendulum
@@ -47,33 +47,24 @@ one of these clocks. Though it is not a trivial task, this repository should
 contain all of the information needed for you to build one.
 
 If you have received one of these clocks as a gift, please see the
-**[Quick Start Guide](QuickStartGuide.pdf)** and
-**[User Manual](user_manual.md.pdf)** for information on how to unpack,
-setup, start, and run your clock.
+**[Quick Start Guide](QuickStartGuide.pdf)** and the
+**[User Interface](ui.md)** page for information on how to unpack,
+setup, start, and use your clock.
 
 On these pages you will find the following:
 
 - **[Design](design.md)** - An overview of the **requirements** and **design** of the clock
-- **[Build](build.md)** - An overview of the process of **building** the clock
-- **[Wood](wood.md)** - **Laser Cutting** the wood and building the *frame* and *gear train*
+- **[Plan](plan.md)** - An *plan* for **building** the clock, and the **BOM** (Bill of Materials)
+- **[Wood](wood.md)** - **Laser Cutting** the wood and building the *Frame*, *Face*, and gluing the *Gears* together
 - **[Coils](coils.md)** - **Winding** the *electromagnet coils*
 - **[Electronics](electronics.md)** - Creating the custom **PCB** (printed circuit board), **Cables**, and **Connectors**
 - **[Software](software.md)** - Compiling and installing the **Software** and doing a submodule **test** of the electronics
-- **[Other](other.md)** - Finish the **other sub-assemblies** of the clock, including the **box, pendulum,** and **cutting the tubes**
-- **[Assembly](assembly.md)** - **Final Assembly** of the clock
+- **[Assemble](assemble.md)** - Build the **sub-assemblies** of the clock, including **cutting the tubes** and assembling the **Gears, Pendulum,** and **Box**
+- **[Build](build.md)** - **Final Build** of the clock, bringing all the *sub-assemblies* together into the finished *Clock*
 - **[Tuning](tuning.md)** - Describes the process of getting the clock to **run accurately**
-- **[User Manual](user_manual.md)** - A more detailed guide to the **WebUI** and software for the clock
-- **[Trouble Shooting](trouble.md)** - Some common potential **problems** and possible **solutions**
+- **[User Interface](ui.md)** - A more detailed guide to the **User Interface** of the clock, including the *Buttons, LEDs, WebUI*, and *Telnet*
+- **[Trouble Shooting](troubles.md)** - Some common potential **problems** and possible **solutions**
 - **[Notes](notes.md)** - Other Notes and information about the clock
-
-Note: In my initial builds of this clock I did not take enough photographs and videos
-to properly document this project.  So, at this time there are **no YouTube videos**
-and only a limited number of actual **photographs** of the build process on these
-pages.   It is my plan to build *another* instance of this clock in the near future,
-solely for the purpose of obtaining photographs and videos for this project documentation.
-Until then I will attempt to make use of Fusion 360 **screen grabs** and **animated gifs** to
-facilitate the documentation, but will ask you to **please check back**
-once I publish the updated version with YouTube videos.
 
 
 ## Files Available in this repository
@@ -83,7 +74,7 @@ the [**KiCAD**](https://www.kicad.org/) schematic and PCB design program.
 The main outputs from Fusion 360 are the **DXF Files** (drawings) used to laser
 cut the wood, and the **STL Files** (3D models) used to 3D print the plastic parts.
 
-The clock was mostly *implemented* by using the **Lightburn** laser CNC machine
+The clock was *implemented* by using the **Lightburn** laser CNC machine
 control software to cut the wood from the Fusion DXF files using my
 [**20mm CNC machine**](https://github.com/phorton1/Arduino-esp32_cnc20mm),
 and the **Prusa Slicer** and **OctoPrint** to slice the Fusion STL files and send
@@ -91,31 +82,40 @@ them to my **Prusa MK3S 3d printer** to make the plastic parts.
 
 The PCB (printed circuit board) is almost it's own sub-project.
 The outputs from *KiCad* include the basic **schematic**, and
-the **Gerber** and **Excellon** files. The program
-[**FlatCAM**](https://bitbucket.org/jpcgt/flatcam/downloads/) was
-used to generate the GCODE files from them
-for running my [**cnc3018**](https://github.com/phorton1/Arduino-esp32_cnc3018)
+the **Gerber** and **Excellon** files used to make the PCB.
+The program [**FlatCAM**](https://bitbucket.org/jpcgt/flatcam/downloads/) \
+was used to generate the GCODE files from those files for running my
+[**cnc3018**](https://github.com/phorton1/Arduino-esp32_cnc3018)
 to **mill, epoxy coat, drill, and cut out** the PCB (printed circuit board.
 
 The following sub-folders and their children can be found within this 'docs' folder
 
-- **fusion** - contains the main *Fusion 360* design **clock3.2.f3z**, as well as a few
+- [**fusion**](https://github.com/phorton1/Arduino-theClock3/tree/master/docs/fusion) -
+   contains the main *Fusion 360* design **clock3.2.f3z**, as well as a few
    other files that support the design, including a CSV file containing parameters for
    the design, and a couple of **pyjoints** animations (which make use of the
    Fusion 360 [pyJoints Animation Plugin](https://github.com/phorton1/fusionAddIns-pyJoints)
    I wrote) that allowed me to visually test the design before implementing it.
-  - **dxf** - contains all of the DXF files used with **Lightburn** to laser cut the wooden parts
-  - **stl** - contains STL files of all the plastic parts that I 3D printed
-- **kicad/pcb3.1** - contains the **kiCAD** project, electronics schematics, and PCB design files
-  - **plot** - contains the Gerber/Excelon files output from kiCAD, along with the
+  - [**dxf**](https://github.com/phorton1/Arduino-theClock3/tree/master/docs/fusion/dxf) -
+    contains all of the DXF files used with **Lightburn** to laser cut the wooden parts
+  - [**stl**](https://github.com/phorton1/Arduino-theClock3/tree/master/docs/fusion/stl) -
+    contains STL files of all the plastic parts that I 3D printed
+- [**kicad/pcb3.1**](https://github.com/phorton1/Arduino-theClock3/tree/master/docs/kicad/pcb3.1) -
+  contains the **kiCAD** project, electronics schematics, and PCB design files
+  - [**plot**](https://github.com/phorton1/Arduino-theClock3/tree/master/docs/kicad/pcb3.1/plot) -
+    contains the Gerber/Excelon files output from kiCAD, along with the
     **FlatCAM** project used to produce the gcode files for milling, epoxy coating,
 	drilling, and cutting out the PCB
-    - **gcode** - contains the final output gcode files for the PCB
-- **lightburn** - contains **LBRN2** Lightburn files that contain all of
+    - [**gcode**](https://github.com/phorton1/Arduino-theClock3/tree/master/docs/kicad/pcb3.1/gcode) -
+	contains the final output gcode files for the PCB
+- [**lightburn**](https://github.com/phorton1/Arduino-theClock3/tree/master/docs/lightburn) -
+   contains **LBRN2** Lightburn files that contain all of
    the wooden parts to be laser cut, as well as individual files to cut
    the different thicknesses or types of wood
-- **prusa** - contains the Prusa **3mf** projects for the plastic parts I sliced
-  - **gcode** - contains the final output *Prusa MK3s* gcode files that I used to
+- [**prusa**](https://github.com/phorton1/Arduino-theClock3/tree/master/docs/prusa) -
+   contains the Prusa **3mf** projects for the plastic parts I sliced
+  - [**gcode**](https://github.com/phorton1/Arduino-theClock3/tree/master/docs/prusa/gcode) -
+    contains the final output *Prusa MK3s* gcode files that I used to
     3D print the plastic parts
 
 
@@ -212,4 +212,4 @@ I hope you will take a few minutes to check out some of these other pages too!!
 
 
 
-**Next:** A [**Design Overview**](design.md) of the clock and the contents of this repository ...
+**Next:** A [**Design Overview**](design.md) of the clock ...

@@ -2,17 +2,18 @@
 
 **[Home](readme.md)** --
 **[Design](design.md)** --
-**[Build](build.md)** --
+**[Plan](plan.md)** --
 **[Wood](wood.md)** --
 **[Coils](coils.md)** --
 **Electronics** --
 **[Software](software.md)** --
-**[Other](other.md)** --
-**[Assembly](assembly.md)** --
+**[Assemble](assemble.md)** --
+**[Build](build.md)** --
 **[Tuning](tuning.md)** --
-**[User Manual](user_manual.md)** --
-**[Trouble Shooting](trouble.md)** --
+**[UI](ui.md)** --
+**[Troubles](troubles.md)** --
 **[Notes](notes.md)**
+
 
 All of the files and design materials for the PCB can be found
 in the **/docs/kicad/pcb3.1** folder of this repository.

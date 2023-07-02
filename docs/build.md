@@ -1,262 +1,436 @@
-# theClock3 - Build Overview
-
+# theClock3 - Final Build
 
 **[Home](readme.md)** --
 **[Design](design.md)** --
-**[Build](build.md)** --
+**[Plan](plan.md)** --
 **[Wood](wood.md)** --
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
 **[Software](software.md)** --
-**[Other](other.md)** --
-**[Assembly](assembly.md)** --
+**[Assemble](assemble.md)** --
+**Build** --
 **[Tuning](tuning.md)** --
-**[User Manual](user_manual.md)** --
-**[Trouble Shooting](trouble.md)** --
+**[UI](ui.md)** --
+**[Troubles](troubles.md)** --
 **[Notes](notes.md)**
 
-## Build Overview
 
-The process of building the clock involves a number of different steps
-and processes.  I have tried to group these into six pages in addition
-to this one.
+We finally get to the *fun part* !!
 
-- Laser cut and prep the **[Wood](wood.md)** parts
-	- assemble and clear-coat the **frame**
-	- assemble, sand, and clear-coat the **face**
-	- **sand** the gears and other wooden parts
-	- **clear coat** the gears other parts
-    - sand the gears and certain mechanism parts again
-	- align and glue to the **pairs of gears** together
-- Wind the electromagnet **[Coils](coils.md)**
-- Create the **[electronics](electronics.md)** **PCB** (printed circuit board) and cables/connectors
-    - PCB isolation routing, epoxy coating, laser curing, drilling, milling, and cutout
-	- **continuity test** the PCB
-	- **solder components** to the PCB
-	- **make cables/connectors** for the LEDs, Coils and AS5600 angle sensor
-- Install and Build the **[Software](software.md)**
-	- install the *Arduino IDE* and necessary **libraries**
-    - build the **code** and upload it, and the *SPIFFS file system* to the ESP32
-	- this page also has a quick *introduction and overview* of the **Software**
-	- do a quick **submodule test** of PCB (Buttons, LEDs, Coils, and Angle Sensor, etc)
-- Finish the **[Other](other.md)** sub-assemblies:
-	- cut and sand the **brass tubes** and **threaded rods** to length
-	- 3D print the **Box**
-    - epoxy glue the coils into the box
-	- epoxy glue LED lenses into the box
-	- hot glue the LEDs into the box
-	- screw the PCB into the box
-	- epoxy glue the *magnets* into the **pendulum** and assemble it
-	- epoxy glue the *magnets* into the **magnetic spring**
-- [Final Assembly](assembly.md) includes:
-	- epoxy glue the *tubes* into the **gears**
-	- press the *bearings* into the **frame**
-	- attach the *angle sensor* to the **frame**
-	- assemble the **gear train** and add the **bridge**
-	- assemble the **arms and weights** and attach them to the frame
-	- test and adjust the **mechanics**
-	- attach the **face** and **box** to finish the clock
-
-After the clock is physically assembled and roughly working, then
-we can proceed to a step by step guide to **[Tuning](tuning.md)**
-the clock and will be prepared to present the **[User Manual](user_manual.md)**
-and **[Trouble Shooting Guide](trouble.md)** on subsequent pages.
-
-## Bill of Materials
-
-It is probably best to try to gather as many of the materials and parts
-before starting to build the clock.  Therefore in this section I detail
-a list of the materials and parts that are needed to build one of these.
-
-The clock is made mostly of 3/16" and 1/8" plywood which I measured as 4.8mm and 3.175mm thick, respectively.
-You can probably swap 5mm plywood for 3/16" with no design changes.
-
-The main **metal** components are 4mm, 5mm, and 6mm **telescoping brass tubes**, a small variety
-of metal **ball bearings** (two 3x9x4mm, one 4x11x4mm, two 5x16x5mm, and one 6x15x5mm), a length
-of **3mm threaded rod**, three small **lead fishing weights**, and a variety of 2mm and 3mm
-wood and machine **screws, nuts, and bolts**.   There is an **M3x45mm bolt** in my implementation
-which could be done with a section of 3mm threaded rod instead.
-
-The main electronic components include an **ESP32 Dev Board**, an **AS5600** magnetic angle sensor
-module, and a **L293D** H Bridge Integrated Circuit, a short length of a **WS2812b** LED Strip,
-along with various connectors, buttons, and cables.  I also separately cost a good quality 2A
-5V micro-usb power supply at about $7.00.
-
-I estimate the cost of the materials to be about $80 to produce this clock as I have designed it.
-Of course, the actual cost will depend on what parts you already have on hand, and how you obtain
-the parts.   For example, the tiny 3x9x4mm bearings probably cost about $3 for 10, but maybe
-$5 for 50!!   When I am sourcing these small cheap parts I usually prefer to buy the larger packages
-so that I have them on hand for other projects.
-
-I also used brand new 30 gauge magnet wire for the coils, but this could easily be
-replaced with reclaimed wire from an old wall-wart transformer or similar.
-
-Without further adoo, here is the **BOM** (Bill of Materials):
-
-<style>
-td {
-	vertical-align: top;
-}
-</style>
-
-<table>
-<tr>
-	<th>Category</th>
-	<th>Descrip</th>
-	<th>Qty</th>
-	<th>Cost</th>
-	<th>Notes</th>
-</tr>
-
-<tr>
-	<td colspan='5'>Wood</td>
-</tr>
-<tr>
-	<td></td>
-	<td>
-		frame parts:  back, middle, front,
-		bridge, frame top, house top, house bottom,
-		and box top
-	</td>
-	<td></td>
-	<td>$3.50</td>
-	<td>
-		I used 3 pieces of 12x16" cheap 3/16" local plywood for these parts.
-		Since I cut them from 4x8 foot sheets that cost me
-		about $14 each here, I can get about 4 clocks out
-		of one sheet of 4x8 feet
-	</td>
-</tr>
-<tr>
-	<td></td>
-	<td>
-		mechanism parts: 5 x big gears,
-		8 x small gears, cam, arms, pawls,
-		spacers, stops, and washers
-	</td>
-	<td></td>
-	<td>$8.00</td>
-	<td>
-		one 12x12 piece of 3/16" imported birch plywood, bulk price.
-		smaller parts can be cut inside the gears
-	</td>
-</tr>
-<tr>
-	<td></td>
-	<td>pendulum</td>
-	<td></td>
-	<td>$2.50</td>
-	<td>
-		I used some nice 3/16" walnut plywood for this
-		that cost me about $12.
-		I can get about 4 pendulums from one piece
-	</td>
-</tr>
-<tr>
-	<td></td>
-	<td>face, pendulum plates</td>
-	<td></td>
-	<td>$6.00</td>
-	<td>one 12x12" piece of 1/8" imported birch plywood, bulk price</td>
-</tr>
-<tr>
-	<td></td>
-	<td>numbers, seconds hand</td>
-	<td></td>
-	<td>$2.50</td>
-	<td>about 1/4 of piece of 4x24" 1/8" walnut that cost about $10</td>
-</tr>
-<tr>
-	<td></td>
-	<td>minute and hour hands</td>
-	<td></td>
-	<td>$1.25</td>
-	<td>about 1/8 of piece of 4x24" 1/8" maple that cost about $10</td>
-</tr>
-
-<tr>
-	<td colspan='5'>Plastic</td>
-</tr>
-	<tr><td></td><td>box			</td><td>73.6m</td><td>$6.60</td><td>at $20/kg</td></tr>
-	<tr><td></td><td>coil set       </td><td>4.3m</td><td>$0.39	</td><td></td></tr>
-	<tr><td></td><td>sensor housing	</td><td>3.4m</td><td>$0.30	</td><td></td></tr>
-	<tr><td></td><td>magnet holder  </td><td>1.1m</td><td>$0.10	</td><td></td></tr>
-	<tr><td></td><td>washers        </td><td>0.3m</td><td>$0.03	</td><td></td></tr>
-	<tr><td></td><td>wire tie		</td><td>0.2m</td><td>$0.02	</td><td></td></tr>
-	<tr><td></td><td>LED lenses		</td><td>0.5</td><td>$0.01	</td><td>clear</td></tr>
-
-<tr>
-	<td colspan='5'>Tubes, Bearings, Weights</td>
-</tr>
-	<tr><td></td><td>Brass Tube, 6mm	</td><td>approx 28mm (1.3")</td><td>$7.00</td><td rowspan='3'>you can buy a set of telescoping brass tubes for about $12-14. ang get two clocks per set from them</td></tr>
-	<tr><td></td><td>Brass Tube, 5mm	</td><td>approx 130mm (5.1")</td><td></td><td></td></tr>
-	<tr><td></td><td>Brass Tube, 4mm	</td><td>approx 140mm (5.5")</td><td></td><td></td></tr>
-	<tr><td></td><td>m3 threaded rod	</td><td>approx 140mm (5.5")</td><td>$2.00  </td><td></td></tr>
-	<tr><td></td><td>Bearing, 3x9x4	 mm	</td><td>4	</td><td>$1.25	</td><td rowspan='4'>the prices of the bearings depends on how many you buy at a time</td></tr>
-	<tr><td></td><td>Bearing, 4x11x4 mm	</td><td>1	</td><td>$0.50	</td><td></td></tr>
-	<tr><td></td><td>Bearing, 5x16x5 mm	</td><td>2	</td><td>$1.00  </td><td></td></tr>
-	<tr><td></td><td>Bearing, 6x15x5 mm	</td><td>1	</td><td>$1.00  </td><td></td></tr>
-	<tr><td></td><td>Arm Weights 1/4 oz	</td><td>2	</td><td>$1.00  </td><td>6-8mm in diameter, with hole through center</td></tr>
-	<tr><td></td><td>Pendulum Weight 4 oz</td><td>1	</td><td>$2.00  </td><td>16-17mm in diameter, with hole through center</td></tr>
-<tr>
-	<td colspan='5'>Screws, Washers, Nuts</td>
-</tr>
-	<tr><td></td><td>m3 x 45 machine	</td><td>1	</td><td>$1.00</td>	</td><td>can use M3 threaded rod instead</td></tr>
-	<tr><td></td><td>m3 x 15 machine 	</td><td>6	</td><td></td>		</td><td>weights, arms, box front</td></tr>
-	<tr><td></td><td>m3 x 12 machine	</td><td>8	</td><td></td>		</td><td>cam rollers, pawls, box back</td></tr>
-	<tr><td></td><td>m2 x 6 machine		</td><td>4	</td><td></td>		</td><td>mag holder, sensor housing</td></tr>
-	<tr><td></td><td>m3 x 6 wood		</td><td>9	</td><td></td>		</td><td>pcb, sensor</td></tr>
-	<tr><td></td><td>m3 x 12 wood		</td><td>6	</td><td></td>		</td><td>face, front</td></tr>
-	<tr><td></td><td>m3 square nut		</td><td>2	</td><td></td>		</td><td>pendulum rod</td></tr>
-	<tr><td></td><td>m3 hex nut			</td><td>1	</td><td></td>		</td><td>threaded rod</td></tr>
-	<tr><td></td><td>m3 washers			</td><td>12 </td><td></td>      </td><td></td></tr>
-	<tr><td></td><td>m4 washers			</td><td>2  </td><td></td>      </td><td></td></tr>
-	<tr><td></td><td>m5 washers			</td><td>1	</td><td>$2.50</td>	</td><td>approximate cost of above when bought in sets or in bulk</td></tr>
-
-<tr>
-	<td colspan='5'>Electronics</td>
-</tr>
-	<tr><td></td><td>ESP32 Dev0						</td><td>1	</td><td>$7.00</td><td></td></tr>
-	<tr><td></td><td>AS5600 magnetic angle sensor	</td><td>1	</td><td>$4.00</td><td></td></tr>
-	<tr><td></td><td>PCB							</td><td>1	</td><td>$2.00</td><td>copper board, UV epoxy</td></tr>
-	<tr><td></td><td>LEDs							</td><td>5	</td><td>$0.50</td><td>1/12th of a WS2812b (60/meter) LED strip</td></tr>
-	<tr><td></td><td>Coils							</td><td>2	</td><td>$1.00</td><td>approx 18' 30 gauge wire each</td></tr>
-	<tr><td></td><td>Buttons						</td><td>2	</td><td>$1.00</td><td></td></tr>
-	<tr><td></td><td>L293D driver IC				</td><td>1	</td><td>$1.00</td><td></td></tr>
-	<tr><td></td><td>10K resistor					</td><td>7	</td><td>$0.40</td><td></td></tr>
-	<tr><td></td><td>100 uf electrolytic cap		</td><td>2	</td><td>$0.75</td><td></td></tr>
-	<tr><td></td><td>10 uf electrolytic cap			</td><td>1	</td><td>$0.10</td><td></td></tr>
-	<tr><td></td><td>15 pin female header			</td><td>2	</td><td>$0.50</td><td></td></tr>
-	<tr><td></td><td>2 pin female header			</td><td>2	</td><td>$0.50</td><td></td></tr>
-	<tr><td></td><td>JST 4 pin header				</td><td>2	</td><td>$0.25</td><td></td></tr>
-	<tr><td></td><td>JST 3 pin header				</td><td>1	</td><td>$0.25</td><td></td></tr>
-	<tr><td></td><td>connecting wires				</td><td>13	</td><td>$0.25</td><td></td></tr>
-<tr>
-	<td colspan='5'>Cables</td>
-</tr>
-	<tr><td></td><td>4 conductor sensor cable		</td><td>1	</td><td>$1.00</td><td>approx 18"  </td></tr>
-	<tr><td></td><td>JST 4 pin connector			</td><td>5	</td><td>$0.25</td><td>1 x 5 pieces</td></tr>
-	<tr><td></td><td>Micro JST 4 pin connector		</td><td>5	</td><td>$0.75</td><td>1 x 5 pieces</td></tr>
-	<tr><td></td><td>3 pin JST wire header			</td><td>1	</td><td>$1.00</td><td>for LEDs    </td></tr>
-<tr>
-	<td colspan='5'>Other</td>
-</tr>
-	<tr><td></td><td>5x5x2 mm magnet				</td><td>2	</td><td>$0.50</td><td>bought 50 for $12.50</td></tr>
-	<tr><td></td><td>3x3x2 mm magnet				</td><td>3  </td><td>$0.54</td><td>bought 50 for $9.00</td></tr>
-	<tr><td></td><td>6mm diametric magnet			</td><td>1	</td><td>		</td><td>included with as5600 sensors</td></tr>
-	<tr><td></td><td>30 gauge wire					</td><td>	</td><td>$0.50	</td><td>approx 36'</td></tr>
-	<tr><td></td><td>power supply					</td><td>1	</td><td>$7.00  </td><td></td></tr>
-
-<tr>
-	<th>TOTAL</th>
-	<td>approx 200 individual parts !!</td>
-	<td></td>
-	<th style="whitespace:nowrap;">$79.36</th>
-	<td></td>
-</tr>
-</table>
+On this page we will assemble the *finished clock*, see it's
+*first tick* and make sure the **mechanics** of the clock
+are good before we proceed to [tuning](tuning.md) it to
+run via the electromagnetic coils.
 
 
+[![YoutubeThumb_FinalBuildMontage.jpg](images/YoutubeThumb_FinalBuildMontage.jpg)](https://youtu.be/oebHyQRG6yk)
 
 
-**Next:** Laser cutting the [**Wooden Parts**](wood.md) of the clock ...
+When the clock is assembled the **gears should mesh** with the large gears riding
+nicely **in the middle** the small gears - not just barely overlapping!
+There should be some **play** in the mechanism, the gears must be **free**
+and **turn well** with little friction.
+
+You *may* want to **sand** the *wooden spacers* to make them *thinner*,
+and/or sand the *long ends of the tubes* to make sure the gears overlap,
+there is a bit of play, and they turn nicely once the **bridge** is attached.
+
+
+## B. Assemble Parts to the Frame
+
+We will now assemble the *majority* of the clock onto the **frame**,
+including the *angle sensor*, *gear train*, *front bridge* and *face*,
+and the hours, minutes, and seconds *hands*.
+
+### 1. Glue Bearings into Frame and Bridge
+
+Each bearing must be **cleaned** and **lubricated** before it is
+installed in the clock.  I do this by putting them all in a small
+plastic container and **soaking them in WD40**, removing each in turn
+and **spinning** them (on the end of a *bic pen*) and **wiping them
+off** with a paper towel.  I then put a small drop of **light machine
+oil** (3-in-1) on each bearing, spin them again, and then *clean*
+the outer surface with a paper towel lightly wetted with *alcohol*.
+
+The outer surface that will be glued to the wood should be
+relatively clean and oil free.
+
+![build-bearings1.jpg](images/build-bearings1.jpg)
+
+For each **bearing**:
+
+- note from the *diagrams* **how** the bearings are to be inserted
+- put a **very small amount** of **5 minute epoxy**
+around the hole the bearing will go into.
+- **press** the bearing into place, using a piece of wood as necessary.
+- **carefully and completely remove any excess epoxy** glue from each
+bearing with a paper towel lightly wetted with *alcohol*.
+
+![build-bearings2.jpg](images/build-bearings2.jpg)
+
+
+### 2. Assemble Angle Sensor and Cable to Frame
+
+**First** *3D Print* the **Sensor Housing** and the small **Wire Tie** pieces. **Then**:
+
+- **plug** the small *JST connector* of the **cable** into the SDA/SCL connector on the **angle sensor module**
+- **screw** the angle sensor module into the *3D printed* **Angle Sensor Housing** with
+   the *cable coming out* the left side using four **M3x8** *wood screws* as shown in the image below
+- **bend** the cable sharply where it comes out of the housing as shown
+- **feed** the large *JST connector* end of the cable into the top of the **frame house**
+  and down through the *cutout* in the bottom of the **frame house**.
+- **bend** and **align** the cable so that it *tucks into* the inner top-left corner of
+  the frame as shown and then **straighten** the part that hangs down so that it goes directly
+  through the smaller square in the *cutout*
+- **screw** the sensor housing onto the frame with two **M2x8** *machine screws
+
+The following image, with the *frame front and gears* removed for clarity, shows how the
+**cable should be run** so that it *does not show* in the final assembled clock:
+
+![build-cable_run.jpg](images/build-cable_run.jpg)
+
+Then **finally**, when you've got it close,
+**back out** the *larger **upper left** bridge M3x20 wood screw*,
+**push** the cable into the *bend* in the wire-tie,
+**force** the cable and tie up into the corner of the frame, and
+**screw** the screw back in so that it goes into the wire tie
+*securing the cable* into the upper left corner.
+
+You can also add a a bit of **hot glue** to keep the straight part out of view.
+
+![build-as5600_cable_in_corner.jpg](images/build-as5600_cable_in_corner.jpg)
+![build-as5600_cable_to_box.jpg](images/build-as5600_cable_to_box.jpg)
+
+The cable should go straight down out the bottom of the clock.
+
+
+### 3. Insert Threaded Rod
+
+- screw an **M3 nut** about 7mm onto one end of the **idler** threaded rod
+- add an **M3 washer**
+- **screw** the threaded rod *into the wood* until it is flush at the back
+- **tighten** the nut so that the threaded rod is secure in the frame
+
+![build-threaded_rod.gif](images/build-threaded_rod.gif)
+
+
+### 4. Mount Magnetic Spring
+
+Mount the magnetic spring using two **M2 x 8** machine screws.
+Mount it as far away from the pendulum as possible and snug, but do not tighten the screws.
+
+![build-magnetic_spring.jpg](images/build-magnetic_spring.jpg)
+
+
+## C. Assemble Gears and Bridge
+
+We are now ready to insert the **gear assemblies** into the frame.
+
+### 1. Lubrication
+
+*Apply* **graphite dry lube** liberally to the teeth of all the gears. The
+idea is to *embed* the dry lube in the *lacquer* on the teeth.  This will
+significantly **reduce the friction** in the clock and make it run better.
+The powdered graphite is very *messy* to work with,  I literally *cover*
+the teeth in graphite powder, by *dipping* them in piles of the powder,
+or by using a *small spoon* to dump powder onto all the teeth. I then
+*rub and brush* the powder into the teeth with a coarse 1/2" paint brush.
+Then finally, I *wipe off* the *faces* of each gear with a paper towel
+to make them look nice.
+
+Likewise, when assembling the *tubes* I apply a *thin coat* of **light
+machine oil** (I use the popular "3-in-1" oil) to the **inner tube** in
+each step where a tube will ride on the *threaded rod* or *another tube*.
+
+
+#### 2. Seconds Wheel Assembly
+
+- slide the *two* **12x4.1mm** *wooden washers* onto the back of the **Seconds Wheel Assembly**
+- slide an **M4** *metal washer* onto the assembly
+- **insert** the assembly into the main *4mm bearing*
+
+#### 3. Min1 Gear Assembly
+
+- **lubricate** the *threaded rod* with a *drop or two* of **light machine oil**
+- slide an **M3** *metal washer* onto the *threaded rod*
+- slide the **Min1 Gear Assembly** onto the *threaded rod* so that
+  the gear teeth *mesh* with the small gear on the *Seconds Wheel Assembly*
+
+#### 4. Min2 Gear Assembly
+
+- **lubricate** the *Seconds Tube* with a drop of *light machine oil*
+- slide an **M4** *metal washer* onto the *Seconds Tube*
+- slide the **Min2 Gear Assembly** onto the *Seconds Tube* so that
+  the gear teeth mesh with the small gear on *Min1 Gear Assembly*
+
+![build-gears.gif](images/build-gears.gif)
+
+#### 5. Hour1 Gear Assembly
+
+- slide an **M3** *metal washer* onto the the **threaded rod**
+- slide the **Hour1 Gear Assembly** onto the threaded rod so that
+  the gear teeth *mesh* with the small gear on the *Min2 Gear Assembly*
+
+#### 6. Hour2 Gear Assembly
+
+- **lubricate** the *Minutes Tube* with a drop of *light machine oil*
+- slide an **M5** *metal washer* onto the *Minutes Tube*
+- slide the **Hour2 Gear Assembly** onto the *Minutes Tube* so that
+  the gear teeth mesh with the small gear on *Hour1 Gear Assembly*
+
+#### 7. Bridge Assembly
+
+- slide the *thin* 1/8" **12x6mm** wooden washer onto the **Hours Tube**
+- slide another **M3** *metal washer* onto the threaded rod
+- **align** and **press** the **Bridge** onto the frame so that
+  the **tabs** fit in the slots in the Bridge, the
+  **Hours Tubes** goes through the bearing, and the **threaded rod**
+  goes into the hole in the Bridge
+
+There should be some **play** in the *Gear Train* when the
+Bridge is in place.  You may need to **sand** the front *thin 1/8" washer*,
+and or *the ends of the tubes* to make sure that everything turns smoothly,
+and/or **add or change washer combination** at the back of the *Seconds Tube*.
+*Ensure* that the **Gear Train** moves freely without any undue *friction*,
+*binding*, or *slop*, **before** you screw the Bridge into place.
+
+- Secure the Bridge with *five* **M3x12** wood screws and *one*
+  **M3x20** wood screw in the **upper left corner**
+
+
+## D. Add Top Tube, Pendulum, Cam, and End Cap
+
+This is the *hardest* step in the Assembly process to explain.
+
+We are now going to insert the top tube, through the **back** of the Frame,
+through a **Keyed Spacer**, through the **Pendulum**, through the **front** of the Frame,
+a M5 **metal washer**, a 3/16" **wooden washer**, and another **Keyed Spacer**, then
+through the **Cam**, and top it off with the **Magnetic Cap** for the Angle Sensor.
+
+You will probably find that it takes a quite a bit of
+**force** and **twisting and turning** to get the Top Tube through all of these parts!
+
+- add a loose fitting **3/16" 12x5 mm wooden washer** to the **Top Tube**
+- position and hold the **Pendulum** within the frame
+- insert the Tube into the *back* of the **Frame** and *push and turn* it through the Pendulum
+- hold a **Keyed Spacer** up against the Pendulum, inside the frame
+- *push and turn* the Top Tube through the Keyed Spacer
+- *push and turn* the Tube out the *front* of the Frame until it protrudes about 1/2"
+
+![build-top_tube1.gif](images/build-top_tube1.gif)
+
+It doesn't matter at this point if the *Pendulum* and *Spacer* are *aligned*.
+You just need to get the tube through them and poking a bit out of the front frame.
+After that:
+
+- put a **M5 metal washer** on the tube
+- put a loose fitting **12x5 mm wooden washer** on the tube
+- *push and turn* the tube through the 2nd **Keyed Spacer**
+- position the **Cam**
+- *push and turn* the Tube through the Cam until the Tube comes out about 1/2" past the Cam
+
+![build-top_tube2.gif](images/build-top_tube2.gif)
+
+*Note that the **Cam** is **not symmetrical***.  The *higher side* of the
+Cam goes on the **left** and the *lower side* on the *right* !!!
+
+- *add* the **Magnetic Sensor Cap** to the end of the tube.
+- **hold** the Cam and its Washers **firmly** against the Frame
+- **push** the tube the rest of the way until the back **Wooden Washer** comes
+  up against the **bearing** in the back of the Frame.
+
+![build-top_tube3.gif](images/build-top_tube3.gif)
+
+At this point the *Magnetic Cap* should be about **1mm from the Sensor Module**,
+the *Back Washer* should be **snug** up to the *Rear Bearing* and the *Cam, Keyed Spacer,*
+and *Wooden and Metal Washers* should be **snug** up to the *Front Bearing*, and
+the *Cam* should be more or less aligned above the *Seconds Wheel*.
+
+The **Pendulum** will be likely be jammed up against the inside of the Frame.
+We need to move the Pendulum **back** so that it is in the **middle** of the **Channel**.
+
+- While holding the **Pendulum** and it's **Spacer** with your fingers,
+- **turn the Tube** back and forth while **working the Pendulum** back into the middle of the space.
+- *Slide* the assembled **Clock** onto the 3D printed **Box** so that the **Pendulum** is in the **Channel**
+- **Adjust the spacing** of the Pendulum so that it swings freely in the
+- **middle of the channel** and does not touch the sides.
+
+In the end the
+**Pendulum must swing freely in the middle of the channel**
+and should *oscillate* **at least 5-6 times** when swung from an extreme.
+There should be about **1/2 mm of play** for the Top Tube to move back and forth
+aginst the Front and Rear bearings.
+
+Finally we just have to get the **M3x45mm bolt** through the Pendulum, Spacers, and into the Cam.
+
+- **Align the holes** in the *Pendulum, Keyed Spacers, and Cam* so that
+  they are lined up when the pendulum is hanging **straight down**.
+- **Insert** the **M3x45 bolt** into the Pendulum
+- Making sure that the Pendulum Spacer is **flush** up against the Pendulum
+- **screw** the bolt in through the Pendulum and Spacer
+- Continue **screwing** it in until the bolt *just reaches* the *Cam Spacer*
+
+![build-top_tube4.gif](images/build-top_tube4.gif)
+
+When the bolt is up against the Cam Spacer, **double check that everything
+is aligned**, that the **pendulum is still in the middle of the channel**
+and that the Cam Spacer is flush up again the Cam and
+
+- **screw the bolt** in the rest of the way.
+
+Ideally it the bolt should protude a small amount out of the front of the Cam.
+
+*Once again*, this will take some *practice* and maybe **several tries**.
+If you need to, *remove the bolt*, get everything spaced and aligned,
+and try again until you **get it right**!
+
+You can do *minor adjustments* once the assembly is complete by moving
+the **Pendulum** slightly on the **Top Tube**.
+**Note** that when the **bolt** is screwed in, it acts as a *fulcrum* so
+if you need to move the *bottom* of the **Pendulum** backwards in the **Channel**,
+once the bolt is screwed in,  you will move the *top* of **Pendulum** forwards, and
+the bottom will move slightly backwards.
+
+**You will probably need to mess with this a few times during *Tuning* and *Testing*
+to get it just right** so that the Pendulum swings freely, and the Cam is in the
+correct place.
+
+****Note Also** that there is a **range of allowed orientations** for the sensor cap.*
+In the end, it must be on the tube such that when the pendulum is hanging straight down,
+the sensor is reading in the middle of the range, **between 90 and 270 degrees**.
+Later, after we have finished the assembly, during [Tuning](tuning.md) we will **Mark**
+the spacer so that we know how it supposed to be positioned on the Tube.
+
+
+## E. Mount Clock on Box
+
+In the previous step we already put **Assembled Clock** onto the **Box**.
+I usually don't add the screws until I have started [Tuning](tuning.md)
+the clock and I am confident all of the electronics are working correctly.
+
+However, we obviously need to do these things at some point, so they are
+being presented here for completeness:
+
+- **Plug** the *Sensor Cable* into the *PCB*
+- **Screw** two **M3x12** wood screws from the rear of the Clock into the box.
+- **Screw** two **M3x18** wood screws from the front of the Clock into the box.
+
+
+
+## F. Assemble Arms and Pawls
+
+The below photo shows the parts that are used in assmbling the *Arms and Pawls*.
+
+![build-arm_and_pawl_parts.jpg](images/build-arm_and_pawl_parts.jpg)
+
+Start by expanding the holes in the *two small fishing weights* using a **3mm Drill**.
+
+![build-hole_in_small_weight.jpg](images/build-hole_in_small_weight.jpg)
+
+Then assemble each arm as follows:
+
+- put an **M3x10** *machine* **screw** through one of the **3x9x4 bearings**
+- put *two* **M3 washers** behind that
+- *screw* the bearing assembly into the Arm
+- put an **M3x18** *machine* **screw** through a **small fishing weight**
+- *screw* the weight into the Arm
+- put an **M3 washer** on a **M3x12** *machine* **screw**
+- put the screw *through* the appropriate **Pawl**
+- put another **M3 washer** on the screw
+- *screw* the pawl onto the Arm until it is **snug**
+- **back off** the screw by *1/4 turn* so that the **Pawl swings freely**
+
+![build-assembled_arms.jpg](images/build-assembled_arms.jpg)
+
+
+
+## G. Attach Arms and Pawls
+
+The **Pawls must ride on the Seconds Wheel**.  So there
+is some *jiggling* and *adjustment* needed as you screw
+the Arms into place.
+
+![build-attach_arms1.jpg](images/build-attach_arms1.jpg)
+![build-attach_arms2.jpg](images/build-attach_arms2.jpg)
+
+For both arms, do the following:
+
+- put a **M3 washer** on an **M3x20** *machine* **screw**.
+- insert the screw into one of the **Arms**
+- put another **M3 washer** on the screw, behind the Arm
+- **lower** the arm into the space *next to the Cam* until it is positioned in
+  front of it's **mounting spacer**.
+- **screw** the Arm in until it is **snug**
+- **back off** the screw by *1/4 turn* so that the **Arm swings freely**
+
+![build-attach_arms3.jpg](images/build-attach_arms3.jpg)
+![build-attach_arms4.jpg](images/build-attach_arms4.jpg)
+
+As you are assembling this part, you will need adjust the *Pawl* so that
+it rides **on top of the Seconds Wheel**.
+
+**You may need to add additional M3 washers** to the back of the arms
+to get the spacing correct.
+
+
+
+
+## H. Attach Face and Hands
+
+- align and attach the **Face** with two **M3x12** wood screws
+- *push and turn* a 3/16" **10x6mm** *wooden stop washer* onto the *Hours Tube*
+  so that it is snug up again the *bearing*
+- **compression fit** the **Hour**, **Minutes**, and **Seconds**
+hands on to the tubes so there is about **1-2mm** of space
+between them and they are **square** and won't hit each other
+as they turn.
+
+![build-face_and_hands.gif](images/build-face_and_hands.gif)
+
+
+## FIRST TICK!!
+
+At this point you should be able to *move* the **Pendulum** and
+the **Pawls** should *correctly engage* the *Seconds Wheel* one
+after the other, advancing the *Gear Train* on each swing!!
+
+**TAKE A BREAK** !!  Sit back and admire your clock :-)
+
+![build-full_clock.jpg](images/build-full_clock.jpg)
+
+This is the time to make **any and all** adjustments to get the clock **ticking correctly**.
+Trust me, it is **worth the time** to get the *Mechanism* working correctly at this point.
+By moving the Pendulum *gently* with your finger through the top hole in the Frame you
+should be able to swing it back and forth and **reliably** and *smoothly* engage and
+advance the *Gear Train*.
+
+You may need to do one or more of the following:
+
+- move the **Pendulum** back or forwards to get it in the middle of the channel
+- adjust **Top Tube** and the *Cam* and *Spacers* on it to get align them
+- *tighten* or *loosen* the *Arm and Pawl* **screws** to get them to swing freely, yet *aligned* with the Seconds Wheel
+- add additional **M3 washers** to the back of the Arms to make sure the *bearings* ride on the Cam
+- add additional **M3 washers** between the Pawls and the Arms to make sure the *Pawls* ride on the Seconds Wheel
+- **cut** and use *slightly modified **Pawls***
+
+It should **tick and tock** and should move the **Seconds Wheel** about the same
+distance as it swings in **each direction**.
+
+If you find that the Seconds Hand moves *mostly* when the Pendulum swings in one
+direction and *hardly at all* when the Pendulum swings in the other direction,
+then you *may* want to **Analyze the motion closely** and **modify the DXF drawings**
+slightly to **cut** and use *slightly modified **Pawls***.
+
+For example, on one clock I built, I found that shortening the **right pawl** by
+**0.5mm** made all the difference in the world in *balancing* out the ticks and
+tocks.  To whit, there is a **alternate_right_pawls.lbrn2** file in the *Lightburn*
+folder in the repository that contains some modified Pawls.
+
+Some **experimentation may be necessary**, but as I said, it is **well worth the time**
+to get the clock **ticking and tocking correctly** before moving on and trying to
+[Tune](tuning.md) it.  You don't want to be modifying the *hardware* once you have
+started configuring the *software*!
+
+
+
+**Next:** Setting up and [**Tuning**](tuning.md) the clock ...

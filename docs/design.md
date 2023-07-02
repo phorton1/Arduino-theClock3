@@ -2,16 +2,16 @@
 
 **[Home](readme.md)** --
 **Design** --
-**[Build](build.md)** --
+**[Plan](plan.md)** --
 **[Wood](wood.md)** --
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
 **[Software](software.md)** --
-**[Other](other.md)** --
-**[Assembly](assembly.md)** --
+**[Assemble](assemble.md)** --
+**[Build](build.md)** --
 **[Tuning](tuning.md)** --
-**[User Manual](user_manual.md)** --
-**[Trouble Shooting](trouble.md)** --
+**[UI](ui.md)** --
+**[Troubles](troubles.md)** --
 **[Notes](notes.md)**
 
 
@@ -146,8 +146,8 @@ parametrized. as well as things like **the interval for syncing
 the RTC and NTP clocks**.  In fact the firmware can even be **re-compiled
 and uploaded** to the ESP32 via WiFi with **OTA** (Over the Air) updates.
 
-Please see the **[User Manual](user_manual.md)** for more details on
-the capabilities of the software and the various user interfaces.
+Please see the **[User Interface](ui.md)** page for more details on
+the capabilities of the software and how to use it.
 
 ## 2. Mechanical Calculations
 
@@ -269,4 +269,4 @@ adding additional **cables and connectors** as far as the clock's construction i
 Please see the [Notes](notes.md) page for more details on these options.
 
 
-**Next:** An overview of the [**Build Process**](build.md) for the clock ...
+**Next:** An overview of the [**Build Plan**](plan.md) for the clock ...
