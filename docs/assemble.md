@@ -120,7 +120,7 @@ If you do, *immediately* clean the inside of the tube end with a paper towel, we
 
 The **pendulum** is made up of the 3/16" thick *main wooden piece*, four
 1/8" thick *pendulum covers*, the large *lead fishing weight*, the
-M3 threaded *pendulum* rod and two *m3 square nuts*.
+M3 threaded *pendulum* rod, and *m3 hex nut* and two *m3 square nuts*.
 
 ![assem-pendulum.jpg](images/assem-pendulum.jpg)
 
@@ -160,7 +160,7 @@ in the slot.
 **You *should* have determined the *correct orientation* of the magnets
 previously when testing the Software on the [previous page](software.md).*
 If you don't remember the correct orientation, or if you get it wrong
-**its ok**.  You will merely need to reverse the orientation of the
+**it's ok**.  You will merely need to reverse the orientation of the
 coil plugs later when we start [Tuning](tuning.md) the clock.
 
 - put a piece of masking tape on the front of the pendulum over the main magnet

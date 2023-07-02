@@ -195,7 +195,8 @@ and/or **add or change washer combination** at the back of the *Seconds Tube*.
 *binding*, or *slop*, **before** you screw the Bridge into place.
 
 - Secure the Bridge with *five* **M3x12** wood screws and *one*
-  **M3x20** wood screw in the **upper left corner**
+  **M3x20** wood screw in the **upper left corner** that **also**
+  goes *through* the **Wire Tie** for the sensor cable.
 
 
 ## D. Add Top Tube, Pendulum, Cam, and End Cap
@@ -209,6 +210,8 @@ through the **Cam**, and top it off with the **Magnetic Cap** for the Angle Sens
 
 You will probably find that it takes a quite a bit of
 **force** and **twisting and turning** to get the Top Tube through all of these parts!
+It is a *good idea* to make sure that the **5mm tube** goes *easily* through all of the
+parts, especially the **Pendulum and it's spacer**!
 
 - add a loose fitting **3/16" 12x5 mm wooden washer** to the **Top Tube**
 - position and hold the **Pendulum** within the frame
@@ -251,6 +254,9 @@ We need to move the Pendulum **back** so that it is in the **middle** of the **C
 
 - While holding the **Pendulum** and it's **Spacer** with your fingers,
 - **turn the Tube** back and forth while **working the Pendulum** back into the middle of the space.
+
+We can now *mount* the **Clock** on the **Box** and **align** the Pendulum.
+
 - *Slide* the assembled **Clock** onto the 3D printed **Box** so that the **Pendulum** is in the **Channel**
 - **Adjust the spacing** of the Pendulum so that it swings freely in the
 - **middle of the channel** and does not touch the sides.
@@ -261,7 +267,7 @@ and should *oscillate* **at least 5-6 times** when swung from an extreme.
 There should be about **1/2 mm of play** for the Top Tube to move back and forth
 aginst the Front and Rear bearings.
 
-Finally we just have to get the **M3x45mm bolt** through the Pendulum, Spacers, and into the Cam.
+Finally we just have to *screw* the **M3x45mm bolt** through the Pendulum, Spacers, and into the Cam.
 
 - **Align the holes** in the *Pendulum, Keyed Spacers, and Cam* so that
   they are lined up when the pendulum is hanging **straight down**.
@@ -302,22 +308,8 @@ Later, after we have finished the assembly, during [Tuning](tuning.md) we will *
 the spacer so that we know how it supposed to be positioned on the Tube.
 
 
-## E. Mount Clock on Box
 
-In the previous step we already put **Assembled Clock** onto the **Box**.
-I usually don't add the screws until I have started [Tuning](tuning.md)
-the clock and I am confident all of the electronics are working correctly.
-
-However, we obviously need to do these things at some point, so they are
-being presented here for completeness:
-
-- **Plug** the *Sensor Cable* into the *PCB*
-- **Screw** two **M3x12** wood screws from the rear of the Clock into the box.
-- **Screw** two **M3x18** wood screws from the front of the Clock into the box.
-
-
-
-## F. Assemble Arms and Pawls
+## E. Assemble Arms and Pawls
 
 The below photo shows the parts that are used in assmbling the *Arms and Pawls*.
 
@@ -344,7 +336,7 @@ Then assemble each arm as follows:
 
 
 
-## G. Attach Arms and Pawls
+## F. Attach Arms and Pawls
 
 The **Pawls must ride on the Seconds Wheel**.  So there
 is some *jiggling* and *adjustment* needed as you screw
@@ -375,7 +367,7 @@ to get the spacing correct.
 
 
 
-## H. Attach Face and Hands
+## G. Attach Face and Hands
 
 - align and attach the **Face** with two **M3x12** wood screws
 - *push and turn* a 3/16" **10x6mm** *wooden stop washer* onto the *Hours Tube*
@@ -430,6 +422,20 @@ Some **experimentation may be necessary**, but as I said, it is **well worth the
 to get the clock **ticking and tocking correctly** before moving on and trying to
 [Tune](tuning.md) it.  You don't want to be modifying the *hardware* once you have
 started configuring the *software*!
+
+
+## H. Secure the Clock to the Box
+
+In the previous step we already *mounted* **Assembled Clock** onto the **Box**.
+I usually don't add the *screws* and *Top* wooden pieces until I have started [Tuning](tuning.md)
+the clock and I am confident all of the electronics are working correctly.
+
+However, we obviously need to do these things at some point, so they are
+being presented here for completeness:
+
+- **Plug** the *Sensor Cable* into the *PCB*
+- **Screw** two **M3x12** wood screws from the rear of the Clock into the box.
+- **Screw** two **M3x18** wood screws from the front of the Clock into the box.
 
 
 
