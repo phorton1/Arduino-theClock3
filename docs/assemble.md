@@ -64,14 +64,6 @@ listed lengths for best fitting and operation of the clock.
 
 Here is a table showing the lengths of the tubes/rods to be cut:
 
-
-<style>
-td,th {
-	vertical-align: top;
-	text-align:left;
-}
-</style>
-
 <table style='width:50%;'>
 <tr>
 	<th>Type</th>

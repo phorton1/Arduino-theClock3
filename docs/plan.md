@@ -96,12 +96,6 @@ replaced with reclaimed wire from an old wall-wart transformer or similar.
 
 Without further adoo, here is the **BOM** (Bill of Materials):
 
-<style>
-td {
-	vertical-align: top;
-}
-</style>
-
 <table>
 <tr>
 	<th>Category</th>

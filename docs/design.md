@@ -165,13 +165,6 @@ For ease of design all gears are **separated by 60mm** center-to-center.
 
 ### Gear Ratios
 
-<style>
-td,th {
-	vertical-align: top;
-	text-align:left;
-}
-</style>
-
 <table style='width:50%;'>
 <tr><th colspan='5'>Gear Ratios</th><tr>
 <tr>
