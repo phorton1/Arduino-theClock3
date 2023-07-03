@@ -226,97 +226,99 @@ serial monitor:
 
 ![soft-start1.jpg](images/soft-start1.jpg)
 
-that continues like this:
-
-![soft-start2.jpg](images/soft-start2.jpg)
-
-I *could* skip a description of *all of this stuff* here, but I'd like to point out a
-few things.
-
-- the [[][[37m[[92m]] at the beginning of each line are **ansi color codes**.  If you
-  use a serial monitor (like **Putty**) that can display colors, you will see different
-  colors for USER, INFO, DEBUG, WARNING, and ERROR messages in the serial output
-- each line starts with **date-time stamp**.  Since we have not yet connected to
-  NTP (Network Time Protocol), the ESP32 does not know what time it is, and so
-  it defaults to starting at midnight on January 1, 1970.
-- The next **two numbers separated by a colon** (i.e. 164:163) show the **RAM memory
-  available** on the ESP32 (current and lowest)
-- The messages are **nested** (in many cases) by their **call level** within the
-  code
-
 When you boot a [**myIOT device**](https://github.com/phorton1/Arduino-libraries-myIOT),
 like **theClock3**, the serial output tells you a lot about the device as it boots,
 including providing a complete listing of the **ESP32 partitions** and **contents
 of the SPIFFS file system**.
 
-A **myIOT device**, by default, sets itself up as a **WiFi Access Point**, and in
-the serial output you can see that the **IP Address** of the AP is 192.168.1.254.
+- each line starts with **date-time stamp**.  Since we have not yet connected to
+  NTP (Network Time Protocol), the ESP32 does not know what time it is, and so
+  it defaults to starting at midnight on January 1, 1970.
+- The next **two numbers separated by a colon** (i.e. 244:237) show the **RAM memory
+  available** on the ESP32 (current and lowest)
+- The messages are **nested** (in many cases) by their **call level** within the
+  code
 
-Things particular to **theClock3** in the above window
-include the fact that the **setup()** methods try (but in this case **fail**)
-five times to initialize the *AS5600 angle sensor*,
-and that it is reporting that the **5V sensor voltage divider is not connected**
-as it reports a **voltage of zero**.
+The most important thing to note in the above log output,
+as highlighted in <font color='red'><b>red</b></font>,
+is that the ESP32
+**failed to initialize the AS5600** angle sensor module.
+That's ok!! We haven't *plugged it in yet* !!  The listing then continues:
+
+![soft-start2.jpg](images/soft-start2.jpg)
+
+A **myIOT device**, by default, sets itself up as a **WiFi Access Point**,
+as highlighted in <font color='blue'><b>blue</b></font>
+in the serial output. You can see that the *SSID* of the Access Point
+is **theClock3.3** and the *IP Address* is 192.168.1.254. Also we see,
+highlighted in <font color='red'><b>red</b></font> that the ESP32
+**COULD NOT SET** the **AS5600 zero angle** five times.
+That's ok too!  We just want to draw your attention to
+these messages for later.
 
 
-### 4. See a list of the Clock's PARAMETERS
 
-If we then type the command **"values"**, followed by a carriage return,
+### 4. See a list of the Clock's PARAMETERS (Values)
+
+If we now type the command **"values"**, followed by a carriage return,
 into the serial monitor, the clock will display a list of all of it's
 **PARAMETERS** and their values.
 
 ![soft-values.jpg](images/soft-values.jpg)
 
+### 5. Try settting a PARAMETER and REBOOTING
+
 There are a **lot** of different parameters available for controlling
-and understanding the clock.  They will be described more fully on
-the [Tuning](tuning.md) and [User Interface](ui.md) pages,
-but for now it is good to know that you can **set parameters**
+and understanding the clock.  They will be described more fully as we
+move forward through the [Tuning](tuning.md) and [User Interface](ui.md) pages,
+but for now it is good to learn that you can **set parameters**
 by typing their **name**, followed by an **equals sign**, followed
 by the **value** you want to set them to.
 
+**parameter = value &lt;carriage return>**
+
 For instance (from the Serial Monitor), we can **turn the ESP32
-WiFi off** and back **on** and toggle the use of **SSDP** (Service Search and
-Discovery Protocol) by typing the following into the Serial Monitor (where
+WiFi off** and back **on** by typing the following into the Serial Monitor (where
 each line is followed by a *carriage return*)
 
 ```
 wifi=0
 wifi=1
-ssdp=0
-ssdp=1
 ```
-
-These commands will, in turn, turn the **WiFi off** and then **back on again**
-and will *disable and re-enable* the **SSDP** functionality of the clock.
 
 Note that you can type the word **"reboot"**, followed by a carriage
 return, into the serial monitor to reboot the ESP32.
 
+![soft-wifi_on_off_reboot.jpg](images/soft-wifi_on_off_reboot.jpg)
+
 Try it!
 
-### 5. Connect to theClock's WebUI
 
-One thing that is fun to test at this point with just the bare ESP32 is that you
-can properly attach to the ESP32 via WiFi and access the **browser based Web
+### 6. Connect to theClock's WebUI
+
+One thing that can be tested with the bare **ESP32 Dev module** at this point is
+that you can properly attach to the ESP32 via WiFi and access the **browser based Web
 User Interface**.
 
-Please see **sections 4 and 10** in the
+Please see **Sections 4** and **Section 10** in the
 [**Quick Start Guide**](https://github.com/phorton1/Arduino-theClock3/blob/master/docs/QuickStartGuide.pdf)
 for details on how to connect to, and find the WebUI on your local **WiFi network**.
 
 It is not **necessary** to use the WebUI to test, control, and configure the clock,
-but it can make it **easier** than typing commands, long-hand, into the serial monitor.
+but it can make it **much easier** than typing commands, long-hand, into the serial monitor.
+
+![soft-WebUI.jpg](images/soft-WebUI.jpg)
 
 
-## C. Quick Submodule Test of the PCB
+## C. Submodule Test of the PCB
 
 The point of introducing the **software** at this point in the documentation is so that
 we can do a quick test of the **PCB** and some of the **peripherals and cables**
 that were built on the **[Electronics](electronics.md)** page.
 
-Particularly, we can test that the **LEDS** and **BUTTONS** are working,
-the **coils** energize, and, with a little effort,
-that the **AS5600 angle sensor module** is basically working.
+Particularly, we can test that the **LEDs** and **buttons** are working,
+that we can connect to the **AS5600 angle sensor module**, and that the
+**coils** *energize* and can *repel* a magnet.
 
 To begin with, you should have already **uploaded the firmware and the
 contents of the SPIFFS filesystem** to a bare ESP32 as described above, and
@@ -326,37 +328,99 @@ You should have already (also) checked the PCB out with a *multimeter* to
 make sure there are **no short circuits**, particularly between any of the
 power rails and ground,.
 
+
 ### 1. Unpower everything and plug the ESP32 into the PCB
 
 **Plug the ESP32 into the PCB** and **power it up** by attaching it to your computer via a serial cable.
 
 It should boot normally and not **explode** or overheat!
 
-Bring up the Arduino Serial Monitor.  You should see the same thing as before.
+In the *Serial Monitor*, you should see the same thing as before.
+
+**De-power the ESP32**.
 
 
-### 2. Plug in the LED Strip and Reboot
+### 2. Plug in the LED Strip and Repower
 
-**Plug in the LED Strip** and type **reboot<<cr>** into the serial monitor.
-The ESP32 will reboot.
+**Plug in the LED Strip** and **power up the ESP32**.
 
-You should see a series of 5 LEDS lighting up in <font color='cyan'><b>cyan</b></font>.
-Then, because it cannot initialize the AS5600, LEDS should start flashing
-<font color='red'><b>red</b></font>.
+*note: the LEDs are in installed in the box from right to left, so
+the **last** LED in the strip becomes the **leftmost** LED in the box
+and the **first** LED in the strip becomes the **rightmost** LED in the box*.
+
+You should see a series of 5 LEDs lighting up in <font color='cyan'><b>cyan</b></font>.
+Then, because it cannot initialize the AS5600, all five LEDs should start flashing.
+It flashes <font color='red'><b>red</b></font> **five times** for each failed attempt,
+and *it will retry five times* to initialize the AS5600, so, in total you
+*should* see **25 red flashes of all five LEDs** as it boots.
+
+After 30 seconds or so the last LED in the strip should turn
+<font color='green'><b>green</b></font>
+if you connected the ESP32 to your home Wifi in *B6. Connect to theClock's WebUI* above, or
+<font color='purple'><b>purple</b></font>
+if you did not and the clock is in *Access Point Mode*.
+
+In either case the 2nd to last LED should continue to flash <font color='red'><b>red</b></font>
+to remind you that, *without the AS5600 module, the **clock will not work***.  That's
+ok!  We can still test the PCB!
+
 
 
 ### 3. Test the button(s)
 
-**Press and hold the *Left* Button** for 15 seconds for a FACTORY RESET
+**Short Press** (quickly press and release) the **right** button a few times.
+Each time you do it, the *1st LED* in the strip should turn **white** while the button
+is pressed, and the LEDs should get brighter when you release it.
+There are **15 levels** of brightness for the LEDs, then they will
+turn off, then on again at their minimum level to repeat the cycle.
 
-After 2-3 seconds the right most LED should go from white to <font color='cyan'><b>cyan</b></font>
-and after 8-10 seconds it should go to <font color='purple'><b>purple</b></font>.
+While you do this you should see various output in the console window.
+if you are running the *Web UI* you should see the **LED BRIGHTNESS**
+parameter change values each time you press the button.
 
-When you *release* the button the serial monitor should display
-"FACTORY RESET" and the ESP32 should reboot.
+To test the left button, **Medium Press** the **left** button by holding for two or more seconds
+(but *less than 8 seconds!!*) until the 1st LED changes from **white**
+to <font color='cyan'><b>cyan</b></font>.
+When you let it up, you will toggle the **WIFI on and off**.
+
+The last LED in the strip will turn <font color='blue'><b>blue</b></font> when
+the Wifi is turned **off** and will turn back to <font color='green'><b>green</b></font>
+when it connects to your Wifi, or to <font color='purple'><b>purple</b></font>
+when it starts an Access Point.
+
+If you are running the *WebUI* and you turn Wifi **off** you will notice that
+the buttons and entry controls in the browser will be *greyed out* and *disabled*
+while Wifi is turned off.  When you turn Wifi back **on** again, after a
+few seconds, the WebUI *should* **reconnect** to the clock and *enable*
+the buttons and entry controls.
+
+You probably want to make sure that you *leave the ESP32* with the **WiFi** turned on,
+and the **LEDS** at medium brightness after this step!!
+
+When you are done testing the buttons, **De-power the ESP32**.
 
 
-### 4. Test the coils
+### 4. Test the AS5600 Connection
+
+**Plug in the AS5600 cable** and *power up the ESP32**.
+
+If we plug the AS5600 in with it's cable, and reboot the ESP32, the AS5600 should now initialize
+properly, **no longer flashing RED 25 times**, and giving the **AS5600 connected=1** message
+in the console as shown below:
+
+![soft-AS5600_connected.jpg](images/soft-AS5600_connected.jpg)
+
+
+The last LED in the strip should eventually turn
+<font color='green'><b>green</b></font> or <font color='purple'><b>purple</b></font>,
+as before, but now, instead of **red** the 2nd to last LED will flash <font color='orange'><b>orange</b></font>
+indicating that, although the AS5600 initialized, we **still could not set the zero angle**.
+
+That's because there's no **magnet** in front of the AS5600!  That's ok!!  All
+we wanted to do here was test that we can connect to the AS5600 correctly via the cable.
+
+
+### 5. Test the coils
 
 Use a **multimeter** to ensure that the coils have some resistance (about 6 ohms) **BEFORE
 CONNECTING THEM TO THE CIRCUIT**!!!
@@ -370,7 +434,7 @@ same colors are on each side, with **orange** on the left and **white** on the r
 
 ![soft-coil_plugs.jpg](images/soft-coil_plugs.jpg)
 
-De-power the ESP32 (unplug the serial cable), plug in the coils, and power up
+**De-power the ESP32** (unplug the serial cable), **plug in the coils**, and **power up**
 the ESP32.
 
 After it has finished booting, type the command **"motor=1"** into the Serial Monitor.
@@ -391,32 +455,12 @@ next steps of assembly!
 De-energize the coils by typing **motor=0** into the Serial Monitor.
 
 
-### 5. Test the AS5600
-
-If we plug the AS5600 in with it's cable, and reboot the ESP32, the AS5600 should initialize
-properly but we will likely get a slew of errors as there is no magnet near it,
-the **zero cannot be set**, and even
-if it was, the proper zero is likely not in the prescribed range of *45 to 235 degrees**.
-
-However, it *may* be a good idea to make sure the cable is working properly and that
-the AS5600 can be properly initialized, before embedding the cable in the clock and
-screwing down the sensor and sensor housing.
-
-**Plug the AS5600 in** and **power up the ESP32**.
-
-This time, in the *serial monitor*, you *should* see a message indicating
-that the AS5600 **initialized correctly**.  It will still (most likely)
-get an error when it tries to set the *zero angle*, but at least we
-will have confirmed that the **cable and module** are basically working.
-
-
-
 ## D. Summary
 
 That's about it for an introduction to the software.  We just want to make sure
-the PCB basically works before we embed it, and the coils, LEDS, and other
-peripherals and cables into the [Box](box.md) and finish [assembling](assembly.md)
-the clock.
+the PCB basically works before we embed it, the LEDS, and the coils
+into the **Box**, and the AS5600 cable and Sensor into **Frame**, as
+we continue building the clock.
 
 
 
