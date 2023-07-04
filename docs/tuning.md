@@ -124,6 +124,8 @@ reliably. We just want to make sure that the orientation of the
 **magnet** in the Pendulum versus the **fields** generated
 by the coils **repulse** the magnet correctly.
 
+![tuning-power_min.gif](images/tuning-power_min.gif)
+
 **IF THE PENDULUM DOES NOT START MOVING** one of the following
 problems may be present and *needs to be corrected*.
 
@@ -168,6 +170,8 @@ it will start **banging** up against the frame within a few
 seconds and you can issue the **running=0** command before
 it does any damage!
 
+![tuning-power_max.gif](images/tuning-power_max.gif)
+
 In any case, it is **necessary** that it swings *at least* as far as the
 parameterized **ANGLE_MAX** which is **11.5 degrees** by default.
 
@@ -185,7 +189,7 @@ in our example that the part of the line that looks like: **-17.100/16.100=16.60
 
 This tells us that the Pendulum is swinging (negative) **17.1 degrees to the
 left** and **16.1 degrees to the right** for an **average** angle of **16.6
-degrees**.
+degrees**, so **all is good** as the Pendulum is swinging **more** than 11.5 degrees.
 
 If the Pendulum does **not swing at least *(well over)* 11.5 degrees on average**
 the **PID** controller will not work.  As mentioned before, this *may* be
@@ -223,6 +227,7 @@ running=0
  ... to stop the clock
 ```
 
+![tuning-angle_min.gif](images/tuning-angle_min.gif)
 
 You will see **timing lines** appear in the Serial Monitor as the
 clock attempts to **stabilize** the Pendulum at the **ANGLE_MIN**
@@ -293,21 +298,128 @@ running=0
  ... to stop the clock
 ```
 
+![tuning-angle_max.gif](images/tuning-angle_max.gif)
+
 As in the previous step, after a while you should find that
 the Pendulum has narrowed down to swinging within a **few tenths of
 a degree** of the **target angle** which is **11.5 degrees** in this case.
 
 Once we have verified that the pendulum can reliably swing at
 the ANGLE_MAX target angle, we can move to the next step,
-*7. Adjusting the Pendulum Weight*.
+*7. Adjust the Pendulum Weight*.
 
 
-## 7. Adjusting the Pendulum Weight
-## 8. Adjusting the Magnetic Spring
+## 7. Adjust the Pendulum Weight
+
+Here we will **adjust** the weight on the Pendulum so that the
+Pendulum swings slightly *slower* than 1 second (more than 1000 millieconds) per swing.
+Moving the weight **up** on the rod will cause the Pendulum to swing *faster*, and
+moving the weight **down** on the rod will cause the Pendulum to swing *slower*.
+
+- **Start** the clock in **Minimum Angle Mode** (*clock_mode=angle_min, running=1*) as described above.
+- Watch the *Serial Monitor* and Note the **milliseconds for each swing**, which is
+the *first* number in the *timing line* after the *time*.
+- **Stop** the clock by typing *running=0*
+- Adjust the *weight* **up or down** by turning it on the *rod*
+- **Repeat** the process until the Pendulum is swinging **about** 1010 ms per swing.
+
+![tuning-pendulum_weight.jpg](images/tuning-pendulum_weight.jpg)
+
+The goal is to get the **milliseconds per swing** to be slightly *slower* than
+(1 second), averaging about **1010 ms**.  You will find that the time *varies*,
+even when the Pendulum is swinging at a constant angle.  That's ok!  When
+properly adjusted you should *rarely* see swings that are *less than 1000 ms*,
+*generally* see swings that are *from 1005 to 1015 ms*, and *rarely* see
+swings that are much over *1020 ms*.
+
+*Design Note:  as currently designed in **v3.3** the weight typically needs to
+be adjusted far **up** on the rod to achieve the correct swing.*
+
+## 8. Adjust the Magnetic Spring
+
+In this (final) adjustment step, we will *fix the position* of the **Magnetic Spring**.
+During assembly, and up to this point, the Magnetic Spring *should have* been adjusted
+to be **as far as possible away** from the Pendulum.
+
+We will now **adjust** the Magnetic Spring so that, in *Maximum Angle Mode* the
+Pendulum will swing **slightly quicker** than 1000 ms per swing.
+
+Get ready for this step by *loosening* the screws on the Magnetic Spring until they are *snug* but
+you can still **move** the Spring Assembly **by hand**.  Then:
+
+- **Start** the clock in **Maximum Angle Mode** (*clock_mode=angle_max, running=1*) as described above.
+- Watch the *Serial Monitor* and Note the **milliseconds for each swing**
+- *While* the clock is *Running* **move** the Magnetic Spring Assembly
+  **closer** or **farther away** from the Pendulum
+
+![tuning-magnetic_spring.jpg](images/tuning-magnetic_spring.jpg)
+
+The goal here is to get the **ms per swing** to be *faster* than 1000, around **990 ms** on average.
+Once again, the time will *vary* and so you are shooting for the **average** time.
+When properly aligned you should see swings in the **985-995 ms range** and not see
+many swings *over 1000 ms* or *under 980 ms*.  Once you are satisfied that the
+clock is beating slightly quicker than 1000 ms:
+
+- **Tighten** the screws holding the Magnetic Spring
+
+**DONT OVER TIGHTEN THE SCREWS!!**.  They are just M2 screws into wooden holes
+and can easily be stripped!  If they become stripped, simply put a *small dab* of
+**super glue** in the holes, let it **dry**, and *rethread* the screws.
+As you *gain experience* and **test the clock** over *longer durations* you will likely
+find that you want to adjust the **Pendulum Weight and Magnetic Spring** again a *few
+times* to achieve **optimal performance**.
+
+We are actually **now done** with Tuning the clock !!!  The rest of this
+page just does additional *testing* to see that the clock is running
+correctly.
+
 
 ## 9. MIN_MAX test
 
+This step is *optional* but I wanted you to know that the possibility exists.
+Before I implemented the *2nd PID controller*, I implemented a bare-bones way
+to make the clock keep *accurate time*.  This is called **MIN_MAX mode**.
+
+In *MIN_MAX mode* the clock beats at the **minimum target angle** (slower
+than 1 second per beat) until the **accumulated ms error** exceeds some value.
+Then it **switches** to run at the **maximum target angle** until it has
+sped up enough so that the *accumulated error* is under some value.
+The **amount** that the clock can vary from the correc time is given
+by the **MIN_MAX_MS** *parameter*, which is set to **50ms** by default.
+So the clock will run slowly until it is more than 50ms slow, and
+then it will run quicker until it is more than 50ms fast, overall,
+switching back and forth to oscillate around the *correct time*.
+
+You can test MIN_MAX mode by typing the following into the Serial Monitor:
+
+```
+clock_mode=min_max
+running=1
+```
+
+By watching the Serial Monitor, you *should* see the start running at the
+*minimum* **target angle** (9.5 degrees) until it stabilizes, and when the *acculumated ms error*
+(the **a_err** field in the *timing line*) gets to *50 or more*, then you should
+see the *target angle* change to the *maxiumum* target angle (11 degrees), the
+clock should start speeding up, and the *accumulated error* should start dropping
+until, at **-50 (negative 50 ms) or less**, it should **swtich** back to the minimum
+target angle, repeating the process over and over again.
+
+
 ## 10. PID Mode (Tuning Finished!)
+
+The clock normally runs in **PID mode**.  Start the clock for **normal operation**
+by typing the following:
+
+```
+clock_mode=pid
+running=1
+```
+
+**CONGRATULATIONS!!!**  You now have a completely working **accurate magnetically
+driven wooden geared clock** !!!
+
+[![YoutubeThumb_Ticking.jpg](images/YoutubeThumb_Ticking.jpg)](https://youtu.be/lsMbbkOouPc)
 
 
 

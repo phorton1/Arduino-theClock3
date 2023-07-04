@@ -143,20 +143,20 @@ machine oil** (I use the popular "3-in-1" oil) to the **inner tube** in
 each step where a tube will ride on the *threaded rod* or *another tube*.
 
 
-#### 2. Seconds Wheel Assembly
+### 2. Seconds Wheel Assembly
 
 - slide the *two* **12x4.1mm** *wooden washers* onto the back of the **Seconds Wheel Assembly**
 - slide an **M4** *metal washer* onto the assembly
 - **insert** the assembly into the main *4mm bearing*
 
-#### 3. Min1 Gear Assembly
+### 3. Min1 Gear Assembly
 
 - **lubricate** the *threaded rod* with a *drop or two* of **light machine oil**
 - slide an **M3** *metal washer* onto the *threaded rod*
 - slide the **Min1 Gear Assembly** onto the *threaded rod* so that
   the gear teeth *mesh* with the small gear on the *Seconds Wheel Assembly*
 
-#### 4. Min2 Gear Assembly
+### 4. Min2 Gear Assembly
 
 - **lubricate** the *Seconds Tube* with a drop of *light machine oil*
 - slide an **M4** *metal washer* onto the *Seconds Tube*
@@ -165,20 +165,20 @@ each step where a tube will ride on the *threaded rod* or *another tube*.
 
 ![build-gears.gif](images/build-gears.gif)
 
-#### 5. Hour1 Gear Assembly
+### 5. Hour1 Gear Assembly
 
 - slide an **M3** *metal washer* onto the the **threaded rod**
 - slide the **Hour1 Gear Assembly** onto the threaded rod so that
   the gear teeth *mesh* with the small gear on the *Min2 Gear Assembly*
 
-#### 6. Hour2 Gear Assembly
+### 6. Hour2 Gear Assembly
 
 - **lubricate** the *Minutes Tube* with a drop of *light machine oil*
 - slide an **M5** *metal washer* onto the *Minutes Tube*
 - slide the **Hour2 Gear Assembly** onto the *Minutes Tube* so that
   the gear teeth mesh with the small gear on *Hour1 Gear Assembly*
 
-#### 7. Bridge Assembly
+### 7. Bridge Assembly
 
 - slide the *thin* 1/8" **12x6mm** wooden washer onto the **Hours Tube**
 - slide another **M3** *metal washer* onto the threaded rod
@@ -199,11 +199,11 @@ and/or **add or change washer combination** at the back of the *Seconds Tube*.
   goes *through* the **Wire Tie** for the sensor cable.
 
 
-## D. Add Top Tube, Pendulum, Cam, and End Cap
+## D. Top Tube Assembly
 
 This is the *hardest* step in the Assembly process to explain.
 
-We are now going to insert the top tube, through the **back** of the Frame,
+We are now going to insert the *Top Tube*, through the **back** of the Frame,
 through a **Keyed Spacer**, through the **Pendulum**, through the **front** of the Frame,
 a M5 **metal washer**, a 3/16" **wooden washer**, and another **Keyed Spacer**, then
 through the **Cam**, and top it off with the **Magnetic Cap** for the Angle Sensor.
@@ -212,6 +212,8 @@ You will probably find that it takes a quite a bit of
 **force** and **twisting and turning** to get the Top Tube through all of these parts!
 It is a *good idea* to make sure that the **5mm tube** goes *easily* through all of the
 parts, especially the **Pendulum and it's spacer**!
+
+### 1. Pendulum and Spacer
 
 - add a loose fitting **3/16" 12x5 mm wooden washer** to the **Top Tube**
 - position and hold the **Pendulum** within the frame
@@ -226,6 +228,8 @@ It doesn't matter at this point if the *Pendulum* and *Spacer* are *aligned*.
 You just need to get the tube through them and poking a bit out of the front frame.
 After that:
 
+### 2. Metal and Wooden Washer, Spacer, and Cam
+
 - put a **M5 metal washer** on the tube
 - put a loose fitting **12x5 mm wooden washer** on the tube
 - *push and turn* the tube through the 2nd **Keyed Spacer**
@@ -236,6 +240,8 @@ After that:
 
 *Note that the **Cam** is **not symmetrical***.  The *higher side* of the
 Cam goes on the **left** and the *lower side* on the *right* !!!
+
+### 3. Magnetic Cap
 
 - *add* the **Magnetic Sensor Cap** to the end of the tube.
 - **hold** the Cam and its Washers **firmly** against the Frame
@@ -249,11 +255,15 @@ the *Back Washer* should be **snug** up to the *Rear Bearing* and the *Cam, Keye
 and *Wooden and Metal Washers* should be **snug** up to the *Front Bearing*, and
 the *Cam* should be more or less aligned above the *Seconds Wheel*.
 
+### 4. Adjust Pendulum Spacing
+
 The **Pendulum** will be likely be jammed up against the inside of the Frame.
 We need to move the Pendulum **back** so that it is in the **middle** of the **Channel**.
 
 - While holding the **Pendulum** and it's **Spacer** with your fingers,
 - **turn the Tube** back and forth while **working the Pendulum** back into the middle of the space.
+
+### 5. Mount Clock on Box
 
 We can now *mount* the **Clock** on the **Box** and **align** the Pendulum.
 
@@ -266,6 +276,8 @@ In the end the
 and should *oscillate* **at least 5-6 times** when swung from an extreme.
 There should be about **1/2 mm of play** for the Top Tube to move back and forth
 aginst the Front and Rear bearings.
+
+### 6. Pendulum-Cam Bolt
 
 Finally we just have to *screw* the **M3x45mm bolt** through the Pendulum, Spacers, and into the Cam.
 
@@ -285,6 +297,8 @@ and that the Cam Spacer is flush up again the Cam and
 - **screw the bolt** in the rest of the way.
 
 Ideally it the bolt should protude a small amount out of the front of the Cam.
+
+### Practice Makes Perfect!
 
 *Once again*, this will take some *practice* and maybe **several tries**.
 If you need to, *remove the bolt*, get everything spaced and aligned,
@@ -426,8 +440,8 @@ started configuring the *software*!
 
 ## H. Secure the Clock to the Box
 
-In the previous step we already *mounted* **Assembled Clock** onto the **Box**.
-I usually don't add the *screws* and *Top* wooden pieces until I have started [Tuning](tuning.md)
+In the previous step we already *mounted* the **Assembled Clock** onto the **Box**.
+I usually don't add the *screws* and *Top* wooden pieces until I have finished [Tuning](tuning.md)
 the clock and I am confident all of the electronics are working correctly.
 
 However, we obviously need to do these things at some point, so they are
