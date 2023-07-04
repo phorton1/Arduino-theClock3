@@ -52,22 +52,6 @@
 //      the number of restarts, bad reads, and power loss statistics.
 
 
-//	#define CLOCK_STATE_NONE    	0
-//	#define CLOCK_STATE_START		1
-//	#define CLOCK_STATE_STARTED		2
-//	#define CLOCK_STATE_RUNNING		3
-//
-//	#define CLOCK_MODE_SENSOR_TEST	0
-//	#define CLOCK_MODE_POWER_MIN	1
-//	#define CLOCK_MODE_POWER_MAX    2
-//	#define CLOCK_MODE_ANGLE_START	3
-//	#define CLOCK_MODE_ANGLE_MIN 	4
-//	#define CLOCK_MODE_ANGLE_MAX	5
-//	#define CLOCK_MODE_MIN_MAX		6
-//	#define CLOCK_MODE_PID          7
-
-
-
 
 static char msg_buf[512];
 	// generic buffer for loop() related messages

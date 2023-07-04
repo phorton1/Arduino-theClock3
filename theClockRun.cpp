@@ -265,7 +265,8 @@ void theClock::run()
 			// so that changes due to drift from the RTC clock time will not all get lumped into the
 			// instantaneous error and this allows us to keep track of the millis() vs RTC drift.
 
-			if (as5600_side < 0)
+			int side_type = _clock_type ? -1 : 1;
+			if (as5600_side == side_type)
 			{
 				if (m_last_cycle)
 					m_cur_cycle = now - m_last_cycle;
@@ -422,9 +423,9 @@ void theClock::run()
 
 			if (_plot_values == PLOT_OFF)
 			{
-				LOGD("%-6s(%-2d) %-4d %3.3f/%3.3f=%3.3f  target=%3.3f  accum=%3.3f  power=%d  err=%d  sync=%d",
+				LOGD("%-6s%s %-4d %7.3f/%6.3f=%-6.3f  targ=%-6.3f  a_err=%-6.3f  power=%-3d  err=%-4d  sync=%-4d",
 					 m_sync_sign ? "SYNC" : m_clock_state == CLOCK_STATE_RUNNING ? "run" : "start",
-					 as5600_direction,
+					 as5600_direction==1?"+":"-",
 					 m_cur_cycle,
 					 as5600_min_angle,
 					 as5600_max_angle,

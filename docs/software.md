@@ -229,15 +229,10 @@ serial monitor:
 When you boot a [**myIOT device**](https://github.com/phorton1/Arduino-libraries-myIOT),
 like **theClock3**, the serial output tells you a lot about the device as it boots,
 including providing a complete listing of the **ESP32 partitions** and **contents
-of the SPIFFS file system**.
-
-- each line starts with **date-time stamp**.  Since we have not yet connected to
-  NTP (Network Time Protocol), the ESP32 does not know what time it is, and so
-  it defaults to starting at midnight on January 1, 1970.
-- The next **two numbers separated by a colon** (i.e. 244:237) show the **RAM memory
-  available** on the ESP32 (current and lowest)
-- The messages are **nested** (in many cases) by their **call level** within the
-  code
+of the SPIFFS file system**. Each line starts with **time stamp**.  Since we have
+not yet connected to NTP (Network Time Protocol), the ESP32 does not know what time
+it is, and so it defaults to starting at midnight on January 1, 1970.
+The messages are **nested** (in many cases) by their **call level** within the code
 
 The most important thing to note in the above log output,
 as highlighted in <font color='red'><b>red</b></font>,

@@ -17,7 +17,7 @@
 // VOLTAGE CHECKS and associated LOW_POWER_MODE are only
 // compiled in for specific clocks.
 
-#if 1
+#if 0
 	#define WITH_VOLTAGES   	1
 	#define VOLT_MODE_NORMAL    0
 	#define VOLT_DETECT_LOW     1
@@ -31,9 +31,9 @@
 // Critical Angle Constants
 //--------------------------------
 
-#define MIN_ZERO_ANGLE          45.0			// criteria for successful setZeroAngle
-#define MAX_ZERO_ANGLE			235.0			// criteria for successful setZeroAngle
-#define MAX_ALLOWABLE_ANGLE  	17.0			// adjusted angles greater than this will be ignored in run()
+#define MIN_ZERO_ANGLE          90.0			// criteria for successful setZeroAngle
+#define MAX_ZERO_ANGLE			270.0			// criteria for successful setZeroAngle
+#define MAX_ALLOWABLE_ANGLE  	20.0			// adjusted angles greater than this will be ignored in run()
 
 
 //---------------------------------
@@ -141,6 +141,8 @@
 #define ID_CLOCK_MODE		"CLOCK_MODE"
 #define ID_PLOT_VALUES		"PLOT_VALUES"
 #define ID_LED_BRIGHTNESS	"LED_BRIGHTNESS"
+
+#define ID_CLOCK_TYPE		"CLOCK_TYPE"
 
 #define ID_SET_ZERO_ANGLE	"SET_ZERO_ANGLE"
 #define ID_ZERO_ANGLE		"ZERO_ANGLE"
@@ -255,6 +257,7 @@ private:
 
     static const valDescriptor m_clock_values[];
 
+	static int  _clock_type;		// is it left (tock) or right (tick) at 500ms?
 	static bool _start_sync;		// doing a synchronized start
 	static bool _clock_running;		// user interface variable !! (as opposed to control variable)
 	static uint32_t _clock_mode;

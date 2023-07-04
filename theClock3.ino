@@ -193,6 +193,7 @@ static valueIdType dash_items[] = {
 // what shows up on the "device" UI tab
 
 static valueIdType device_items[] = {
+	ID_CLOCK_TYPE,
 	ID_START_DELAY,
 	ID_ANGLE_START,
 	ID_ANGLE_MIN,
@@ -232,14 +233,11 @@ static valueIdType device_items[] = {
 };
 
 
-#define CLOCK_MODE_SENSOR_TEST		0
-#define CLOCK_MODE_POWER_MIN		1
-#define CLOCK_MODE_POWER_MAX        2
-#define CLOCK_MODE_ANGLE_START	    3
-#define CLOCK_MODE_ANGLE_LOW 		4
-#define CLOCK_MODE_ANGLE_HIGH		5
-#define CLOCK_MODE_MIN_MAX			6
-#define CLOCK_MODE_PID              7
+static enumValue clockType[] = {
+    "Left",
+    "Right",
+    0};
+
 
 static enumValue clockAllowed[] = {
     "Sensor_Test",
@@ -275,6 +273,7 @@ const valDescriptor theClock::m_clock_values[] =
     { ID_DEVICE_NAME,      VALUE_TYPE_STRING,    VALUE_STORE_PREF,     VALUE_STYLE_REQUIRED,   NULL,   NULL,   THE_CLOCK },
         // DEVICE_NAME overrides base class element
 
+	{ ID_CLOCK_TYPE,      	VALUE_TYPE_ENUM,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_clock_type, 	NULL, 	{ .enum_range = { 0, clockType }} },
 	{ ID_START_SYNC,      	VALUE_TYPE_BOOL,     VALUE_STORE_PUB,      VALUE_STYLE_NONE,       (void *) &_start_sync,	(void *) onStartSyncChanged, },
 	{ ID_RUNNING,      		VALUE_TYPE_BOOL,     VALUE_STORE_PUB,      VALUE_STYLE_NONE,       (void *) &_clock_running,(void *) onClockRunningChanged, },
 	{ ID_CLOCK_MODE,      	VALUE_TYPE_ENUM,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_clock_mode, 	(void *) onClockModeChanged, 	{ .enum_range = { DEFAULT_CLOCK_MODE, clockAllowed }} },
@@ -284,10 +283,10 @@ const valDescriptor theClock::m_clock_values[] =
 	{ ID_SET_ZERO_ANGLE,  	VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    (void *) setZeroAngle },
 	{ ID_ZERO_ANGLE,  		VALUE_TYPE_INT,    	 VALUE_STORE_PREF,     VALUE_STYLE_READONLY,   (void *) &_zero_angle,	NULL,  { .int_range = { DEFAULT_ZERO_ANGLE,  	0,  4095}} },
 	{ ID_ZERO_ANGLE_F,  	VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_READONLY,   (void *) &_zero_angle_f,	NULL,  { .float_range = { DEFAULT_ZERO_ANGLE_F, 0,  360}} },
-	{ ID_DEAD_ZONE,  		VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_dead_zone,	NULL,  { .float_range = { DEFAULT_DEAD_ZONE,      0,  OVER_MAX_ANGLE}} },
-	{ ID_ANGLE_START,  		VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_angle_start,	NULL,  { .float_range = { DEFAULT_ANGLE_START,   0,  OVER_MAX_ANGLE}} },
-	{ ID_ANGLE_MIN,  		VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_angle_min,	NULL,  { .float_range = { DEFAULT_ANGLE_MIN,   0,  OVER_MAX_ANGLE}} },
-	{ ID_ANGLE_MAX,  		VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_angle_max,	NULL,  { .float_range = { DEFAULT_ANGLE_MAX,   0,  OVER_MAX_ANGLE}} },
+	{ ID_DEAD_ZONE,  		VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_dead_zone,	NULL,  { .float_range = { DEFAULT_DEAD_ZONE,    0,  OVER_MAX_ANGLE}} },
+	{ ID_ANGLE_START,  		VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_angle_start,	NULL,  { .float_range = { DEFAULT_ANGLE_START,  0,  OVER_MAX_ANGLE}} },
+	{ ID_ANGLE_MIN,  		VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_angle_min,	NULL,  { .float_range = { DEFAULT_ANGLE_MIN,    0,  OVER_MAX_ANGLE}} },
+	{ ID_ANGLE_MAX,  		VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_angle_max,	NULL,  { .float_range = { DEFAULT_ANGLE_MAX,    0,  OVER_MAX_ANGLE}} },
 
 	{ ID_POWER_MIN,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_power_min,	NULL,  { .int_range = { DEFAULT_POWER_MIN,  	0,  255}} },
 	{ ID_POWER_PID,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_power_pid,	NULL,  { .int_range = { DEFAULT_POWER_PID,   	0,  255}} },
@@ -352,6 +351,8 @@ const valDescriptor theClock::m_clock_values[] =
 //--------------------------------------------------
 // params in this file, working vars in cpp
 //--------------------------------------------------
+
+int		theClock::_clock_type;
 bool 	theClock::_start_sync;
 bool 	theClock::_clock_running;
 uint32_t theClock::_clock_mode;

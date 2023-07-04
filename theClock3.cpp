@@ -606,9 +606,12 @@ void theClock::setZeroAngle()
 
 	// As with initializing the AS5600, the clock will just flat out NOT run
 	// if the zero angle cannot be set. We will try upto 5 times to set it.
-	//
 	// The zero angle MUST be between 45 and 235 degrees.
-	//
+
+	the_clock->setInt(ID_ZERO_ANGLE,0);
+    the_clock->setFloat(ID_ZERO_ANGLE_F,0.0);
+	delay(100);
+
 	// Setting the zero angle is important enough to warrant taking
 	// over all the LEDs, so we set the static global "m_setting_zero"
 	// to prevent loop() from modifying the pixels
@@ -633,9 +636,7 @@ void theClock::setZeroAngle()
 		LOGE("COULD NOT SET AS5600 zero angle=%d  %0.3f", zero,zero_f);
 		setPixel(2,MY_LED_RED);
 		showPixels();
-		delay(300);
-		setPixel(2,MY_LED_WHITE);
-		showPixels();
+		delay(500);
 		zero = getAS5600Raw();
 		zero_f =  angleOf(zero);
 		ok = (zero_f >= MIN_ZERO_ANGLE) && (zero_f <= MAX_ZERO_ANGLE);
@@ -644,11 +645,11 @@ void theClock::setZeroAngle()
 	// we set the values even though they might be incorrect
 	// so that loop() can start flashing the state pixel red
 
-	the_clock->setInt(ID_ZERO_ANGLE,zero);
-	the_clock->setFloat(ID_ZERO_ANGLE_F,zero_f);
 	if (ok)
 	{
-		LOGU("AS5600 zero angle=%d  %0.3f", zero,zero_f);
+		LOGU("Set AS5600 zero angle=%d  %0.3f", zero,zero_f);
+		the_clock->setInt(ID_ZERO_ANGLE,zero);
+		the_clock->setFloat(ID_ZERO_ANGLE_F,zero_f);
 		setPixel(2,MY_LED_GREEN);
 		showPixels();
 		delay(3000);
