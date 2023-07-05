@@ -171,7 +171,6 @@
 #define ID_RUNNING_ANGLE	"RUNNING_ANGLE"
 #define ID_RUNNING_ERROR	"RUNNING_ERROR"
 #define ID_MIN_MAX_MS		"MIN_MAX_MS"
-#define ID_RESTART_MILLIS	"RESTART_MILLIS"
 #define ID_START_DELAY		"START_DELAY"
 
 #define ID_DIAG_CYCLE_RANGE "CYCLE_RANGE"
@@ -205,11 +204,9 @@
 #endif
 
 
-#define ID_TEST_MOTOR		"MOTOR"
-	// A CONFIGURATION COMMAND TO TEST THE MOTOR
-	// value is only kept in memory and used once
-	// Will call motor(direction,POWER_LOW) directly!!
-#define ID_DIDDLE_CLOCK		"DIDDLE_CLOCK"
+#define ID_TEST_COILS		"TEST_COILS"
+	// ANY CHAGNGES will call motor(value) directly!!
+#define ID_CHANGE_CLOCK		"CHANGE_CLOCK"
 	// Will add given number of seconds to ESP32 clock
 	// for testing sync code
 
@@ -290,8 +287,7 @@ private:
 	static float _running_angle;		// minimum angle for clock to be considered "running"
 	static float _running_error;		// minimum accumulated angular error for clock to be considered running
 	static int 	 _min_max_ms;			// ms threshold for min/max algorithm
-	static uint32_t _restart_millis;	// millis for automatic restart (0 == off)
-	static int _start_delay;
+	static int   _start_delay;
 
 	static int   _cycle_range;			// range for displaying diag LED for cycles
 	static int   _error_range;			// range for displaying diag LED for cumulative error
@@ -318,8 +314,8 @@ private:
 	static uint32_t _ntp_interval;	// interval, in beats/seconds for NTP vs ESP32 clock check
 #endif
 
-	static int _test_motor;		// memory only, only happens onChange
-	static int _diddle_clock;	// memory only, only happens onChange
+	static int _test_coils;		// memory only, only happens onChange
+	static int _change_clock;	// memory only, only happens onChange
 
 
 	// clock paramters
@@ -381,8 +377,8 @@ private:
 
 	// UI test methods
 
-	static void onTestMotor(const myIOTValue *desc, int val);
-	static void onDiddleClock(const myIOTValue *desc, int val);
+	static void onTestCoils(const myIOTValue *desc, int val);
+	static void onChangeClock(const myIOTValue *desc, int val);
 
 	// Internal Private methods
 
@@ -390,7 +386,7 @@ private:
 	static void setClockState(int state);
 	static void initMotor();
 	static void initStats(int how);
-	static void motor(int state, int power);
+	static void motor(int power);
 
 	static void run();
 	static void clockTask(void *param);

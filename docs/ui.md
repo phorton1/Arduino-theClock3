@@ -149,7 +149,127 @@ It is normal for the 5th LED to sometimes come on as red or blue.  It should tra
 If any of the last three pixels remains BLUE or RED for more than 10-15 minutes, then it is likely the clock needs **maintenance** or **tuning**.
 
 
-## 3. Parameters, Values, and Commands
+## 3. Parameters and Commands
+
+### A. Clock Specific
+
+### B. myIOT General
+
+The Parameters and Commands shown in this table are available in all
+[**MyIOT**](https://github.com/phorton1/Arduino-libraries-myIOT) devices.
+
+<table>
+<tr><td valign='top'><b>REBOOT</b></td><td valign='top'>COMMAND</td><td valign='top'>Reboots the device.</td></tr>
+<tr><td valign='top'><b>FACTORY_RESET</b></td><td valign='top'>COMMAND</td><td valign='top'>Performs a Factory Reset of the device, restoring all of the <i>parameters</i> to their initial values and rebooting</td></tr>
+<tr><td valign='top'><b>VALUES</b></td><td valign='top'>COMMAND</td><td valign='top'>From Serial or Telnet monitors, shows a list of all of the current <i>parameter</i> <b>values</b></td></tr>
+<tr><td valign='top'><b>PARAMS</b></td><td valign='top'>COMMAND</td><td valign='top'></td></tr>
+<tr><td valign='top'><b>JSON</b></td><td valign='top'>COMMAND</td><td valign='top'></td></tr>
+<tr><td valign='top'><b>DEVICE_NAME</b></td><td valign='top'>STRING</td><td valign='top'><i>User Modifiable</i> <b>name</b> of the device that will be shown in the <i>WebUI</i>, as the <i>Access Point</i> name, and in </i>SSDP</i> (Service Search and Discovery)
+   <br><b>Required</b> (must not be blank)
+   <br><i>default</i> : theClock3.3</td></tr>
+<tr><td valign='top'><b>DEVICE_TYPE</b></td><td valign='top'>STRING</td><td valign='top'>The <b>type</b> of the device as determined by the implementor
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>DEVICE_VERSION</b></td><td valign='top'>STRING</td><td valign='top'>The <b>version number</b> of the device as determined by the implementor
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>DEVICE_UUID</b></td><td valign='top'>STRING</td><td valign='top'>A <b>unique identifier</b> for this device.  The last 12 characters of this are the <i>MAC Address</i> of the device
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>DEVICE_IP</b></td><td valign='top'>STRING</td><td valign='top'>The most recent Wifi <b>IP address</b> of the device. Assigned by the WiFi router in <i>Station mode</i> or hard-wired in <i>Access Point</i> mode.
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>DEVICE_BOOTING</b></td><td valign='top'>BOOL</td><td valign='top'>A value that indicates that the device is in the process of <b>rebooting</b>
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>DEBUG_LEVEL</b></td><td valign='top'>ENUM</td><td valign='top'>Sets the amount of detail that will be shown in the <i>Serial</i> and <i>Telnet</i> output.
+   <br><i>allowed</i> : <b>0</b>=NONE, <b>1</b>=USER, <b>2</b>=ERROR, <b>3</b>=WARNING, <b>4</b>=INFO, <b>5</b>=DEBUG, <b>6</b>=VERBOSE
+   <br><i>default</i> : <b>5</b>=DEBUG</td></tr>
+<tr><td valign='top'><b>LOG_LEVEL</b></td><td valign='top'>ENUM</td><td valign='top'>Sets the amount of detail that will be shown in the <i>Logfile</i> output. <b>Note</b> that a logfile is only created if the device is built with an <b>SD Card</b> on which to store it!!
+   <br><i>allowed</i> : <b>0</b>=NONE, <b>1</b>=USER, <b>2</b>=ERROR, <b>3</b>=WARNING, <b>4</b>=INFO, <b>5</b>=DEBUG, <b>6</b>=VERBOSE
+   <br><i>default</i> : <b>0</b>=NONE</td></tr>
+<tr><td valign='top'><b>LOG_COLORS</b></td><td valign='top'>BOOL</td><td valign='top'>Sends standard <b>ansi color codes</b> to the <i>Serial and Telnet</i> output to highlight <i>errors, warnings,</i> etc
+   <br><i>default</i> : <b>0</b>=off</td></tr>
+<tr><td valign='top'><b>LOG_DATE</b></td><td valign='top'>BOOL</td><td valign='top'>Shows the <b>date</b> in Logfile and Serial output
+   <br><i>default</i> : <b>1</b>=on</td></tr>
+<tr><td valign='top'><b>LOG_TIME</b></td><td valign='top'>BOOL</td><td valign='top'>Shows the current <b>time</b>, including <i>milliseconds</i> in Logfile and Serial output
+   <br><i>default</i> : <b>1</b>=on</td></tr>
+<tr><td valign='top'><b>LOG_MEM</b></td><td valign='top'>BOOL</td><td valign='top'>Shows the <i>current</i> and <i>least</i> <b>memory available</b>, in <i>KB</i>, on the ESP32, in Logfile and Serial output
+   <br><i>default</i> : <b>0</b>=off</td></tr>
+<tr><td valign='top'><b>WIFI</b></td><td valign='top'>BOOL</td><td valign='top'>Turns the device's <b>Wifi</b> on and off
+   <br><i>default</i> : <b>1</b>=on</td></tr>
+<tr><td valign='top'><b>AP_PASS</b></td><td valign='top'>STRING</td><td valign='top'>The <i>encrypted</i> <b>Password</b> for the <i>Access Point</i> when in AP mode
+   <br><i>default</i> : 11111111</td></tr>
+<tr><td valign='top'><b>STA_SSID</b></td><td valign='top'>STRING</td><td valign='top'>The <b>SSID</b> (name) of the WiFi network the device will attempt to connect to as a <i>Station</i>.  Setting this to <b>blank</b> force the device into <i>AP</i> (Access Point) mode</td></tr>
+<tr><td valign='top'><b>STA_PASS</b></td><td valign='top'>STRING</td><td valign='top'>The <i>encrypted</i> <b>Password</b> for connecting in <i>STA</i> (Station) mode</td></tr>
+<tr><td valign='top'><b>SSDP</b></td><td valign='top'>BOOL</td><td valign='top'>Turns <b>SSDP</b> (Service Search and Discovery Protocol) on and off.  SSDP allows a device attached to Wifi in <i>Station mode</i> to be found by other devices on the LAN (Local Area Network). Examples include the <b>Network tab</b> in <i>Windows Explorer</i> on a <b>Windows</b>
+   <br><i>default</i> : <b>1</b>=on</td></tr>
+<tr><td valign='top'><b>TIMEZONE</b></td><td valign='top'>ENUM</td><td valign='top'>Sets the <b>timezone</b> for the RTC (Real Time Clock) when connected to WiFi in <i>Station mode</i>. There is a very limited set of timezones currently implemented.
+   <br><i>allowed</i> : <b>0</b>=EST - Panama, <b>1</b>=EDT - New York, <b>2</b>=CDT - Chicago, <b>3</b>=MST - Phoenix, <b>4</b>=MDT - Denver, <b>5</b>=PDT - Los Angeles
+   <br><i>default</i> : <b>0</b>=EST - Panama</td></tr>
+<tr><td valign='top'><b>NTP_SERVER</b></td><td valign='top'>STRING</td><td valign='top'>Specifies the NTP (Network Time Protocol) <b>Server</b> that will be used when connected to Wifi as a <i>Station</i>
+   <br><i>default</i> : pool.ntp.org</td></tr>
+<tr><td valign='top'><b>LAST_BOOT</b></td><td valign='top'>TIME</td><td valign='top'>The <b>time</b> at which the device was last rebooted.
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>UPTIME</b></td><td valign='top'>INT</td><td valign='top'>LAST_BOOT value as integer seconds since Jan 1, 1970.  Displayed as he number of <i>hours, minutes, and seconds</i> since the device was last rebooted in the WebUI
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>RESET_COUNT</b></td><td valign='top'>INT</td><td valign='top'>The number of times the <b>Factory Reset</b> command has been issued on this device
+   <br><i>default</i> : <b>0</b></td></tr>
+<tr><td valign='top'><b>CLOCK_TYPE</b></td><td valign='top'>ENUM</td><td valign='top'>The type of clock.
+   <br><i>allowed</i> : <b>0</b>=Left, <b>1</b>=Right
+   <br><i>default</i> : <b>0</b>=Left</td></tr>
+<tr><td valign='top'><b>CLOCK_MODE</b></td><td valign='top'>ENUM</td><td valign='top'>The Clock Mode.
+   <br><i>allowed</i> : <b>0</b>=Sensor_Test, <b>1</b>=Power_Min, <b>2</b>=Power_Max, <b>3</b>=Angle_Start, <b>4</b>=Angle_Min, <b>5</b>=Angle_Max, <b>6</b>=Min_Max, <b>7</b>=PID
+   <br><i>default</i> : <b>7</b>=PID</td></tr>
+<tr><td valign='top'><b>RUNNING</b></td><td valign='top'>BOOL</td><td valign='top'><i>default</i> : <b>0</b>=off
+   <br><i>Memory Only</i></td></tr>
+<tr><td valign='top'><b>START_SYNC</b></td><td valign='top'>BOOL</td><td valign='top'><i>default</i> : <b>0</b>=off
+   <br><i>Memory Only</i></td></tr>
+<tr><td valign='top'><b>START_DELAY</b></td><td valign='top'>INT</td><td valign='top'><i>default</i> : <b>-500</b>&nbsp;&nbsp;&nbsp;<i>min</i> : -5000&nbsp;&nbsp;&nbsp;<i>max</i> : 5000</td></tr>
+<tr><td valign='top'><b>SET_ZERO_ANGLE</b></td><td valign='top'>COMMAND</td><td valign='top'></td></tr>
+<tr><td valign='top'><b>ZERO_ANGLE</b></td><td valign='top'>INT</td><td valign='top'><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>ZERO_ANGLE_F</b></td><td valign='top'>FLOAT</td><td valign='top'><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>DEAD_ZONE</b></td><td valign='top'>FLOAT</td><td valign='top'><i>default</i> : <b>0.300</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 15</td></tr>
+<tr><td valign='top'><b>ANGLE_START</b></td><td valign='top'>FLOAT</td><td valign='top'><i>default</i> : <b>10.000</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 15</td></tr>
+<tr><td valign='top'><b>ANGLE_MIN</b></td><td valign='top'>FLOAT</td><td valign='top'><i>default</i> : <b>9.000</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 15</td></tr>
+<tr><td valign='top'><b>ANGLE_MAX</b></td><td valign='top'>FLOAT</td><td valign='top'><i>default</i> : <b>11.500</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 15</td></tr>
+<tr><td valign='top'><b>POWER_MIN</b></td><td valign='top'>INT</td><td valign='top'><i>default</i> : <b>60</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 255</td></tr>
+<tr><td valign='top'><b>POWER_PID</b></td><td valign='top'>INT</td><td valign='top'><i>default</i> : <b>100</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 255</td></tr>
+<tr><td valign='top'><b>POWER_MAX</b></td><td valign='top'>INT</td><td valign='top'><i>default</i> : <b>255</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 255</td></tr>
+<tr><td valign='top'><b>POWER_START</b></td><td valign='top'>INT</td><td valign='top'><i>default</i> : <b>255</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 255</td></tr>
+<tr><td valign='top'><b>DUR_PULSE</b></td><td valign='top'>INT</td><td valign='top'><i>default</i> : <b>120</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 1000</td></tr>
+<tr><td valign='top'><b>DUR_START</b></td><td valign='top'>INT</td><td valign='top'><i>default</i> : <b>250</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 1000</td></tr>
+<tr><td valign='top'><b>PID_P</b></td><td valign='top'>FLOAT</td><td valign='top'><i>default</i> : <b>20.000</b>&nbsp;&nbsp;&nbsp;<i>min</i> : -1000&nbsp;&nbsp;&nbsp;<i>max</i> : 1000</td></tr>
+<tr><td valign='top'><b>PID_I</b></td><td valign='top'>FLOAT</td><td valign='top'><i>default</i> : <b>0.500</b>&nbsp;&nbsp;&nbsp;<i>min</i> : -1000&nbsp;&nbsp;&nbsp;<i>max</i> : 1000</td></tr>
+<tr><td valign='top'><b>PID_D</b></td><td valign='top'>FLOAT</td><td valign='top'><i>default</i> : <b>-9.000</b>&nbsp;&nbsp;&nbsp;<i>min</i> : -1000&nbsp;&nbsp;&nbsp;<i>max</i> : 1000</td></tr>
+<tr><td valign='top'><b>APID_P</b></td><td valign='top'>FLOAT</td><td valign='top'><i>default</i> : <b>0.200</b>&nbsp;&nbsp;&nbsp;<i>min</i> : -1000&nbsp;&nbsp;&nbsp;<i>max</i> : 1000</td></tr>
+<tr><td valign='top'><b>APID_I</b></td><td valign='top'>FLOAT</td><td valign='top'><i>default</i> : <b>0.025</b>&nbsp;&nbsp;&nbsp;<i>min</i> : -1000&nbsp;&nbsp;&nbsp;<i>max</i> : 1000</td></tr>
+<tr><td valign='top'><b>APID_D</b></td><td valign='top'>FLOAT</td><td valign='top'><i>default</i> : <b>0.002</b>&nbsp;&nbsp;&nbsp;<i>min</i> : -1000&nbsp;&nbsp;&nbsp;<i>max</i> : 1000</td></tr>
+<tr><td valign='top'><b>RUNNING_ANGLE</b></td><td valign='top'>FLOAT</td><td valign='top'><i>default</i> : <b>4.000</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 12</td></tr>
+<tr><td valign='top'><b>RUNNING_ERROR</b></td><td valign='top'>FLOAT</td><td valign='top'><i>default</i> : <b>2.000</b>&nbsp;&nbsp;&nbsp;<i>min</i> : 1&nbsp;&nbsp;&nbsp;<i>max</i> : 100</td></tr>
+<tr><td valign='top'><b>MIN_MAX_MS</b></td><td valign='top'>INT</td><td valign='top'><i>default</i> : <b>50</b>&nbsp;&nbsp;&nbsp;<i>min</i> : 10&nbsp;&nbsp;&nbsp;<i>max</i> : 1000</td></tr>
+<tr><td valign='top'><b>CYCLE_RANGE</b></td><td valign='top'>INT</td><td valign='top'><i>default</i> : <b>50</b>&nbsp;&nbsp;&nbsp;<i>min</i> : 10&nbsp;&nbsp;&nbsp;<i>max</i> : 1000</td></tr>
+<tr><td valign='top'><b>ERROR_RANGE</b></td><td valign='top'>INT</td><td valign='top'><i>default</i> : <b>150</b>&nbsp;&nbsp;&nbsp;<i>min</i> : 10&nbsp;&nbsp;&nbsp;<i>max</i> : 5000</td></tr>
+<tr><td valign='top'><b>LED_BRIGHTNESS</b></td><td valign='top'>INT</td><td valign='top'><i>default</i> : <b>40</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 254</td></tr>
+<tr><td valign='top'><b>PLOT_VALUES</b></td><td valign='top'>ENUM</td><td valign='top'><i>allowed</i> : <b>0</b>=Off, <b>1</b>=Waves, <b>2</b>=Pause, <b>3</b>=Clock
+   <br><i>default</i> : <b>0</b>=Off
+   <br><i>Memory Only</i></td></tr>
+<tr><td valign='top'><b>SYNC_RTC</b></td><td valign='top'>COMMAND</td><td valign='top'></td></tr>
+<tr><td valign='top'><b>SYNC_INTERVAL</b></td><td valign='top'>INT</td><td valign='top'><i>default</i> : <b>3600</b>&nbsp;&nbsp;&nbsp;<i>min</i> : 0=off&nbsp;&nbsp;&nbsp;<i>max</i> : 3000000</td></tr>
+<tr><td valign='top'><b>SYNC_NTP</b></td><td valign='top'>COMMAND</td><td valign='top'></td></tr>
+<tr><td valign='top'><b>NTP_INTERVAL</b></td><td valign='top'>INT</td><td valign='top'><i>default</i> : <b>14400</b>&nbsp;&nbsp;&nbsp;<i>min</i> : 0=off&nbsp;&nbsp;&nbsp;<i>max</i> : 3000000</td></tr>
+<tr><td valign='top'><b>CLEAR_STATS</b></td><td valign='top'>COMMAND</td><td valign='top'></td></tr>
+<tr><td valign='top'><b>STAT_INTERVAL</b></td><td valign='top'>INT</td><td valign='top'><i>default</i> : <b>30</b>&nbsp;&nbsp;&nbsp;<i>min</i> : 0=off&nbsp;&nbsp;&nbsp;<i>max</i> : 3000000</td></tr>
+<tr><td valign='top'><b>STAT_MSG0</b></td><td valign='top'>STRING</td><td valign='top'><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>STAT_MSG1</b></td><td valign='top'>STRING</td><td valign='top'><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>STAT_MSG2</b></td><td valign='top'>STRING</td><td valign='top'><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>STAT_MSG3</b></td><td valign='top'>STRING</td><td valign='top'><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>STAT_MSG4</b></td><td valign='top'>STRING</td><td valign='top'><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>STAT_MSG5</b></td><td valign='top'>STRING</td><td valign='top'><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>STAT_MSG6</b></td><td valign='top'>STRING</td><td valign='top'><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>TEST_COILS</b></td><td valign='top'>INT</td><td valign='top'><i>default</i> : <b>0</b>=off&nbsp;&nbsp;&nbsp;<i>min</i> : 0=off&nbsp;&nbsp;&nbsp;<i>max</i> : 255
+   <br><i>Memory Only</i></td></tr>
+<tr><td valign='top'><b>CHANGE_CLOCK</b></td><td valign='top'>INT</td><td valign='top'><i>default</i> : <b>0</b>&nbsp;&nbsp;&nbsp;<i>min</i> : -3000000&nbsp;&nbsp;&nbsp;<i>max</i> : 3000000
+   <br><i>Memory Only</i></td></tr>
+</table>
+
+
+
 ## 4. WebUI General
 ## 5. Telnet Serial Access
 ## 6. OTA Firmware Upgrades

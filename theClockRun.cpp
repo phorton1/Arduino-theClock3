@@ -10,25 +10,25 @@
 // motor
 //----------------------------
 
-static int motor_state = 0;
+static int cur_motor_power = 0;
 
-void theClock::motor(int state, int power)
+
+void theClock::motor(int power)
 {
-	motor_state = state;
-	int use_power = state ? power : 0;
+	cur_motor_power = power;
 #if CLOCK_COMPILE_VERSION == 1
-	ledcWrite(0, use_power);
-	digitalWrite(PIN_INA1,state == 1  ? 1 : 0);
-	digitalWrite(PIN_INA2,state == -1 ? 1 : 0);
-	ledcWrite(1, use_power);
-	digitalWrite(PIN_INB1,state == 1  ? 1 : 0);
-	digitalWrite(PIN_INB2,state == -1 ? 1 : 0);
+	ledcWrite(0, power);
+	digitalWrite(PIN_INA1,0);
+	digitalWrite(PIN_INA2,power ? 1 : 0);
+	ledcWrite(1, power);
+	digitalWrite(PIN_INB1,0);
+	digitalWrite(PIN_INB2,power ? 1 : 0);
 #elif CLOCK_COMPILE_VERSION == 2
-	ledcWrite(0, use_power);
-	digitalWrite(PIN_IN1,state == 1  ? 1 : 0);
-	digitalWrite(PIN_IN2,state == -1 ? 1 : 0);
+	ledcWrite(0, power);
+	digitalWrite(PIN_IN1,0);
+	digitalWrite(PIN_IN2,power ? 1 : 0);
 #else	// MOSFET DRIVER
-	ledcWrite(0, use_power);
+	ledcWrite(0, power);
 #endif
 }
 
@@ -175,7 +175,7 @@ void theClock::run()
 		if (now - m_initial_pulse_time > _dur_start)
 		{
 			m_initial_pulse_time = 0;
-			motor(0,0);
+			motor(0);
 
 			// non motor-pid modes start off as 'running',
 			// where as pid modes start off as 'started'
@@ -190,20 +190,6 @@ void theClock::run()
 		{
 			return;
 		}
-	}
-
-	// Restart if necessary
-
-	int res_millis = now - m_last_change;
-	if (_restart_millis &&
-		_clock_mode > CLOCK_MODE_SENSOR_TEST &&
-		m_clock_state >= CLOCK_STATE_STARTED &&
-		res_millis > _restart_millis)
-	{
-		LOGW("RESTARTING CLOCK!! now=%d m_last_change=%d  diff=%d  constant=%d",now,m_last_change,res_millis,_restart_millis);
-		incStatRestarts();
-		startClock(1);
-		return;
 	}
 
 
@@ -417,7 +403,7 @@ void theClock::run()
 
 			m_motor_start = now;
 			m_motor_dur =_dur_pulse;
-			motor(-1,use_power);
+			motor(use_power);
 
 			updateStatsPowerAngle(use_power, m_total_ang_error);
 
@@ -446,7 +432,7 @@ void theClock::run()
 	{
 		m_motor_start = 0;
 		m_motor_dur = 0;
-		motor(0,0);
+		motor(0);
 	}
 
 	//----------------------
@@ -474,10 +460,13 @@ void theClock::run()
 		Serial.print(max);
 		Serial.print(",");
 
-		Serial.print(m_total_millis_error * 20);
-		Serial.print(",");
+		if (_clock_mode >= CLOCK_MODE_MIN_MAX)
+		{
+			Serial.print(m_total_millis_error * 20);
+			Serial.print(",");
+		}
 
-		Serial.print(motor_state * 400);
+		Serial.print(cur_motor_power * 2);
 		Serial.println(",1000,-1000");
 	}
 

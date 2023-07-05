@@ -432,10 +432,16 @@ same colors are on each side, with **orange** on the left and **white** on the r
 **De-power the ESP32** (unplug the serial cable), **plug in the coils**, and **power up**
 the ESP32.
 
-After it has finished booting, type the command **"motor=1"** into the Serial Monitor.
-This command energizes the coils (at the **POWER_MIN** parameter).
+**WATCH OUT FOR SMOKE AND BE READY TO UNPLUG THE POWER SUPPLY!!**
+
+After it has finished booting, type the command **"test_coils=80"** into the Serial Monitor.
+This command energizes the coils at 80/255 power (80 on a scale from 0 to 255) which
+should be enough for you to detect the forces. Obviously, if any thing gets **hot**
+or **starts smoking**, you should remove the power supply immediately and figure out
+what is wrong, and **correct the short circuit** before continuing.
+
 You should be able to hold the magnet near the face of each coil and feel a
-repulsion or attraction.
+repulsion or attraction. Increase the power (*gingerly!*) as necessary.
 
 This is a good opportunity to determine the **orientation** of the *magnets and coils*.
 We want to figure out how to arrange the coils and magnets such that
@@ -447,7 +453,7 @@ a piece of tape or felt marker, and **mark the front** of the magnet.
 you can glue the magnets in the pendulum in the correct orientation in the
 next steps of assembly!
 
-De-energize the coils by typing **motor=0** into the Serial Monitor.
+De-energize the coils by typing **test_coils=0** into the Serial Monitor.
 
 
 ## D. Summary

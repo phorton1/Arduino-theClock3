@@ -420,7 +420,7 @@ void theClock::setup()	// override
 
 void theClock::initMotor()
 {
-	motor(0,0);
+	motor(0);
 
 	setClockState(CLOCK_STATE_NONE);
 	m_last_change = 0;
@@ -558,7 +558,7 @@ void theClock::startClock(bool restart /*=0*/)
 			m_time_start_ms = tv_now.tv_usec / 1000L;
 		}
 
-		motor(-1,_power_start);
+		motor(_power_start);
 		m_initial_pulse_time = m_last_change = millis();
 		setClockState(CLOCK_STATE_START);
 	}
@@ -663,14 +663,14 @@ void theClock::setZeroAngle()
 
 
 
-void theClock::onTestMotor(const myIOTValue *desc, int val)
+void theClock::onTestCoils(const myIOTValue *desc, int val)
 {
-	LOGU("onTestMotor %d",val);
-	motor(val,_power_min);
+	LOGU("onTestCoils(%d)",val);
+	motor(val);
 }
 
 
-void theClock::onDiddleClock(const myIOTValue *desc, int val)
+void theClock::onChangeClock(const myIOTValue *desc, int val)
 {
 	struct timeval tv_now;
 	gettimeofday(&tv_now, NULL);
@@ -679,14 +679,14 @@ void theClock::onDiddleClock(const myIOTValue *desc, int val)
 
 	if (!val)
 	{
-		LOGU("onDiddleClock(%d) orig=%d.%03d  NO CHANGE",val,orig_secs,orig_ms);
+		LOGU("onChangeClock(%d) orig=%d.%03d  NO CHANGE",val,orig_secs,orig_ms);
 	}
 	else
 	{
 		int new_ms = orig_ms;
 		int new_secs = orig_secs;
 		timeAddMS(&new_secs,&new_ms,val);
-		LOGU("onDiddleClock(%d) orig=%d.%03d  new=%d.%0.3d",val,orig_secs,orig_ms,new_secs,new_ms);
+		LOGU("onChangeClock(%d) orig=%d.%03d  new=%d.%0.3d",val,orig_secs,orig_ms,new_secs,new_ms);
 		timeval e_time = {new_secs, new_ms * 1000};
 		settimeofday((const timeval*)&e_time, 0);
 	}
@@ -761,11 +761,11 @@ void theClock::onSyncRTC()
 		int32_t delta_ms = 0;
 		bool    failed = 0;
 
-		if (!the_clock->getBool(ID_DEVICE_WIFI) ||
+		if (!the_clock->getBool(ID_WIFI) ||
 			!(the_clock->getConnectStatus() & IOT_CONNECT_STA))
 		{
 			LOGE("Attempt to sync to NTP when WIFI=%d and connect_status=0x%02x",
-				 the_clock->getBool(ID_DEVICE_WIFI),
+				 the_clock->getBool(ID_WIFI),
 				 the_clock->getConnectStatus());
 
 		}

@@ -145,7 +145,7 @@ void syncNTPTime()
 {
         LOGD("Synchronizing to ntpServer");
         const char* ntpServer = "pool.ntp.org";
-        uint32_t tz_enum = my_iot_device->getEnum(ID_DEVICE_TZ);
+        uint32_t tz_enum = my_iot_device->getEnum(ID_TIMEZONE);
         const char *tz_string = tzString(static_cast<IOT_TIMEZONE>(tz_enum));
         LOGI(" using TZ(%d)=%s",tz_enum,tz_string);
         configTime(0, 0, ntpServer);	// <<-- THE magic is here

@@ -142,6 +142,8 @@ Likewise, when assembling the *tubes* I apply a *thin coat* of **light
 machine oil** (I use the popular "3-in-1" oil) to the **inner tube** in
 each step where a tube will ride on the *threaded rod* or *another tube*.
 
+![build-gears.gif](images/build-gears.gif)
+
 
 ### 2. Seconds Wheel Assembly
 
@@ -162,8 +164,6 @@ each step where a tube will ride on the *threaded rod* or *another tube*.
 - slide an **M4** *metal washer* onto the *Seconds Tube*
 - slide the **Min2 Gear Assembly** onto the *Seconds Tube* so that
   the gear teeth mesh with the small gear on *Min1 Gear Assembly*
-
-![build-gears.gif](images/build-gears.gif)
 
 ### 5. Hour1 Gear Assembly
 

@@ -184,8 +184,8 @@ static valueIdType dash_items[] = {
 	ID_ZERO_ANGLE,
 	ID_ZERO_ANGLE_F,
 #endif
-	ID_TEST_MOTOR,
-	ID_DIDDLE_CLOCK,
+	ID_TEST_COILS,
+	ID_CHANGE_CLOCK,
 	0,
 };
 
@@ -214,7 +214,6 @@ static valueIdType device_items[] = {
 	ID_RUNNING_ANGLE,
 	ID_RUNNING_ERROR,
 	ID_MIN_MAX_MS,
-	ID_RESTART_MILLIS,
 	ID_DIAG_CYCLE_RANGE,
 	ID_DIAG_ERROR_RANGE,
 	ID_STAT_INTERVAL,
@@ -267,85 +266,93 @@ static enumValue pixelsAllowed[] = {
 
 
 // value descriptors for theClock
+// in order of presentation via UI 'values' command
 
 const valDescriptor theClock::m_clock_values[] =
 {
-    { ID_DEVICE_NAME,      VALUE_TYPE_STRING,    VALUE_STORE_PREF,     VALUE_STYLE_REQUIRED,   NULL,   NULL,   THE_CLOCK },
+    { ID_DEVICE_NAME,      VALUE_TYPE_STRING,    VALUE_STORE_PREF,	VALUE_STYLE_REQUIRED,	NULL,   NULL,   THE_CLOCK },
         // DEVICE_NAME overrides base class element
 
-	{ ID_CLOCK_TYPE,      	VALUE_TYPE_ENUM,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_clock_type, 	NULL, 	{ .enum_range = { 0, clockType }} },
-	{ ID_START_SYNC,      	VALUE_TYPE_BOOL,     VALUE_STORE_PUB,      VALUE_STYLE_NONE,       (void *) &_start_sync,	(void *) onStartSyncChanged, },
-	{ ID_RUNNING,      		VALUE_TYPE_BOOL,     VALUE_STORE_PUB,      VALUE_STYLE_NONE,       (void *) &_clock_running,(void *) onClockRunningChanged, },
-	{ ID_CLOCK_MODE,      	VALUE_TYPE_ENUM,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_clock_mode, 	(void *) onClockModeChanged, 	{ .enum_range = { DEFAULT_CLOCK_MODE, clockAllowed }} },
-	{ ID_PLOT_VALUES,      	VALUE_TYPE_ENUM,     VALUE_STORE_PUB,      VALUE_STYLE_NONE,       (void *) &_plot_values, 	(void *) onPlotValuesChanged,   { .enum_range = { 0, plotAllowed }} },
-	{ ID_LED_BRIGHTNESS,  	VALUE_TYPE_INT,    	 VALUE_STORE_PREF,     VALUE_STYLE_NONE,   	   (void *) &_led_brightness,(void *) onBrightnessChanged, 	{ .int_range = { DEFAULT_LED_BRIGHTNESS,  	0,  254}} },
+	{ ID_CLOCK_TYPE,      	VALUE_TYPE_ENUM,	VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_clock_type,		NULL, 	{ .enum_range = { 0, clockType }} },
+	{ ID_CLOCK_MODE,      	VALUE_TYPE_ENUM,	VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_clock_mode, 		(void *) onClockModeChanged, { .enum_range = { DEFAULT_CLOCK_MODE, clockAllowed }} },
 
-	{ ID_SET_ZERO_ANGLE,  	VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    (void *) setZeroAngle },
-	{ ID_ZERO_ANGLE,  		VALUE_TYPE_INT,    	 VALUE_STORE_PREF,     VALUE_STYLE_READONLY,   (void *) &_zero_angle,	NULL,  { .int_range = { DEFAULT_ZERO_ANGLE,  	0,  4095}} },
-	{ ID_ZERO_ANGLE_F,  	VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_READONLY,   (void *) &_zero_angle_f,	NULL,  { .float_range = { DEFAULT_ZERO_ANGLE_F, 0,  360}} },
-	{ ID_DEAD_ZONE,  		VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_dead_zone,	NULL,  { .float_range = { DEFAULT_DEAD_ZONE,    0,  OVER_MAX_ANGLE}} },
-	{ ID_ANGLE_START,  		VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_angle_start,	NULL,  { .float_range = { DEFAULT_ANGLE_START,  0,  OVER_MAX_ANGLE}} },
-	{ ID_ANGLE_MIN,  		VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_angle_min,	NULL,  { .float_range = { DEFAULT_ANGLE_MIN,    0,  OVER_MAX_ANGLE}} },
-	{ ID_ANGLE_MAX,  		VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_angle_max,	NULL,  { .float_range = { DEFAULT_ANGLE_MAX,    0,  OVER_MAX_ANGLE}} },
+	{ ID_RUNNING,      		VALUE_TYPE_BOOL,	VALUE_STORE_PUB, 	VALUE_STYLE_NONE,       (void *) &_clock_running,	(void *) onClockRunningChanged, },
+	{ ID_START_SYNC,      	VALUE_TYPE_BOOL,	VALUE_STORE_PUB, 	VALUE_STYLE_NONE,       (void *) &_start_sync,		(void *) onStartSyncChanged, },
+	{ ID_START_DELAY,  		VALUE_TYPE_INT, 	VALUE_STORE_PREF,	VALUE_STYLE_NONE,  		(void *) &_start_delay,	 	NULL, { .int_range = 	{ DEFAULT_START_DELAY,   		-5000,  5000}} },
 
-	{ ID_POWER_MIN,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_power_min,	NULL,  { .int_range = { DEFAULT_POWER_MIN,  	0,  255}} },
-	{ ID_POWER_PID,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_power_pid,	NULL,  { .int_range = { DEFAULT_POWER_PID,   	0,  255}} },
-	{ ID_POWER_MAX,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_power_max,	NULL,  { .int_range = { DEFAULT_POWER_MAX,   	0,  255}} },
-	{ ID_POWER_START,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_power_start,	NULL,  { .int_range = { DEFAULT_POWER_START,   	0,  255}} },
+	{ ID_SET_ZERO_ANGLE,  	VALUE_TYPE_COMMAND,	VALUE_STORE_SUB, 	VALUE_STYLE_NONE,       NULL,                    	(void *) setZeroAngle },
+	{ ID_ZERO_ANGLE,  		VALUE_TYPE_INT,  	VALUE_STORE_PREF,	VALUE_STYLE_READONLY,   (void *) &_zero_angle,		NULL,  { .int_range = 	{ DEFAULT_ZERO_ANGLE,  	0,  4095}} },
+	{ ID_ZERO_ANGLE_F,  	VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,	VALUE_STYLE_READONLY,   (void *) &_zero_angle_f,	NULL,  { .float_range = { DEFAULT_ZERO_ANGLE_F, 0,  360}} },
+	{ ID_DEAD_ZONE,  		VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_dead_zone,		NULL,  { .float_range = { DEFAULT_DEAD_ZONE,    0,  OVER_MAX_ANGLE}} },
+	{ ID_ANGLE_START,  		VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_angle_start,		NULL,  { .float_range = { DEFAULT_ANGLE_START,  0,  OVER_MAX_ANGLE}} },
+	{ ID_ANGLE_MIN,  		VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_angle_min,		NULL,  { .float_range = { DEFAULT_ANGLE_MIN,    0,  OVER_MAX_ANGLE}} },
+	{ ID_ANGLE_MAX,  		VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_angle_max,		NULL,  { .float_range = { DEFAULT_ANGLE_MAX,    0,  OVER_MAX_ANGLE}} },
 
-	{ ID_DUR_PULSE,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_dur_pulse,	NULL,  { .int_range = { DEFAULT_DUR_PULSE,   	0,  1000}} },
-	{ ID_DUR_START,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_dur_start,	NULL,  { .int_range = { DEFAULT_DUR_START,   	0,  1000}} },
+	{ ID_POWER_MIN,  		VALUE_TYPE_INT,		VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_power_min,		NULL,  { .int_range = 	{ DEFAULT_POWER_MIN,  	0,  255}} },
+	{ ID_POWER_PID,  		VALUE_TYPE_INT,		VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_power_pid,		NULL,  { .int_range = 	{ DEFAULT_POWER_PID,   	0,  255}} },
+	{ ID_POWER_MAX,  		VALUE_TYPE_INT,		VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_power_max,		NULL,  { .int_range = 	{ DEFAULT_POWER_MAX,   	0,  255}} },
+	{ ID_POWER_START,  		VALUE_TYPE_INT,		VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_power_start,		NULL,  { .int_range = 	{ DEFAULT_POWER_START,  0,  255}} },
 
-	{ ID_PID_P,  			VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_pid_P,		NULL,  { .float_range = { DEFAULT_PID_P,   	-1000,  1000}} },
-	{ ID_PID_I,  			VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_pid_I,		NULL,  { .float_range = { DEFAULT_PID_I,    -1000,  1000}} },
-	{ ID_PID_D,  			VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_pid_D,		NULL,  { .float_range = { DEFAULT_PID_D,   	-1000,  1000}} },
+	{ ID_DUR_PULSE,  		VALUE_TYPE_INT,		VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_dur_pulse,		NULL,  { .int_range = 	{ DEFAULT_DUR_PULSE,   	0,  1000}} },
+	{ ID_DUR_START,  		VALUE_TYPE_INT,		VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_dur_start,		NULL,  { .int_range = 	{ DEFAULT_DUR_START,   	0,  1000}} },
 
-	{ ID_APID_P,  			VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_apid_P,		NULL,  { .float_range = { DEFAULT_APID_P,   -1000,  1000}} },
-	{ ID_APID_I,  			VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_apid_I,		NULL,  { .float_range = { DEFAULT_APID_I,   -1000,  1000}} },
-	{ ID_APID_D,  			VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_apid_D,		NULL,  { .float_range = { DEFAULT_APID_D,   -1000,  1000}} },
+	{ ID_PID_P,  			VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_pid_P,			NULL,  { .float_range = { DEFAULT_PID_P,   	-1000,  1000}} },
+	{ ID_PID_I,  			VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_pid_I,			NULL,  { .float_range = { DEFAULT_PID_I,    -1000,  1000}} },
+	{ ID_PID_D,  			VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_pid_D,			NULL,  { .float_range = { DEFAULT_PID_D,   	-1000,  1000}} },
 
-	{ ID_RUNNING_ANGLE,  	VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_running_angle, NULL, { .float_range = { DEFAULT_RUNNING_ANGLE, 0, 12}} },
-	{ ID_RUNNING_ERROR,  	VALUE_TYPE_FLOAT,    VALUE_STORE_PREF,     VALUE_STYLE_NONE,       (void *) &_running_error, NULL, { .float_range = { DEFAULT_RUNNING_ERROR, 1.0, 100}} },
-	{ ID_MIN_MAX_MS,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,   	   (void *) &_min_max_ms,	 NULL, { .int_range = { DEFAULT_MIN_MAX_MS,   	    10, 1000}} },
-	{ ID_RESTART_MILLIS,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_restart_millis,NULL, { .int_range = { DEFAULT_RESTART_MILLIS,   	0,  60000}} },
-	{ ID_START_DELAY,  		VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,  	   (void *) &_start_delay,	 NULL, { .int_range = { DEFAULT_START_DELAY,   		-5000,  5000}} },
+	{ ID_APID_P,  			VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_apid_P,			NULL,  { .float_range = { DEFAULT_APID_P,   -1000,  1000}} },
+	{ ID_APID_I,  			VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_apid_I,			NULL,  { .float_range = { DEFAULT_APID_I,   -1000,  1000}} },
+	{ ID_APID_D,  			VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_apid_D,			NULL,  { .float_range = { DEFAULT_APID_D,   -1000,  1000}} },
 
-	{ ID_DIAG_CYCLE_RANGE,  VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,   	   (void *) &_cycle_range,	 NULL, { .int_range = { DEFAULT_CYCLE_RANGE,   	    10, 1000}} },
-	{ ID_DIAG_ERROR_RANGE,  VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,   	   (void *) &_error_range,	 NULL, { .int_range = { DEFAULT_ERROR_RANGE,   	    10, 5000}} },
+	{ ID_RUNNING_ANGLE,  	VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_running_angle, 	NULL, { .float_range = 	{ DEFAULT_RUNNING_ANGLE, 0, 12}} },
+	{ ID_RUNNING_ERROR,  	VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_running_error, 	NULL, { .float_range = 	{ DEFAULT_RUNNING_ERROR, 1.0, 100}} },
+
+	{ ID_MIN_MAX_MS,  		VALUE_TYPE_INT,  	VALUE_STORE_PREF,	VALUE_STYLE_NONE,   	(void *) &_min_max_ms,	 	NULL, { .int_range = 	{ DEFAULT_MIN_MAX_MS,   	    10, 1000}} },
+
+	{ ID_DIAG_CYCLE_RANGE,  VALUE_TYPE_INT,  	VALUE_STORE_PREF,	VALUE_STYLE_NONE,   	(void *) &_cycle_range,	 	NULL, { .int_range = 	{ DEFAULT_CYCLE_RANGE,   	    10, 1000}} },
+	{ ID_DIAG_ERROR_RANGE,  VALUE_TYPE_INT,  	VALUE_STORE_PREF,	VALUE_STYLE_NONE,   	(void *) &_error_range,	 	NULL, { .int_range = 	{ DEFAULT_ERROR_RANGE,   	    10, 5000}} },
 
 #if WITH_VOLTAGES
-	{ ID_VOLT_INTERVAL,  	VALUE_TYPE_INT,       VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,  (void *) &_volt_interval, 	NULL,  { .int_range = { DEFAULT_VOLT_INTERVAL, 0, 86400}} },
-	{ ID_VOLT_CALIB,      	VALUE_TYPE_FLOAT,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,      (void *) &_volt_calib, 		NULL,  { .float_range = { DEFAULT_VOLT_SCALE,  0,  2}} },
-	{ ID_VOLT_CUTOFF,      	VALUE_TYPE_FLOAT,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,  	   (void *) &_volt_cutoff, 		NULL,  { .float_range = { DEFAULT_VOLT_CUTOFF,  0,  120}} },
-	{ ID_VOLT_RESTORE,      VALUE_TYPE_FLOAT,     VALUE_STORE_PREF,     VALUE_STYLE_NONE,  	   (void *) &_volt_restore, 	NULL,  { .float_range = { DEFAULT_VOLT_RESTORE,  0,  120}} },
-	{ ID_LOW_POWER_ENABLE,  VALUE_TYPE_BOOL,      VALUE_STORE_PREF,     VALUE_STYLE_NONE,      (void *)&_low_power_enable,  NULL,  },
+	{ ID_VOLT_INTERVAL,  	VALUE_TYPE_INT,    	VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,	(void *) &_volt_interval, 	NULL,  { .int_range = 	{ DEFAULT_VOLT_INTERVAL, 0,  86400}} },
+	{ ID_VOLT_CALIB,      	VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,     VALUE_STYLE_NONE,		(void *) &_volt_calib, 		NULL,  { .float_range = { DEFAULT_VOLT_SCALE,    0,  2}} },
+	{ ID_VOLT_CUTOFF,      	VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,     VALUE_STYLE_NONE,		(void *) &_volt_cutoff, 	NULL,  { .float_range = { DEFAULT_VOLT_CUTOFF,   0,  120}} },
+	{ ID_VOLT_RESTORE,      VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,     VALUE_STYLE_NONE,		(void *) &_volt_restore, 	NULL,  { .float_range = { DEFAULT_VOLT_RESTORE,  0,  120}} },
+	{ ID_LOW_POWER_ENABLE,  VALUE_TYPE_BOOL, 	VALUE_STORE_PREF,     VALUE_STYLE_NONE,		(void *)&_low_power_enable, NULL,  },
 #endif
 
-	{ ID_CLEAR_STATS,       VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    (void *) clearStats },
+	{ ID_LED_BRIGHTNESS,  	VALUE_TYPE_INT, 	VALUE_STORE_PREF,     VALUE_STYLE_NONE,		(void *) &_led_brightness,	(void *) onBrightnessChanged, { .int_range = { DEFAULT_LED_BRIGHTNESS,  	0,  254}} },
+	{ ID_PLOT_VALUES,      	VALUE_TYPE_ENUM,	VALUE_STORE_PUB,      VALUE_STYLE_NONE,		(void *) &_plot_values, 	(void *) onPlotValuesChanged, { .enum_range = { 0, plotAllowed }} },
 
-	{ ID_STAT_MSG0,      	VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_msg0, },
-	{ ID_STAT_MSG1,      	VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_msg1, },
-	{ ID_STAT_MSG2,      	VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_msg2, },
-	{ ID_STAT_MSG3,      	VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_msg3, },
-	{ ID_STAT_MSG4,      	VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_msg4, },
-	{ ID_STAT_MSG5,      	VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_msg5, },
-	{ ID_STAT_MSG6,      	VALUE_TYPE_STRING,   VALUE_STORE_PUB,      VALUE_STYLE_READONLY,   (void *) &_stat_msg6, },
-
-	{ ID_STAT_INTERVAL,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_stat_interval, 	NULL,  { .int_range = { DEFAULT_STAT_INTERVAL,1,3000000L}} },
-	{ ID_SYNC_INTERVAL,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_sync_interval, 	NULL,  { .int_range = { DEFAULT_SYNC_INTERVAL,1,3000000L}} },
-	{ ID_SYNC_RTC,  		VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    	(void *) onSyncRTC },
+	{ ID_SYNC_RTC,  		VALUE_TYPE_COMMAND,	VALUE_STORE_SUB,      VALUE_STYLE_NONE,    	NULL,                    	(void *) onSyncRTC },
+	{ ID_SYNC_INTERVAL,  	VALUE_TYPE_INT,    	VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,	(void *) &_sync_interval, 	NULL,  { .int_range = { DEFAULT_SYNC_INTERVAL,0,3000000L}} },
 
 #if CLOCK_WITH_NTP
-	{ ID_NTP_INTERVAL,  	VALUE_TYPE_INT,      VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,   (void *) &_ntp_interval, 	NULL,  { .int_range = { DEFAULT_NTP_INTERVAL,1,3000000L}} },
-	{ ID_SYNC_NTP,  		VALUE_TYPE_COMMAND,  VALUE_STORE_MQTT_SUB, VALUE_STYLE_NONE,       NULL,                    	(void *) onSyncNTP },
+	{ ID_SYNC_NTP,  		VALUE_TYPE_COMMAND,	VALUE_STORE_SUB,      VALUE_STYLE_NONE,    	NULL,                    	(void *) onSyncNTP },
+	{ ID_NTP_INTERVAL,  	VALUE_TYPE_INT,    	VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,	(void *) &_ntp_interval, 	NULL,  { .int_range = { DEFAULT_NTP_INTERVAL,0,3000000L}} },
 #endif
 
-	{ ID_TEST_MOTOR,  		VALUE_TYPE_INT,    	 VALUE_STORE_PUB,      VALUE_STYLE_NONE,   	   (void *) &_test_motor,		(void *) onTestMotor,  { .int_range = { 0, -1, 1}} },
-	{ ID_DIDDLE_CLOCK,  	VALUE_TYPE_INT,    	 VALUE_STORE_PUB,      VALUE_STYLE_NONE,   	   (void *) &_diddle_clock,		(void *) onDiddleClock,  { .int_range = { 0, -3000000L, 3000000L}} },
+	{ ID_CLEAR_STATS,       VALUE_TYPE_COMMAND,	VALUE_STORE_SUB,      VALUE_STYLE_NONE,    	NULL,                       (void *) clearStats },
+	{ ID_STAT_INTERVAL,  	VALUE_TYPE_INT,    	VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,	(void *) &_stat_interval, 	NULL,  { .int_range = { DEFAULT_STAT_INTERVAL,0,3000000L}} },
+
+	{ ID_STAT_MSG0,      	VALUE_TYPE_STRING, 	VALUE_STORE_PUB,      VALUE_STYLE_READONLY,	(void *) &_stat_msg0, },
+	{ ID_STAT_MSG1,      	VALUE_TYPE_STRING, 	VALUE_STORE_PUB,      VALUE_STYLE_READONLY,	(void *) &_stat_msg1, },
+	{ ID_STAT_MSG2,      	VALUE_TYPE_STRING, 	VALUE_STORE_PUB,      VALUE_STYLE_READONLY,	(void *) &_stat_msg2, },
+	{ ID_STAT_MSG3,      	VALUE_TYPE_STRING, 	VALUE_STORE_PUB,      VALUE_STYLE_READONLY,	(void *) &_stat_msg3, },
+	{ ID_STAT_MSG4,      	VALUE_TYPE_STRING, 	VALUE_STORE_PUB,      VALUE_STYLE_READONLY,	(void *) &_stat_msg4, },
+	{ ID_STAT_MSG5,      	VALUE_TYPE_STRING, 	VALUE_STORE_PUB,      VALUE_STYLE_READONLY,	(void *) &_stat_msg5, },
+	{ ID_STAT_MSG6,      	VALUE_TYPE_STRING, 	VALUE_STORE_PUB,      VALUE_STYLE_READONLY,	(void *) &_stat_msg6, },
+
+	{ ID_TEST_COILS,  		VALUE_TYPE_INT,    	VALUE_STORE_PUB,      VALUE_STYLE_OFF_ZERO,	(void *) &_test_coils,		(void *) onTestCoils, 		{ .int_range = { 0, 0, 255}} },
+	{ ID_CHANGE_CLOCK,  	VALUE_TYPE_INT,    	VALUE_STORE_PUB,      VALUE_STYLE_NONE,   	(void *) &_change_clock,	(void *) onChangeClock,  	{ .int_range = { 0, -3000000L, 3000000L}} },
 };
 
 
 #define NUM_CLOCK_VALUES (sizeof(m_clock_values)/sizeof(valDescriptor))
+
+static const char *clock_tooltips[] = {
+    ID_CLOCK_TYPE		,	"The type of clock.",
+    ID_CLOCK_MODE		,	"The Clock Mode.",
+	0 };
 
 
 //--------------------------------------------------
@@ -385,7 +392,6 @@ float  	theClock::_apid_D;
 float  	theClock::_running_angle;
 float  	theClock::_running_error;
 int	    theClock::_min_max_ms;
-uint32_t theClock::_restart_millis;
 int 	theClock::_start_delay;
 
 int	    theClock::_cycle_range;
@@ -417,8 +423,8 @@ uint32_t theClock::_sync_interval;
 
 // remember, 'int' is 32 bits on ESP32 !!
 
-int 	theClock::_test_motor;
-int		theClock::_diddle_clock;
+int 	theClock::_test_coils;
+int		theClock::_change_clock;
 
 
 // ctor
@@ -427,6 +433,7 @@ theClock::theClock()
 {
     addValues(m_clock_values,NUM_CLOCK_VALUES);
     setTabLayouts(dash_items,device_items);
+	addDerivedToolTips(clock_tooltips);
 }
 
 
