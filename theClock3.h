@@ -173,8 +173,8 @@
 #define ID_MIN_MAX_MS		"MIN_MAX_MS"
 #define ID_START_DELAY		"START_DELAY"
 
-#define ID_DIAG_CYCLE_RANGE "CYCLE_RANGE"
-#define ID_DIAG_ERROR_RANGE "ERROR_RANGE"
+#define ID_CYCLE_RANGE 		"CYCLE_RANGE"
+#define ID_ERROR_RANGE "ERROR_RANGE"
 
 #define ID_CLEAR_STATS		"CLEAR_STATS"
 
@@ -200,7 +200,7 @@
 	#define ID_VOLT_CALIB	 	"VOLT_CALIB"		// calibration of voltages
 	#define ID_VOLT_CUTOFF	 	"VOLT_CUTOFF"		// vbus volts at which to enter low power mode
 	#define ID_VOLT_RESTORE	 	"VOLT_RESTORE"		// vbus volts at which to leave low power mode
-	#define ID_LOW_POWER_ENABLE "LOW_POWER_EN"	    // enables actually going into low power mode
+	#define ID_LOW_POWER_EN "LOW_POWER_EN"	    // enables actually going into low power mode
 #endif
 
 

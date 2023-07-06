@@ -119,7 +119,7 @@ void theClock::doButtons()
 						else if (m_low_power_mode == VOLT_MODE_LOW)
 						{
 							LOGU("RESTORE POWER FROM BUTTON");
-							setBool(ID_LOW_POWER_ENABLE,0);
+							setBool(ID_LOW_POWER_EN,0);
 							setInt(ID_VOLT_INTERVAL,0);
 							m_low_power_time = 0;
 							m_low_power_mode = VOLT_MODE_NORMAL;

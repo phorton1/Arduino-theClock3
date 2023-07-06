@@ -68,7 +68,7 @@ proceed to the next step, *3. Minimum Power Coil and Pendulum Test*, below.
 In the above Serial Monitor listing we see that message that the clock
 **COULD NOT SET AS5600 zero angle=3413  300.00**.  This is telling us
 that the AS5600 sensor returned a **raw value** of **3413** (on a scale
-of 0 to 4096) which equates to an **angle** of **300.00** degrees.
+of 0 to 4095) which equates to an **angle** of **300.00** degrees.
 
 The clock **requires** that the zero angle be in the range of **90
 to 270 degrees** to function correctly.   Ideally, the zero angle

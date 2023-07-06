@@ -25,7 +25,7 @@
 	#define THE_CLOCK             	"theClock1.3"
 	#define THE_CLOCK_VERSION     	"1.3"
 
-	#define DEFAULT_START_DELAY     600			// now defined as MS BEFORE 0 crossing to start clock
+	#define DEFAULT_START_DELAY     -600			// negative ms BEFORE 0 crossing to start clock
 		// Note that clock 1.3 firmware has NOT been updated to this new code!
 
 	#define DEFAULT_ANGLE_START 	10.5 		// starting value for clock_pid control
@@ -66,7 +66,7 @@
 	#define THE_CLOCK             	"theClock3.2"
 	#define THE_CLOCK_VERSION     	"3.2"
 
-	#define DEFAULT_START_DELAY     100			// now defined as MS BEFORE 0 crossing to start clock
+	#define DEFAULT_START_DELAY     -100		// negative ms BEFORE 0 crossing to start clock
 	#define DEFAULT_ANGLE_START 	10.0		// starting value for clock_pid control
 	#define DEFAULT_ANGLE_MIN 		9.5
 	#define DEFAULT_ANGLE_MAX 		11.5
@@ -96,7 +96,7 @@
 
 #else	// CLOCK_V3
 
-	// MY ORIGINAL CLOCK 3.2 which is now using MOSFET circuit board
+	// The STANDARD and my ORIGINAL CLOCK 3 which is now using MOSFET circuit board
 	// has different defaults for ANGLE_MIN and POWER_MIN from version 3 gifts.
 	// Note that the coils are wired in series.
 
@@ -105,7 +105,7 @@
 	#define THE_CLOCK             	"theClock3.3"
 	#define THE_CLOCK_VERSION     	"3.3"
 
-	#define DEFAULT_START_DELAY     -500			// now defined as MS BEFORE 0 crossing to start clock
+	#define DEFAULT_START_DELAY     200			// postive ms AFTER 0 crossing to start clock
 	#define DEFAULT_ANGLE_START 	10.0		// starting value for clock_pid control
 	#define DEFAULT_ANGLE_MIN 		9.0			// !!! MOSFET CIRCUIT BOARD
 	#define DEFAULT_ANGLE_MAX 		11.5
@@ -214,8 +214,8 @@ static valueIdType device_items[] = {
 	ID_RUNNING_ANGLE,
 	ID_RUNNING_ERROR,
 	ID_MIN_MAX_MS,
-	ID_DIAG_CYCLE_RANGE,
-	ID_DIAG_ERROR_RANGE,
+	ID_CYCLE_RANGE,
+	ID_ERROR_RANGE,
 	ID_STAT_INTERVAL,
 	ID_SYNC_INTERVAL,
 #if CLOCK_WITH_NTP
@@ -226,15 +226,15 @@ static valueIdType device_items[] = {
 	ID_VOLT_CALIB,
 	ID_VOLT_CUTOFF,
 	ID_VOLT_RESTORE,
-	ID_LOW_POWER_ENABLE,
+	ID_LOW_POWER_EN,
 #endif
 	0
 };
 
 
 static enumValue clockType[] = {
-    "Left",
     "Right",
+    "Left",
     0};
 
 
@@ -309,16 +309,8 @@ const valDescriptor theClock::m_clock_values[] =
 
 	{ ID_MIN_MAX_MS,  		VALUE_TYPE_INT,  	VALUE_STORE_PREF,	VALUE_STYLE_NONE,   	(void *) &_min_max_ms,	 	NULL, { .int_range = 	{ DEFAULT_MIN_MAX_MS,   	    10, 1000}} },
 
-	{ ID_DIAG_CYCLE_RANGE,  VALUE_TYPE_INT,  	VALUE_STORE_PREF,	VALUE_STYLE_NONE,   	(void *) &_cycle_range,	 	NULL, { .int_range = 	{ DEFAULT_CYCLE_RANGE,   	    10, 1000}} },
-	{ ID_DIAG_ERROR_RANGE,  VALUE_TYPE_INT,  	VALUE_STORE_PREF,	VALUE_STYLE_NONE,   	(void *) &_error_range,	 	NULL, { .int_range = 	{ DEFAULT_ERROR_RANGE,   	    10, 5000}} },
-
-#if WITH_VOLTAGES
-	{ ID_VOLT_INTERVAL,  	VALUE_TYPE_INT,    	VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,	(void *) &_volt_interval, 	NULL,  { .int_range = 	{ DEFAULT_VOLT_INTERVAL, 0,  86400}} },
-	{ ID_VOLT_CALIB,      	VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,     VALUE_STYLE_NONE,		(void *) &_volt_calib, 		NULL,  { .float_range = { DEFAULT_VOLT_SCALE,    0,  2}} },
-	{ ID_VOLT_CUTOFF,      	VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,     VALUE_STYLE_NONE,		(void *) &_volt_cutoff, 	NULL,  { .float_range = { DEFAULT_VOLT_CUTOFF,   0,  120}} },
-	{ ID_VOLT_RESTORE,      VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,     VALUE_STYLE_NONE,		(void *) &_volt_restore, 	NULL,  { .float_range = { DEFAULT_VOLT_RESTORE,  0,  120}} },
-	{ ID_LOW_POWER_ENABLE,  VALUE_TYPE_BOOL, 	VALUE_STORE_PREF,     VALUE_STYLE_NONE,		(void *)&_low_power_enable, NULL,  },
-#endif
+	{ ID_CYCLE_RANGE,  		VALUE_TYPE_INT,  	VALUE_STORE_PREF,	VALUE_STYLE_NONE,   	(void *) &_cycle_range,	 	NULL, { .int_range = 	{ DEFAULT_CYCLE_RANGE,   	    10, 1000}} },
+	{ ID_ERROR_RANGE, 		 VALUE_TYPE_INT,  	VALUE_STORE_PREF,	VALUE_STYLE_NONE,   	(void *) &_error_range,	 	NULL, { .int_range = 	{ DEFAULT_ERROR_RANGE,   	    10, 5000}} },
 
 	{ ID_LED_BRIGHTNESS,  	VALUE_TYPE_INT, 	VALUE_STORE_PREF,     VALUE_STYLE_NONE,		(void *) &_led_brightness,	(void *) onBrightnessChanged, { .int_range = { DEFAULT_LED_BRIGHTNESS,  	0,  254}} },
 	{ ID_PLOT_VALUES,      	VALUE_TYPE_ENUM,	VALUE_STORE_PUB,      VALUE_STYLE_NONE,		(void *) &_plot_values, 	(void *) onPlotValuesChanged, { .enum_range = { 0, plotAllowed }} },
@@ -344,18 +336,221 @@ const valDescriptor theClock::m_clock_values[] =
 
 	{ ID_TEST_COILS,  		VALUE_TYPE_INT,    	VALUE_STORE_PUB,      VALUE_STYLE_OFF_ZERO,	(void *) &_test_coils,		(void *) onTestCoils, 		{ .int_range = { 0, 0, 255}} },
 	{ ID_CHANGE_CLOCK,  	VALUE_TYPE_INT,    	VALUE_STORE_PUB,      VALUE_STYLE_NONE,   	(void *) &_change_clock,	(void *) onChangeClock,  	{ .int_range = { 0, -3000000L, 3000000L}} },
+
+#if WITH_VOLTAGES
+	{ ID_VOLT_INTERVAL,  	VALUE_TYPE_INT,    	VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,	(void *) &_volt_interval, 	NULL,  { .int_range = 	{ DEFAULT_VOLT_INTERVAL, 0,  86400}} },
+	{ ID_VOLT_CALIB,      	VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,     VALUE_STYLE_NONE,		(void *) &_volt_calib, 		NULL,  { .float_range = { DEFAULT_VOLT_SCALE,    0,  2}} },
+	{ ID_VOLT_CUTOFF,      	VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,     VALUE_STYLE_NONE,		(void *) &_volt_cutoff, 	NULL,  { .float_range = { DEFAULT_VOLT_CUTOFF,   0,  120}} },
+	{ ID_VOLT_RESTORE,      VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,     VALUE_STYLE_NONE,		(void *) &_volt_restore, 	NULL,  { .float_range = { DEFAULT_VOLT_RESTORE,  0,  120}} },
+	{ ID_LOW_POWER_EN,  	VALUE_TYPE_BOOL, 	VALUE_STORE_PREF,     VALUE_STYLE_NONE,		(void *)&_low_power_enable, NULL,  },
+#endif
+
 };
 
 
 #define NUM_CLOCK_VALUES (sizeof(m_clock_values)/sizeof(valDescriptor))
 
 static const char *clock_tooltips[] = {
-    ID_CLOCK_TYPE		,	"The type of clock.",
-    ID_CLOCK_MODE		,	"The Clock Mode.",
+    ID_CLOCK_TYPE,
+		"Determines which <b>direction</b> will be used for measuring the "
+		"<i>zero crossing</i> for a <i>full 1000 ms cycle</i>.",
+    ID_CLOCK_MODE,
+		"Allows you to set different <b>modes</b> of operation "
+		"for <i>tuning</i> and <i>experimenting</i> with the clock.",
+	ID_RUNNING,
+		"Starts <b>running</b> the clock in the current <i>mode</i>. "
+		"Is set automatically, at the correct time if START_SYNC is used.",
+	ID_START_SYNC,
+		"<b>Starts</b> the clock at the next <i>minute crossing</i> "
+		"based on START_DELAY.",
+	ID_START_DELAY,
+		"Determines, in <i>milliseconds</i>, <b>before</b> or <b>after</b> the "
+		"minute crossing that the <i>Start Sync</i> will take place.",
+	ID_SET_ZERO_ANGLE,
+		"Sets the <b>Zero Angle</b> for the <i>Angle Sensor</i>.",
+	ID_ZERO_ANGLE,
+		"The <i>raw integer</i> value of the zero angle reading, "
+		"on a scale from <i>0 to 4095</i>.",
+	ID_ZERO_ANGLE_F,
+		"The <i>floating point</i> value of the zero angle reading, "
+		"on a scale from <i>0 to 360 degrees</i>.",
+	ID_DEAD_ZONE,
+		"An angle, in <i>degrees about zero</i> where the coils will <b>not</b> "
+		"be energized on each swing.",
+	ID_ANGLE_START,
+		"The starting <i>target angle</i> in <i>degrees</i> "
+		"for PID and MIN_MAX clock modes.",
+	ID_ANGLE_MIN,
+		"The <i>minimum</i> target angle in <i>degrees</i> "
+		"that will be used in PID and MIN_MAX clock modes.",
+	ID_ANGLE_MAX,
+		"The <i>maximum</i> target angle in <i>degrees</i> "
+		"that will be used in PID and MIN_MAX clock modes.",
+	ID_POWER_MIN,
+		"The <i>minimum</i> <b>power</b>, on a scale from 0 to 255, "
+		"that will be delivered to the coils.",
+	ID_POWER_PID,
+		"The <b>power</b>, on a scale from 0 to 255, that will be used "
+		"as the starting input "
+		"for the <b>1st PID controller</b> which tries to get the Pendulum to swing "
+		"at the <i>target angle</i> by modifying the <i>power</i>.",
+	ID_POWER_MAX,
+		"The <i>maxium</i> <b>power</b>, on a scale from 0 to 255, "
+		"that will be delivered to the coils.",
+	ID_POWER_START,
+		"The <b>power</b>, on a scale from 0 to 255, that will be used "
+		"for the <b>initial starting pulse</b> to the Pendulum.",
+	ID_DUR_PULSE,
+		"The duration, in <i>milliseconds</i>, for the <b>pulses</b> "
+		"delivered each time the Pendulum <i>crosses zero</i> (in either direction).",
+	ID_DUR_START,
+		"The duration, in <i>milliseconds</i>, for the <i>initial starting pulse</i>.",
+	ID_PID_P,
+		"The <i>proportional</i> factor, which is muliplied by the <i>instantaneous angular error</i>, "
+		"for the <b>1st PID controller</b>, which tries to get the Pendulum to swing "
+		"at the <i>target angle</i> by modifying the <i>power</i>.",
+	ID_PID_I,
+		"The <i>integral</i> factor, which is muliplied by the <i>cumulative angular error</i>, "
+		"for the <b>1st PID controller</b>, which tries to get the Pendulum to swing "
+		"at the <i>target angle</i> by modifying the <i>power</i>.",
+	ID_PID_D,
+		"The <i>derivative</i> factor. which is multiplied by the <i>difference</i> "
+		"in the change in the degrees from the previous swing, "
+		"for the <b>1st PID controller</b>, which tries to get the Pendulum to swing "
+		"at the <i>target angle</i> by modifying the <i>power</i>.",
+	ID_APID_P,
+		"The <i>proportional</i> factor, which is muliplied by the <i>instantaneous cycle error</i>, "
+		"for the <b>2nd PID controller</b>, which tries to get the Pendulum to swing "
+		"at the <i>the correct rate</i> by modifying the <i>target angle</i>.",
+	ID_APID_I,
+		"The <i>integral</i> factor, which is muliplied by the <i>cumulative milliseconds error</i>, "
+		"for the <b>2nd PID controller</b>, which tries to get the Pendulum to swing "
+		"at the <i>the correct rate</i> by modifying the <i>target angle</i>.",
+	ID_APID_D,
+		"The <i>derivative</i> factor. which is multiplied by the <i>difference</i> "
+		"in the milliseconds per swing from the previous swing, "
+		"for the <b>2nd PID controller</b>, which tries to get the Pendulum to swing "
+		"at the <i>the correct rate</i> by modifying the <i>target angle</i>.",
+	ID_RUNNING_ANGLE,
+		"The <b>angle</b>, in <i>degrees</i> at which the Pendulum must swing "
+		"in clock_modes ANGLE_START and higher "
+		"before the clock will change to CLOCK_STATE_RUNNING.",
+	ID_RUNNING_ERROR,
+		"The <b>cumulative angular error</b>, in <i>degrees</i> which the clock must fall under "
+		"in clock_modes ANGLE_START and higher "
+		"before the clock will change to CLOCK_STATE_RUNNING.",
+	ID_MIN_MAX_MS,
+		"The number of <i>milliseconds</i> fast, or slow, that the clock must be running "
+		"for a change between the minimum to the maxium <i>target angle</i> "
+		"in MIN_MAX mode.",
+	ID_CYCLE_RANGE,
+		"The <b>instantaneous</b> number of <i>milliseconds</i> fast, or slow, for the current swing, "
+		"that will cause the <i>4th LED</i> to change from <b>green</b> to <b>red</b> or <b>blue</b>.",
+	ID_ERROR_RANGE,
+		"The <b>cumulative</b> number of <i>milliseconds</i> fast, or slow, that will cause "
+		"the <i>3rd LED</i> to change from <b>green</b> to <b>red</b> or <b>blue</b>.",
+	ID_LED_BRIGHTNESS,
+		"Sets the brightness, on a scale of 0 to 254, where 0 turns the LEDS <b>off</b>.",
+	ID_PLOT_VALUES,
+		"If <b>not Off</b>, this parameter <i>suspends</i> normal Serial and Telnet Monitor output, "
+		"and instead, outputs a series of numbers every few milliseconds for use with the "
+		"Arduino <b>Serial Plotter</b> to visualize the swing of the Pendulum, the pulses "
+		"delivered to the clock, and so on.",
+	ID_SYNC_RTC,
+		"A <b>manual command</b> that allows you to immediatly trigger a synchronization "
+		"of the <b>Clock</b> to the <b>RTC</b> (embedded Real Time Clock). "
+		"Only can be done while the clock is <i>Running</i>. ",
+	ID_SYNC_INTERVAL,
+		"How often, in <i>seconds</i>, between attempts to synchronize the "
+		"<b>Clock</b> to the <b>RTC</b> (embedded Real Time Clock).",
+	ID_SYNC_NTP,
+		"A <b>manual command</b> that allows you to immediatly trigger a synchronization "
+		"of the <b>RTC</b> (Real Time Clock) to <b>NTP</b> (Network Time Protocol). "
+		"Only can be done while the clock connected to <b>WiFi</b> in <i>Station Mode</i>.",
+	ID_NTP_INTERVAL,
+		"How often, in <i>seconds</i>, between attempts to synchronize the "
+		"<b>RTC</b> (Real Time Clock) to <b>NTP</b> (Network Time Protocol). ",
+	ID_CLEAR_STATS,
+		"A command that will <i>clear</i> the accumulated <b>statistics</b> "
+		"that are sent to the <i>WebUI</i> as if the clock was freshly <b>started</b>",
+	ID_STAT_INTERVAL,
+		"How often, in <i>seconds</i> between sending "
+		"updated <b>statistics</b> to the <i>WebUI</i>.",
+	ID_STAT_MSG0,
+		"A <i>String</i> that is sent to the WebUI to display <b>statistics</b>.",
+	ID_STAT_MSG1,
+		"A <i>String</i> that is sent to the WebUI to display <b>statistics</b>.",
+	ID_STAT_MSG2,
+		"A <i>String</i> that is sent to the WebUI to display <b>statistics</b>.",
+	ID_STAT_MSG3,
+		"A <i>String</i> that is sent to the WebUI to display <b>statistics</b>.",
+	ID_STAT_MSG4,
+		"A <i>String</i> that is sent to the WebUI to display <b>statistics</b>.",
+	ID_STAT_MSG5,
+		"A <i>String</i> that is sent to the WebUI to display <b>statistics</b>.",
+	ID_STAT_MSG6,
+		"A <i>String</i> that is sent to the WebUI to display <b>statistics</b>.",
+	ID_TEST_COILS,
+		"A <i>control</i>, used for <i>testing</i>, that lets you directly energize the <b>coils</b> "
+		"by sending a value for the <b>power</b>, on a scale of <i>0 to 255</i>. "
+		"<br><b>BE SURE TO RETURN THIS TO ZERO AFTER USE!!</b>.",
+	ID_CHANGE_CLOCK,
+		"A <i>control</i> that lets you <b>add</b> a positive, or <b>subtract</b> a negative "
+		"<i>number of milliseconds</i> to the RTC (Real Time Clock). "
+		"This can be used to <i>test</i> syncing to <b>NTP</b> or other "
+		"aspects of the clock's <i>algorithms</i>.",
+	ID_VOLT_INTERVAL,
+		"With the <i>optional</i> <b>external power supply</b>, this parameter "
+		"tells how often, <i>in seconds</i> to check for <i>low power</i> or "
+		"<i>power restored</i> conditions.",
+	ID_VOLT_CALIB,
+		"With the <i>optional</i> <b>external power supply</b>, this parameter "
+		"is <i>multiplied</i> by the <i>calculated voltage</i> to get a "
+		"more reasonable <b>voltage</b> for use in the <i>low power sensing</i> algorithm.",
+	ID_VOLT_CUTOFF,
+		"With the <i>optional</i> <b>external power supply</b>, this parameter "
+		"defines the <b>voltage</b> under which the clock will switch to <i>low power mode</i>",
+	ID_VOLT_RESTORE,
+		"With the <i>optional</i> <b>external power supply</b>, this parameter "
+		"defines the <b>voltage</b> over which the clock will leave <i>low power mode</i>",
+	ID_LOW_POWER_EN,
+		"With the <i>optional</i> <b>external power supply</b>, this parameter "
+		"<b>enables</b> the clock to actually <i>go</i> into <i>low power mode</i>. ",
+
+
+	0 };
+
+// EXTRA TEXT added to description in PARAM command (but not for tooltips)
+
+const char *clock_extra_text[] = {
+    ID_CLOCK_TYPE,
+		"<b>Right</b> means that it will measure the cycle when the Pendulum crosses from "
+		"<i>left to right</i> through <i>zero</i> and "
+		"<b>left</b> means that it will measure the cycle when the Pendulum crosses from "
+		"<i>right to left</i> through <i>zero</i>.",
+	ID_START_DELAY,
+		"will take placed compared to the <i>minute crossing</i>. "
+		"A <i>negative</i> number will start the clock <i>before</i> the minute crossing, and "
+		"a <i>positive</i> number will start the clock <i>after</i> the minute crossing.",
+	ID_DEAD_ZONE,
+		"This is necessary so that we don't send a <i>pulse</i> to the"
+		"coil until <b>after</b> the Pendulum has crossed zero.",
+	ID_ANGLE_START,
+		"The clock will attempt to reach this angle before changing "
+		"state from CLOCK_STARTING to CLOCK_RUNNING. This value should be set <i>between</i>  "
+		"ANGLE_MIN and ANGLE_MAX.",
+	ID_LOW_POWER_EN,
+		"Note that if VOLT_INTERVAL is <b>not zero</b>, the clock will still <i>measure</i> "
+		"the voltage and <b>display</b>> the results in the Serial monitor even if "
+		"<i>low power mode</i> is <b>disabled</b>.  That allows you to test the <i>power sensing</i> "
+		"and <i>functionality</i> <b>before</b> actually sending the clock into "
+		"<b>low power mode</i> which also <b>Turns the Wifi off</b>.",
+
 	0 };
 
 
-//--------------------------------------------------
+
+//--------------------------------------------------0
 // params in this file, working vars in cpp
 //--------------------------------------------------
 
@@ -433,7 +628,7 @@ theClock::theClock()
 {
     addValues(m_clock_values,NUM_CLOCK_VALUES);
     setTabLayouts(dash_items,device_items);
-	addDerivedToolTips(clock_tooltips);
+	addDerivedToolTips(clock_tooltips,clock_extra_text);
 }
 
 

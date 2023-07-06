@@ -112,6 +112,10 @@ boot.
 Then I switched to some new *high quality* **LG** batteries, and
 it was able to power the clock for over **8 hours**.
 
+## Serial Plotter
+
+
+
 ## Possible Future Changes
 
 ### Bigger Holes and 4mm Tubes for Arms && Washers
