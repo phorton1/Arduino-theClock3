@@ -311,8 +311,8 @@ We set the clock to check for SYNC every 7200 seconds (two hours)
 
 This can be turned off in the UI.
 
-It might be necessary ... what about when it boots as an AP with no wifi?  That should
-work ok, but hullo, if you connect to a wifi, or disconnect, while the clock is running,
+It might be necessary ... what about when it boots as an AP with no WiFi?  That should
+work ok, but hullo, if you connect to a WiFi, or disconnect, while the clock is running,
 I'll bet that can really screw things up ... fortunately the ESP32 keeps the RTC while
 disconnecting, but I suspect if you went from Jan 1, 1970, to today's date, and just fed
 that to the algorithm, something bad would happen.  Simple solution ... just "restart"
@@ -324,7 +324,7 @@ the clock.
 We have carefully verified that, by default, the ESP32's clock is not automatically
 synchronized to NTP time during the normal functioning of the clock.
 
-**Requires WIFI and the clock attached as a STATION to your home Wifi network with
+**Requires WiFi and the clock attached as a STATION to your home WiFi network with
 access to the internet**
 
 *The myIOT framework, in fact, synchronizes the RTC to NTP when it connects succesfully

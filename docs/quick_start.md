@@ -27,7 +27,7 @@ and **first connect it to your local WiFi network**, and use the **Synchronized 
 described below to start the clock.
 
 The clock is designed to **synchronize itself** to the Network Time Protocol (NTP) if it is given a
-Wifi connection, with the idea that it should run within a second or so of the correct time for
+WiFi connection, with the idea that it should run within a second or so of the correct time for
 the forseeable future (until, hopefully, at least the *Y2038 problem*, when unix time will overflow 32 bits).
 If it is not connected to the internet, the best it can do is synchronize itself to the internal
 RTC (Real Time Clock) on the embedded computer, which, at best, will only be correct to within
@@ -37,10 +37,10 @@ A few notes:
 
 - The clock was shipped to you after a fresh **Factory Reset**.  You can, at any time, return the clock's
   software to it's initial state by issuing a Factory Reset as described in the **[User Manual](user_manual.md)**.
-- The **Wifi has been enabled by default**. It can be turned off (as described in the **[User Manual](user_manual.md)**)
+- The **WiFi has been enabled by default**. It can be turned off (as described in the **[User Manual](user_manual.md)**)
   if you are paranoid about your home network security.
   Substantial efforts were put into ensuring that the clock does not create any significant security risk
-  to your home network, but just in case, I added the ability for you to disable the clock's Wifi access entirely.
+  to your home network, but just in case, I added the ability for you to disable the clock's WiFi access entirely.
 - Although I have tried my best to produce a reliable clock, **some maintenance may be necessary**.  In particular
   it may be necessary once every few years, or more often, to lubricate the bearings and brass tubes.
 - **PLEASE DO NOT TURN THE SECONDS HAND COUNTER-CLOCKWISE!!** The hands are merely compression fitted to the
@@ -61,7 +61,7 @@ A few notes:
 - Power Up!
 - Connect to theClock
 -- Change Default Password
--- Specify Wifi SSID and password
+-- Specify WiFi SSID and password
 -- Verify Connection
 - Reboot
 - Start Clock Synchronized
@@ -129,27 +129,27 @@ Please see the online **[Trouble Shooting](trouble.md)** guide, or contact me if
 
 The meaning of the LEDs is described more fully below, but for now suffice it to say
 that the **Left Purple LED** indicates that the clock is in **AP (Access Point)) Mode**
-which means that you can connect to it via Wifi.
+which means that you can connect to it via WiFi.
 
 
 ### 4. Connect to the Clock (in Access Point Mode)
 
 When the clock is in **AP (Access Point)) Mode** (the left-most LED is **purple**)
-it will show up on your home computer or phone as a **Wifi Network** to which you can attach.
+it will show up on your home computer or phone as a **WiFi Network** to which you can attach.
 
-You will **connect** to the clock, be required to **change it's wifi password**, and then
-will tell it how to **connect to your home Wifi network**.  By connecting to your home
-Wifi network (and presumably to the internet via that) the clock will have access to
+You will **connect** to the clock, be required to **change it's WiFi password**, and then
+will tell it how to **connect to your home WiFi network**.  By connecting to your home
+WiFi network (and presumably to the internet via that) the clock will have access to
 the **NTP (Network Time Protocol)** from which it can find the correct time.
 
 Just in case you are concerned,
 **apart from connecting to NTP, the clock does not use or present itself in any way to the internet!!**
-However, once it is connected to your home Wifi network, **YOU** will be able to access it
+However, once it is connected to your home WiFi network, **YOU** will be able to access it
 via a browser based **WebUI** if you so wish.
 
-In any case, please perform the following steps to connect the clock to your Wifi network.
+In any case, please perform the following steps to connect the clock to your WiFi network.
 
-- From a laptop or home computer (preferable) or phone/tablet connect to **theClock3** wifi network
+- From a laptop or home computer (preferable) or phone/tablet connect to **theClock3** WiFi network
 - The default password is **11111111**  (eight ones).
 
 ![quick_start11-ConnectAP.png](images/quick_start11-ConnectAP.png)
@@ -163,22 +163,22 @@ In any case, please perform the following steps to connect the clock to your Wif
 ![quick_start12-SetPassword.png](images/quick_start12-SetPassword.png)
 
 - After you set the AP Mode password, you will be presented with a page that allows you to
-  tell the clock the **SSID** and **password** of your home wifi network.
+  tell the clock the **SSID** and **password** of your home WiFi network.
 - These credentials are stored in an encrypted form on the clock's computer and
   will never be presented to anyone in a human readable form !!
 
 ![quick_start13-ConnectWifi.png](images/quick_start13-ConnectWifi.png)
 
-- **Enter the SSID and password of your home Wifi network** and press the **Join
+- **Enter the SSID and password of your home WiFi network** and press the **Join
   Button**.
 - If, after 15 seconds or so, **you do NOT receive an error message, then everything worked ok!!**
 
 That's it!   The only thing that can be done from **AP Mode** is to tell the clock
-a wifi network to connect to.
+a WiFi network to connect to.
 
-The clock *tries* to report when it has sucessfully connected to your home wifi network, but
+The clock *tries* to report when it has sucessfully connected to your home WiFi network, but
 because it cannot be connected in both AP and STA mode at the same time (unless your home
-wifi network *happens* to be on the same "channel" as the clock's AP mode), typically
+WiFi network *happens* to be on the same "channel" as the clock's AP mode), typically
 it is not able to report to the browser that it connected successfully.  However, you
 may get lucky and see a message of the form "theClock3 succesfully connected to YOUR_SSID
 at IP Addresss XXX.XXX.XXX.XXX".
@@ -186,27 +186,27 @@ at IP Addresss XXX.XXX.XXX.XXX".
 ![quick_start14-Connected.png](images/quick_start14-Connected.png)
 
 In any case, **if you DONT see an error message at this point** after 10-15 seconds then the clock has succesfully connected
-to your home wifi network.
+to your home WiFi network.
 If you **DO RECEIVE AN ERROR MESSAGE** please re-enter the SSID and password and try again. You
 can reboot the clock (disconnect and reconnect the power supply) and try this again.  You may
 need to reboot your laptop/tablet/phone, although everything *should* work the first time through.
 
-When the clock is connected to your home wifi network, it is said to be in **Station (STA) Mode**.
+When the clock is connected to your home WiFi network, it is said to be in **Station (STA) Mode**.
 
 
 ### 5. Reboot
 
-Once you have connected the clock to your Wifi network, you may reconnect your Laptop/Tablet/Phone
-to your home wifi network.  When you do so, after about 15 seconds, the leftmost LED should change
+Once you have connected the clock to your WiFi network, you may reconnect your Laptop/Tablet/Phone
+to your home WiFi network.  When you do so, after about 15 seconds, the leftmost LED should change
 from **purple to green**.    When the leftmost LED is **green** it indicates the the clock is
-correctly attached to your home wifi network in **STA Mode**.
+correctly attached to your home WiFi network in **STA Mode**.
 
 If after 15 seconds or so the LED does NOT turn green, you may need to reboot the clock by
 disconnecting and reconnecting the USB power supply.
 
 **It is not a bad idea to reboot the clock in any case at this point**.
 
-When you reboot and the clock connects to your Wifi network, the same pattern of LEDs
+When you reboot and the clock connects to your WiFi network, the same pattern of LEDs
 should occur
 (the five LEDS will light up left-to-right in **cyan**, and then various other colors will show)
 except for now, when the boot is complete, only the
@@ -265,7 +265,7 @@ is running correctly and is accurate to within a few milliseconds of the correct
 
 The LEDs, from left to right, have the following meanings
 
-- the **left most LED** is **the System LED** and shows the status of the system, particularly the state of the **Wifi Connection**.
+- the **left most LED** is **the System LED** and shows the status of the system, particularly the state of the **WiFi Connection**.
 - the **second LED** is the **Clock State LED** it shows if the clock is running or not, and what stage of the startup process it is in.
 - the **third (middle) LED** is the **Clock Accuracy LED**.  If it is **green** then the clock is running, overall, within a few milliseconds of the correct time.
   The color shifts to **blue-ish** tints if the clock is running slightly slow, or **red-ish** tints if it is running slightly fast, overall
@@ -359,12 +359,12 @@ over again. There are 15 levels of brightness for the LEDS.
 
 There is a whole world of other functionality and access available with the clock.
 
-All you need to know is the **IP Address** that your wifi-network has assigned to the clock and,
+All you need to know is the **IP Address** that your WiFi-network has assigned to the clock and,
 if you go to that IP address from a web-browser, you will be connected to the **Web UI** which
 allows you to control the clock, but also show you more detailed statistics about how it is running,
 to set various other modes of operation, and to tune and adjust the clock by changing various parameters.
 
-Typically once I have connected a clock to my own wifi-network, I go to my router's browser
+Typically once I have connected a clock to my own WiFi-network, I go to my router's browser
 based UI and assign it a **fixed IP address** based on it's MAC address, and set a bookmark
 in my browser so that I can easily access the WebUI and check on the status and/or adjust
 the clock's parameters.

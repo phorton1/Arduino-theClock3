@@ -133,7 +133,7 @@ The clock makes use of a library that I created, called
 [myIOT](https://github.com/phorton1/Arduino-libraries-myIOT), for
 creating parametrized devices with ESP32's.   By using this library
 the clock presents a **User Interface** over the **Serial Port** and/or
-a browser based **WebUI** and/or **Telnet** UI via **Wi-Fi** that
+a browser based **WebUI** and/or **Telnet** UI via **WiFi** that
 lets you control and monitor the clock.
 
 Much of the **behavior** of the clock can be modified using these UI's.

@@ -351,7 +351,7 @@ and *it will retry five times* to initialize the AS5600, so, in total you
 
 After 30 seconds or so the last LED in the strip should turn
 <font color='green'><b>green</b></font>
-if you connected the ESP32 to your home Wifi in *B6. Connect to theClock's WebUI* above, or
+if you connected the ESP32 to your home WiFi in *B6. Connect to theClock's WebUI* above, or
 <font color='purple'><b>purple</b></font>
 if you did not and the clock is in *Access Point Mode*.
 
@@ -376,16 +376,16 @@ parameter change values each time you press the button.
 To test the left button, **Medium Press** the **left** button by holding for two or more seconds
 (but *less than 8 seconds!!*) until the 1st LED changes from **white**
 to <font color='cyan'><b>cyan</b></font>.
-When you let it up, you will toggle the **WIFI on and off**.
+When you let it up, you will toggle the **WiFi on and off**.
 
 The last LED in the strip will turn <font color='blue'><b>blue</b></font> when
-the Wifi is turned **off** and will turn back to <font color='green'><b>green</b></font>
-when it connects to your Wifi, or to <font color='purple'><b>purple</b></font>
+the WiFi is turned **off** and will turn back to <font color='green'><b>green</b></font>
+when it connects to your WiFi, or to <font color='purple'><b>purple</b></font>
 when it starts an Access Point.
 
-If you are running the *WebUI* and you turn Wifi **off** you will notice that
+If you are running the *WebUI* and you turn WiFi **off** you will notice that
 the buttons and entry controls in the browser will be *greyed out* and *disabled*
-while Wifi is turned off.  When you turn Wifi back **on** again, after a
+while WiFi is turned off.  When you turn WiFi back **on** again, after a
 few seconds, the WebUI *should* **reconnect** to the clock and *enable*
 the buttons and entry controls.
 
