@@ -36,7 +36,7 @@ and/or sand the *long ends of the tubes* to make sure the gears overlap,
 there is a bit of play, and they turn nicely once the **bridge** is attached.
 
 
-## B. Assemble Parts to the Frame
+## A. Assemble Parts to the Frame
 
 We will now assemble the *majority* of the clock onto the **frame**,
 including the *angle sensor*, *gear train*, *front bridge* and *face*,
@@ -122,7 +122,7 @@ Mount it as far away from the pendulum as possible and snug, but do not tighten 
 ![build-magnetic_spring.jpg](images/build-magnetic_spring.jpg)
 
 
-## C. Assemble Gears and Bridge
+## B. Assemble Gears and Bridge
 
 We are now ready to insert the **gear assemblies** into the frame.
 
@@ -199,7 +199,7 @@ and/or **add or change washer combination** at the back of the *Seconds Tube*.
   goes *through* the **Wire Tie** for the sensor cable.
 
 
-## D. Top Tube Assembly
+## C. Top Tube Assembly
 
 This is the *hardest* step in the Assembly process to explain.
 
@@ -323,7 +323,7 @@ the spacer so that we know how it supposed to be positioned on the Tube.
 
 
 
-## E. Assemble Arms and Pawls
+## D. Assemble Arms and Pawls
 
 The below photo shows the parts that are used in assmbling the *Arms and Pawls*.
 
@@ -350,7 +350,7 @@ Then assemble each arm as follows:
 
 
 
-## F. Attach Arms and Pawls
+## E. Attach Arms and Pawls
 
 The **Pawls must ride on the Seconds Wheel**.  So there
 is some *jiggling* and *adjustment* needed as you screw
@@ -381,7 +381,7 @@ to get the spacing correct.
 
 
 
-## G. Attach Face and Hands
+## F. Attach Face and Hands
 
 - align and attach the **Face** with two **M3x12** wood screws
 - *push and turn* a 3/16" **10x6mm** *wooden stop washer* onto the *Hours Tube*
@@ -438,7 +438,7 @@ to get the clock **ticking and tocking correctly** before moving on and trying t
 started configuring the *software*!
 
 
-## H. Secure the Clock to the Box
+## G. Secure the Clock to the Box
 
 In the previous step we already *mounted* the **Assembled Clock** onto the **Box**.
 I usually don't add the *screws* and *Top* wooden pieces until I have finished [Tuning](tuning.md)

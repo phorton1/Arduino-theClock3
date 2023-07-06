@@ -20,7 +20,7 @@ lacquer based **clear coat** on the parts and let the natural colors of the
 different types of wood show through.
 
 
-## 1. Cutting the Wood
+## A. Cutting the Wood
 
 Here is a screen grab of the Lightburn [AllParts.lbrn2](lightburn/all_parts.lbrn2)
 project showing and naming all of the wooden parts that are laser cut.
@@ -81,7 +81,7 @@ The **sizes** of the various washers and spacers is included as a
 *non-cutting layer* in the various **Lightburn** projects so that
 can see them, but it is **up to you** to keep track of them!
 
-## 2. Assemble the Frame
+## B. Assemble the Frame
 
 It is important to dry fit the frame together and know ahead
 of time how you will assemble and clamp it.  It is also
@@ -130,7 +130,7 @@ of the frame and back of the bridge, and 3-4 coats to the
 exterior and front.
 
 
-## 3. Assemble the Face
+## C. Assemble the Face
 
 The **hash marks** on the *face* are engraved before cutting.
 **Finish sand** the face **before** cutting it and try to handle
@@ -166,7 +166,7 @@ rubbing the last coat down with a clean paper towel,
 to get a nice sheen.
 
 
-## 4. Glue the Arm Washers to the Arms
+## D. Glue the Arm Washers to the Arms
 
 - Apply **wood glue** to the back of the two **11x3mm** *Arm Washers*
 - **Align** and *press* the Washers onto the Arms
@@ -182,18 +182,18 @@ apply a *clamp* (or lay them down and put a small *weight* on top of them).
 
 
 
-## 5. **Sand** and clear-coat the **Gears** and **other parts**
+## E. **Sand** and clear-coat the **Gears** and **other parts**
 
 My *least favorite* part of the entire build process is **sanding the gears**
 and the rest of the small parts.
 
-(A) **Inspect each gear carefully**.  If there are any *defective* or *delaminated*
+1. **Inspect each gear carefully**.  If there are any *defective* or *delaminated*
 teeth they need to be **repaired** (or another instance of the particular gear
 needs to be re-cut with the laser).  I have used wood glue, epoxy glue, and
 even the **baking soda and super glue** trick to repair individual teeth on
 gears before and during the sanding process.
 
-(B) **Make sure the ends of your brass tubes are sanded and smooth** before
+2. **Make sure the ends of your brass tubes are sanded and smooth** before
 inserting them into parts so that they don't damage the holes!
 Test fit all the pieces onto their appropriate brass tubes.
 Make sure the **pendulum, gears, cam,** and **hands** fit onto
@@ -208,28 +208,28 @@ the **hands are snug** when compression fit on their particular brass tubes.
 ![wood-gears1.jpg](images/wood-gears1.jpg)
 ![wood-gears2.jpg](images/wood-gears2.jpg)
 
-(C) For **each gear** and **every tooth** sand them *lightly* with 220 or 300
+3. For **each gear** and **every tooth** sand them *lightly* with 220 or 300
 grit sand paper. You have to be very careful when sanding the gears to **NOT**
 delaminate the plywood and chip the gears!!
 
-For the **big gears**, after sanding the teeth, sand the **interior openings**
+4. For the **big gears**, after sanding the teeth, sand the **interior openings**
 then clean everything with a paper towel before sanding the **back** and **face**
 of each gear until they are clean enough to clear-coat.  This is an *art* more
 than it is a *science*.  **Do your best!!** ... you won't regret taking the
 time needed to make the gears as functionally and aesthetically
 nice as possible.
 
-(D) The **faces of the pawls** and the **contact points** on the cam will also need
+5. The **faces of the pawls** and the **contact points** on the cam will also need
 to be smooth.  The process varies with my feelings.  Sometimes I clear-coat them
 first and then only sand these pieces once afterwards to minimize the
 amount of material removed.
 
-(E) In any case, it is important to **apply several clear-coats** to the gears,
+6. In any case, it is important to **apply several clear-coats** to the gears,
 particularly *saturating the **teeth** and **contact points***.
 The clear coat adds significant strength and **wear resistance** to these
 parts.
 
-(F) After clear coating and allowing to dry thoroughly, **re-sand each tooth**
+7. After clear coating and allowing to dry thoroughly, **re-sand each tooth**
 and all **contact points** to minimize friction.  I like to do the second
 sanding of the small (pinon) gears by aligning each pair of pinon gears
 on a **brass tube** and then doing the second pass at sanding their teeth
@@ -240,7 +240,7 @@ of the *gears, arms, pawls,* and *arm supports* .. any place where two
 pices of wood will be facing each other.
 
 
-##  6. Align and glue to the **sets of gears** together
+## F. Align and glue to the **sets of gears** together
 
 Each **gear assembly** consists of one large gear with two smaller *pinon gears*
 (or one *spacer*) glued together in a *stack*.  I use *5 minute epoxy* to glue the gears together.
@@ -258,7 +258,7 @@ The following picture shows the big gears and each pair of smaller gears
 
 ![wood-gears_and_names.jpg](images/wood-gears_and_names.jpg)
 
-(A) Jury rig an apparatus so that you can **spin the gears** and **align them**
+1. Jury rig an apparatus so that you can **spin the gears** and **align them**
 as the glue is setting up.  For instance the **4 mm tubes** turn nicely
 on **3mm threaded rods**, so for those gears that go on 4mm tubes I rig
 up a contraption with a 3mm threaded rod on which I can spin the 4mm tube
@@ -275,11 +275,11 @@ Also ***note*** that, wheras there are always **two** small *pinon gears* glued
 to the larger gears, there is **only one** *3/16" spacer* glued to the front
 of the *Hours2b* gear.
 
-(B) **BE CAREFUL NOT TO GLUE THE GEARS TO THE TUBES!!**.  We will
+2. **BE CAREFUL NOT TO GLUE THE GEARS TO THE TUBES!!**.  We will
 **cut the tubes later** and we don't want to damage the tubes
 during this process.
 
-(C) Apply a small amount of **5 minute epoxy** glue as needed,
+3. Apply a small amount of **5 minute epoxy** glue as needed,
 press the three gears together on the tube, **spin** them, and **adjust**
 them get them as **square as possible** before the epoxy sets up.
 
@@ -290,7 +290,7 @@ a **wobbly gear** it is probably better to just re-cut, re-sand,
 and create a new assembly than to try to use a mis-aligned gear
 asembly in your finished clock!
 
-(D) After the glue has **set up** (about 5 minutes), slide the sub-assembled
+4. After the glue has **set up** (about 5 minutes), slide the sub-assembled
 gears off the tubes and set them aside.  **CLEAN THE TUBES WITH ALCOHOL**
 after each subassembly.
 

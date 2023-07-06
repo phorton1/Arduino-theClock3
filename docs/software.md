@@ -200,10 +200,10 @@ the instantaneous and cumulative **milliseconds error**.
 
 - **MIN_MAX** -	uses a simple algorithm based on the ID_MIN_MAX_MS parameter,
   which defaults to **50 milliseconds**.  When the **cumulative ms error**
-  is *greater* than ID_MIN_MAX_MS (the clock is running slow), we set the
+  is *greater* than MIN_MAX_MS (the clock is running slow), we set the
   *target angle* to ANGLE_MAX so that it will swing wider, start hitting
   the *magnetic spring* and speed up.  When the **cumulative ms error**
-  is *less* than -ID_MIN_MAX_MS (negative means the clock is running fast),
+  is *less* than -MIN_MAX_MS (negative means the clock is running fast),
   we set the *target angle* to ANGLE_MIN so that it will swing less and
   beat slower.  By alternating between these two *target angles* the
   clock keeps *relatively accurate* time.
