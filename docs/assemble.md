@@ -32,7 +32,7 @@ the other **sub-assemblies** that are needed before we can proceed to the
 
 
 
-## 1. Cut Tubes and Rods to Length
+## A. Cut Tubes and Rods to Length
 
 We will now **cut the brass tubes** and **M3 threaded rod** to lengths.
 
@@ -82,7 +82,7 @@ Here is a table showing the lengths of the tubes/rods to be cut:
 
 
 
-## 2. Glue Tubes into Gear Assemblies
+## B. Glue Tubes into Gear Assemblies
 
 Each of the five **gear assemblies** are glued to the appropriate
 tube with *5 minute epoxy*.  The *spacing* of the tubes into the
@@ -116,7 +116,7 @@ If you do, *immediately* clean the inside of the tube end with a paper towel, we
 
 
 
-## 3. Assemble the Pendulum
+## C. Assemble the Pendulum
 
 The **pendulum** is made up of the 3/16" thick *main wooden piece*, four
 1/8" thick *pendulum covers*, the large *lead fishing weight*, the
@@ -124,7 +124,7 @@ M3 threaded *pendulum* rod, and *m3 hex nut* and two *m3 square nuts*.
 
 ![assem-pendulum.jpg](images/assem-pendulum.jpg)
 
-### a. Prepare the **lead fishing weight**
+### 1. Prepare the **lead fishing weight**
 
 - **Drill** to enlarge the hole in the fishing weight to 2.5mm and **Tap**
   it with *M3 threads*.
@@ -133,7 +133,7 @@ M3 threaded *pendulum* rod, and *m3 hex nut* and two *m3 square nuts*.
 - **Polish** the weight to a shiny surface by *spinning it on an M3 rod
   in a hand drill* and sanding it with 120 and then 220 grit sand paper
 
-### b. Build the **pendulum**
+### 2. Build the **pendulum**
 ![assem-assemble_pendulum.gif](images/assem-assemble_pendulum.gif)
 
 - thread one **M3 square nut** onto the end of the M3 *Pendulum
@@ -155,7 +155,7 @@ it and the *super-glued nut* should **NOT** turn.  If you have a problem with
 this you can also add a **drop of 5 minute epoxy** to the top nut sitting
 in the slot.
 
-### c. Glue the **main magnets** to the pendulum
+### 3. Glue the **main magnets** to the pendulum
 
 **You *should* have determined the *correct orientation* of the magnets
 previously when testing the Software on the [previous page](software.md).*
@@ -172,7 +172,7 @@ coil plugs later when we start [Tuning](tuning.md) the clock.
 
 
 
-## 4. 3D print the Box and glue/screw things into it
+## D. 3D print the Box and glue/screw things into it
 
 3D printing the box takes a **long time**.  It took about *9 hours* for me to
 print it on my Prusa MK3s 3D printer.  After printing, **clean it up** to
@@ -191,7 +191,7 @@ them apart, and a set of the **coil spacer washers** and clean them up.
 ![assem-3D_print_lenses.jpg](images/assem-3D_print_lenses.jpg)
 ![assem-3D_print_washers.jpg](images/assem-3D_print_washers.jpg)
 
-### a. Glue the coils into the box
+### 1. Glue the coils into the box
 
 I usually do the *rear coil* first, and then the front one.  It is
 important to **dry fit** the coils into the box and **enlarge the
@@ -227,7 +227,7 @@ able to secure it with a weight at the end, so you may want to have
 a *small clamp* handy and ready to go to clamp the coil into place
 while the glue sets.
 
-### b. Glue the LED lenses into the box
+### 2. Glue the LED lenses into the box
 
 - Mix some **5 minute epoxy** and, on the *inside of the box* put **very small drops**
 at the corners of each of the 5 *indents* where the lenses go.
@@ -238,7 +238,7 @@ and protrude about 1mm out of the front of the box.
 
 ![assem-led_lenses.jpg](images/assem-led_lenses.jpg)
 
-### c. Hot Glue the LED Strip into place
+### 3. Hot Glue the LED Strip into place
 
 - With a **well heated** hot glue gun, place a drop of hot glue
   between each of the leds and at each end
@@ -252,7 +252,7 @@ and protrude about 1mm out of the front of the box.
 
 ![assem-led_strip.jpg](images/assem-led_strip.jpg)
 
-### d. Insert the PCB
+### 4. Insert the PCB
 
 - Insert the **PCB** into the box
 - Secure the **PCB** with four *M3x8* wood screws
@@ -263,7 +263,7 @@ and protrude about 1mm out of the front of the box.
 
 
 
-## 5. Glue together the Top Tube and Magnetic Sensor Cap
+## E. Glue together the Top Tube and Magnetic Sensor Cap
 
 We want to glue a **stopper** onto the Top Tube.  The stopper is necessary
 for the assembly and also provides us with a *handle* to pull the tube out
@@ -294,7 +294,7 @@ to the top tube when we assemble the clock.
 - **Wipe off** any stray epoxy and **re-center** the rings **as close as you can**!!
 
 
-## 6. Glue Magnets for the Magnetic Spring
+## F. Glue Magnets for the Magnetic Spring
 
 We are going to glue one of the *small* **3x2x2mm** magnets to the shaft of
 the pendulum and the remaining two into the *3D printed* **magnetic spring holder**.
@@ -305,7 +305,7 @@ of the frame) that they **repel** the magnet in the shaft of the
 pendulum!  Here is a diagram showing the *pendulum* and *magnet holder*
 **from the back** of the clock:
 
-### a. Glue the moving **spring magnet** into the Shaft of the Pendulum
+### 1. Glue the moving **spring magnet** into the Shaft of the Pendulum
 
 - put a drop of **5 minute epoxy** into the *indent* on the pendulum shaft.
 - set one **3x3x2mm magnet** into the slot so that it's *magnetic face*
@@ -315,7 +315,7 @@ pendulum!  Here is a diagram showing the *pendulum* and *magnet holder*
 
 ![assem-must_repulse.jpg](images/assem-must_repulse.jpg)
 
-### b. Glue the **stationary magnets** into the Magnet Holder
+### 2. Glue the **stationary magnets** into the Magnet Holder
 
 - *3D print* the **magnet holder**.
 - *Press two* **3x3x2mm magnets** into the holder. They should go down

@@ -267,10 +267,10 @@ then rig it up with a protruding (fixed) 4mm tube so that I can spin the
 5mm tubes and it's gears during the alignment process.
 
 ![wood-gears3.jpg](images/wood-gears3.jpg)
-*note: this photo is an assembly from a previous clock.  Be sure
+
+*Note: above photo is an assembly from a previous clock.  Be sure
 to glue the **correct gears** together (as shown in the previous image) in their
 **proper orientation!!***
-
 Also ***note*** that, wheras there are always **two** small *pinon gears* glued
 to the larger gears, there is **only one** *3/16" spacer* glued to the front
 of the *Hours2b* gear.

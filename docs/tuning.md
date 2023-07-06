@@ -24,7 +24,7 @@ and ensure the clock is in a *known state* by issuing a **Factory Reset**
 command.
 
 
-## 1. Factory Reset and AS5600 connection
+## A. Factory Reset and AS5600 connection
 
 With the clock *completely still* and the *Pendulum* hanging **straight
 down** type the command **factory_reset** into the serial monitor.
@@ -43,7 +43,7 @@ problem with the cable and connection to the AS5600 module before
 proceeding.
 
 
-## 2. Zero Angle Setting
+## B. Zero Angle Setting
 
 Once we are certain that the *AS5600 connection* is good, we can see
 if we need to *adjust* the **Magnetic Cap** on the *Top Tube*.
@@ -99,7 +99,7 @@ Once the Zero Angle has been succesfully set, we can proceed
 to the next step *3. Minimum Power Coil and Pendulum Test*.
 
 
-## 3. Minimum Power Coil and Pendulum Test
+## C. Minimum Power Coil and Pendulum Test
 
 We will now verify that the orientation of the the **magnet**
 in the Pendulum, the **coils** and their **plugs** are correct.
@@ -151,7 +151,7 @@ into the Serial monitor sto stop the Pendulum.
 
 
 
-## 4. Maximum Power Pendulum Test
+## D. Maximum Power Pendulum Test
 
 In this step we will verify that the Pendulum can swing at
 the **maximum target angle**.  *Note* that this test
@@ -210,7 +210,7 @@ and you can proceed to the next step.
 
 
 
-## 5. ANGLE_MIN test
+## E. ANGLE_MIN test
 
 We will now test the **1st PID controller**, which is used to cause the
 Pendulum to swing at a *given angle*.   We will issue the following
@@ -277,7 +277,7 @@ target angle, we repeat the process to make sure it can run at the
 maximum **ANGLE_MAX** in the next step.
 
 
-## 6. ANGLE_MAX test
+## F. ANGLE_MAX test
 
 This step assumes that the **Magnetic Spring** is adjusted **as
 far away** from the Pendulum as possible.  We don't want the
@@ -309,7 +309,7 @@ the ANGLE_MAX target angle, we can move to the next step,
 *7. Adjust the Pendulum Weight*.
 
 
-## 7. Adjust the Pendulum Weight
+## G. Adjust the Pendulum Weight
 
 Here we will **adjust** the weight on the Pendulum so that the
 Pendulum swings slightly *slower* than 1 second (more than 1000 millieconds) per swing.
@@ -335,7 +335,7 @@ swings that are much over *1020 ms*.
 *Design Note:  as currently designed in **v3.3** the weight typically needs to
 be adjusted far **up** on the rod to achieve the correct swing.*
 
-## 8. Adjust the Magnetic Spring
+## H. Adjust the Magnetic Spring
 
 In this (final) adjustment step, we will *fix the position* of the **Magnetic Spring**.
 During assembly, and up to this point, the Magnetic Spring *should have* been adjusted
@@ -374,7 +374,7 @@ page just does additional *testing* to see that the clock is running
 correctly.
 
 
-## 9. MIN_MAX test
+## I. MIN_MAX test
 
 This step is *optional* but I wanted you to know that the possibility exists.
 Before I implemented the *2nd PID controller*, I implemented a bare-bones way
@@ -406,7 +406,7 @@ until, at **-50 (negative 50 ms) or less**, it should **swtich** back to the min
 target angle, repeating the process over and over again.
 
 
-## 10. PID Mode (Tuning Finished!)
+## J. PID Mode (Tuning Finished!)
 
 The clock normally runs in **PID mode**.  Start the clock for **normal operation**
 by typing the following:

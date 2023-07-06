@@ -58,7 +58,7 @@ somehow.
 ![coils-finished2.jpg](images/coils-finished2.jpg)
 
 
-### 1. 3D Print the Tools and the Bobbin
+### A. 3D Print the Tools and the Bobbin
 
 I 3D print the Tools and two Bobbin (as a set) at 0.2mm layer heights
 for more resolution and accuracy.  The parts should be cleaned
@@ -80,7 +80,7 @@ hole, as you will be feeding the wire through it *while the bobbin is
 wound and loose and **covered in epoxy!!***
 
 
-### 2. Prep the Right Tool with Tape
+### B. Prep the Right Tool with Tape
 
 Prepare the **Right Tool** by putting plastic tape on it
 with a hole in the middle and securing that from the back
@@ -105,7 +105,7 @@ masking tape, and cut a hole through the middle of the packing
 tape for the rod to pass through.
 
 
-### 3. Assemble Tools and Bobbin
+### C. Assemble Tools and Bobbin
 
 *Note:  The photos in this section of the how I thread the parts
 on the rod are the opposite of what I do now. The instructions
@@ -138,7 +138,7 @@ You should now have the entire assembly in your hands, with the wire freely pass
 the inner hole.
 
 
-### 4. Insert assembly into Winding Machine and do First Turns
+### D. Insert assembly into Winding Machine and do First Turns
 
 Insert the assembly as follows:
 
@@ -164,7 +164,7 @@ After the first layer of turns I **tape the working end of the wire to my work s
 with a piece of masking tape, **stop**, take a break and a deep breath and **pause**!!
 
 
-### 5. Mix the 30 minute epoxy
+### E. Mix the 30 minute epoxy
 
 On an index card taped to my work surface, so that it wont move around as I try to get a drop on a toothpick with one hand,
 I mix a small batch of 30 minute epoxy.
@@ -176,7 +176,7 @@ You only get one chance!
 **FROM HERE DOWN YOU HAVE TO WORK QUICKLY AND ACCURATELY!!**
 
 
-### 6. Wind the coil adding epoxy as you go
+### F. Wind the coil adding epoxy as you go
 
 Remove the tape holding the working end to your work surface and prepare to feed
 the wire into the machine, working left and right to produce smooth layers of wire.
@@ -212,7 +212,7 @@ Also, it is important to **get as little epoxy as possible** on the
 **Left Tool** in the process.
 
 
-### 7. Feed the terminal end through the tool and finish the epoxy
+### G. Feed the terminal end through the tool and finish the epoxy
 
 **NOW THE TRICKY PART** When the winding is complete, the hard part is getting the wire end
 through the **notch in the Bobbin** and the corresponding **hole in the Left Tool** to come out
@@ -246,7 +246,7 @@ still turning*.  Scrub-a-dub!
 it to setup enough so that when we disassemble the tool it doesn't come apart.
 
 
-### 8. Remove and Unwind the assembly from the machine
+### H. Remove and Unwind the assembly from the machine
 
 So, after **about 3-5 more minutes** for the epoxy to setup, but while it is still **tacky** ....
 
@@ -262,7 +262,7 @@ So, after **about 3-5 more minutes** for the epoxy to setup, but while it is sti
 
 ![coils-final1.jpg](images/coils-final1.jpg)
 
-### 9. Disassemble and free the coil
+### I. Disassemble and free the coil
 
 Finally we disassemble the whole thing and pop the coil out of the tools
 
