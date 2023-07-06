@@ -17,7 +17,7 @@
 // VOLTAGE CHECKS and associated LOW_POWER_MODE are only
 // compiled in for specific clocks.
 
-#if 0
+#if 1
 	#define WITH_VOLTAGES   	1
 	#define VOLT_MODE_NORMAL    0
 	#define VOLT_DETECT_LOW     1
