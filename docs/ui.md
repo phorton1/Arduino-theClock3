@@ -79,9 +79,7 @@ When you first start the clock, it will show a certain pattern of LEDs as it boo
 connects to your WiFi network. It flashes all 5 LEDs **cyan** from left to right at initial start
 up to ensure that the LEDs are working.
 
-<table border='0' style='border:0px'>
-<tr><td width='200px'><img src='./images/LEDS_small-startup.gif'></td></tr>
-</table>
+<img src='./images/LEDS_small-startup.gif' width='200ox'>
 
 ### Special Startup Patterns
 
