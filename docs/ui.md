@@ -17,8 +17,8 @@
 On the [Software](software.md) page we gave an
 [Overview](./software.md#b-software-overview) of the Software
 of the clock, and described how to use the
-[Serial Monitor](./software.md#c-serial-monitor) and
-[connect to the Webui](./software.md#e-connect-to-webui)WebUI.
+[Serial Monitor](./software.md#c-serial-monitor) and how to
+[connect to the Webui](./software.md#e-connect-to-webui).
 
 On this page, we describe the **User Interfaces** of the clock in terms of:
 
