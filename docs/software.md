@@ -18,6 +18,13 @@
 This page describes how to install and build the **software**, upload it to the **ESP32**
 and do an initial **test** of the PCB cables and sub components.
 
+- [Install and Build the Software](#a-install-and-build)
+- Do an [Overview](#b-software-overview) of the Software
+- Boot up the ESP32 and explore the [Serial Monitor](#c-serial-monitor)
+- Do a [Hardware Test](#d-hardware-test) of the PCB and components
+- Connect to the [WebUI](#e-connect-to-webui)
+
+
 ## A. Install and Build
 
 ### 1. Install the [**myIOT**](https://github.com/phorton1/Arduino-libraries-myIOT/blob/master/docs/getting_started.md) Library
@@ -78,6 +85,8 @@ Start with a **bare ESP32 Dev Module** that is **NOT** plugged into the PCB we c
 6. Press the **Right Arrow** icon to **compile and upload** the **code** to the ESP32
 7. Use the **ESP32 Sketch Data Upload** command from the *Tools* menu to upload the
    contents of the sketches' **data** folder to the **SPIFFS File System** on the ESP32
+
+
 
 ## B. Software Overview
 
@@ -214,7 +223,8 @@ the instantaneous and cumulative **milliseconds error**.
   beat** as possible by minimizing the instantaneous and cumulative
   *milliseconds errors* simultaneously.
 
-### 3. Typical Serial Monitor Output
+
+## C. Serial Monitor
 
 There is a **lot** of Serial Output from the ESP32.  Use the *Arduino IDE
 **Serial Monitor*** to see the output and to **type commands** to control the clock.
@@ -253,7 +263,7 @@ these messages for later.
 
 
 
-### 4. See a list of the Clock's PARAMETERS (Values)
+### 1. See a list of the Clock's PARAMETERS (Values)
 
 If we now type the command **"values"**, followed by a carriage return,
 into the serial monitor, the clock will display a list of all of it's
@@ -261,7 +271,7 @@ into the serial monitor, the clock will display a list of all of it's
 
 ![soft-values.jpg](images/soft-values.jpg)
 
-### 5. Try settting a PARAMETER and REBOOTING
+### 2. Try settting a PARAMETER and REBOOTING
 
 There are a **lot** of different parameters available for controlling
 and understanding the clock.  They will be described more fully as we
@@ -289,23 +299,8 @@ return, into the serial monitor to reboot the ESP32.
 Try it!
 
 
-### 6. Connect to theClock's WebUI
 
-One thing that can be tested with the bare **ESP32 Dev module** at this point is
-that you can properly attach to the ESP32 via WiFi and access the **browser based Web
-User Interface**.
-
-Please see **Sections 4** and **Section 10** in the
-[**Quick Start Guide**](https://github.com/phorton1/Arduino-theClock3/blob/master/docs/QuickStartGuide.pdf)
-for details on how to connect to, and find the WebUI on your local **WiFi network**.
-
-It is not **necessary** to use the WebUI to test, control, and configure the clock,
-but it can make it **much easier** than typing commands, long-hand, into the serial monitor.
-
-![soft-WebUI.jpg](images/soft-WebUI.jpg)
-
-
-## C. Submodule Test of the PCB
+## D. Hardware Test
 
 The point of introducing the **software** at this point in the documentation is so that
 we can do a quick test of the **PCB** and some of the **peripherals and cables**
@@ -350,10 +345,8 @@ and *it will retry five times* to initialize the AS5600, so, in total you
 *should* see **25 red flashes of all five LEDs** as it boots.
 
 After 30 seconds or so the last LED in the strip should turn
-<font color='green'><b>green</b></font>
-if you connected the ESP32 to your home WiFi in *B6. Connect to theClock's WebUI* above, or
-<font color='purple'><b>purple</b></font>
-if you did not and the clock is in *Access Point Mode*.
+<font color='purple'><b>purple</b></font>, or
+<font color='green'><b>green</b></font> if you have previously connected to the WebUI.
 
 In either case the 2nd to last LED should continue to flash <font color='red'><b>red</b></font>
 to remind you that, *without the AS5600 module, the **clock will not work***.  That's
@@ -405,7 +398,6 @@ in the console as shown below:
 
 ![soft-AS5600_connected.jpg](images/soft-AS5600_connected.jpg)
 
-
 The last LED in the strip should eventually turn
 <font color='green'><b>green</b></font> or <font color='purple'><b>purple</b></font>,
 as before, but now, instead of **red** the 2nd to last LED will flash <font color='orange'><b>orange</b></font>
@@ -456,7 +448,147 @@ next steps of assembly!
 De-energize the coils by typing **test_coils=0** into the Serial Monitor.
 
 
-## D. Summary
+## E. Connect to WebUI
+
+The other thing that can be tested with the bare ESP32 and **PCB** at this point is
+that you can properly attach to the ESP32 via WiFi and access the *browser based*
+**WebUI** (Web User Interface).
+
+On a new ESP32, or after a *Factory Reset*, the ESP32 will boot with *Wifi ON*
+and go into **Access Point Mode**, which can be seen in the *Serial Monitor*,
+and which will be indicated by the last LED in the strip turning
+<font color='purple'><b>purple</b></font>.
+
+When in **AP** (Access Point) *mode*, the Clock will present itself as
+a **WiFi Network** that you can *attach to* from your computer, laptop
+or phone. The following example shows how to connect to the *WebUI*
+from a **Windows Laptop Computer**, but should work about the same from
+any other device.
+
+- Connect to the **theClock3** *WiFi Network*.  The default password is **11111111** (eight ones).
+- A browser *should* pop up asking you to change the **Access Point** password.
+- After you change the AP password, you will be presented with a window letting you specify the *SSID and password* to **your** *WiFi network*
+- After you enter the SSID and Password, theClock will connect to your WiFi Network
+
+Once theClock has connected to your WiFi network, you can
+access the **WebUI** at the **IP Address** of theClock on your network.
+You can get the IP address of the clock in a variety of ways:
+
+- it *may* have shown up in the browser when you connected theClock to your Wifi network
+- it **will** show in the *Serial Monitor*
+- it *may* be found by going to the **Windows Explorer Network Tab** and *right-clicking* on **refresh**
+- it **can** be found by going to your **router's WebUI** and seeing what **IP Address** the router assigned to theClock
+
+Note that in the following example, on **my** home Wifi network, the router assigned
+theClock an IP address of **10.237.50.13**.  Yours will be different, most likely
+something like **192.168.X.YYY** where X is 0 or 1, and YYY is some number between
+100 and 200 (i.e. **192.168.0.123**).
+
+### 1. Connect to theClock Access Point
+
+Select the **theClock3.3** Wifi Network from the list of available networks.
+
+![soft-selectAP.jpg](images/soft-selectAP.jpg)
+![soft-enterAP_password.jpg](images/soft-enterAP_password.jpg)
+
+Enter the default password  **11111111** (eight ones)
+
+### 2. Change the AP Password
+
+After a few seconds your system browser should *automatically* **pop up** with a (redirect page and then)
+a **page** which requires you to set a new password.  On some newer Android phones this page does not pop
+up automatically.  **IF YOU DON’T SEE THE BELOW WINDOW**, please open a browser on your machine and enter
+**192.168.1.254/captive** into the location bar to bring up the clock’s AP Mode UI (user interface).
+
+![soft-change_pass.jpg](images/soft-change_pass.jpg)
+
+Enter (and re-enter) and write down!! a new password for your clock's AP Mode.
+You will need this password (or a Factory Reset) in the future if you change your home
+network SSID or credentials.
+
+### 3. Specify the SSID and Password of your WiFi network
+
+After you set the new password, you will be presented with a page that allows you to tell the clock
+the **SSID and password** of your home Wi-Fi network.
+These credentials are stored in an encrypted form on the clock's c
+omputer and will never be shown to anyone.
+
+![soft-enter_SSID.jpg](images/soft-enter_SSID.jpg)
+
+Enter the SSID and password of your home Wi-Fi network and press the **Join** Button.
+<b>The last LED should turn <font color='orange'>Orange</font></b> as theClock
+connects to your WiFi network at this point.
+
+The clock tries to report when it has successfully connected to your home Wi-Fi network,
+but, because it *cannot be connected in both AP and STA mode at the same time*
+(unless your home Wi-Fi network happens to be on the same "channel" as the clock's AP mode),
+typically it is not able to report to the browser that it connected successfully.
+However, you *may get* lucky and see a message of the form "theClock3 successfully
+connected to YOUR_SSID at IP Address XXX.XXX.XXX.XXX", as in the window below:
+
+![soft-StationConnected.jpg](images/soft-StationConnected.jpg)
+
+In any case, if you **DONT** see an error message at this point after
+10-15 seconds then the clock has successfully connected to your home Wi-Fi network
+
+
+
+### 4. Determine the IP address of theClock
+
+- **Disconnect** from theClock and **reconnect** to your *home Wifi network*.
+- **Reboot** the clock.
+- The last LED should turn <font color='green'><b>green</b></font>.
+
+We need to determine the **IP Address** of the Clock, so that we can open the WebUI in a browser.
+You *may* have already gotten the IP address of theClock in the previous step.  Here are
+three other ways to get the IP Address.
+
+#### a. Get the IP Address from the Serial Monitor
+
+You should be able to see the IP Address of the clock in the **Serial
+Monitor** when you connected:
+
+![soft-STA_connect_serial.jpg](images/soft-STA_connect_serial.jpg)
+
+#### b. Get the IP Address from Router DHCP table
+
+If you bring the WebUI of your Wifi network **router** up in a browser, you
+should be able to find the **DHCP Client Table** of IP addresses
+the router has assigned. Here is an example of the DHCP client
+table from my Wifi Router, showing the IP address of **theClock3**.
+
+![soft-WiFiRouterTable.jpg](images/soft-WiFiRouterTable.jpg)
+
+#### c. Get the IP Address from Windows Explorer
+
+The clock supports **SSDP** (Service Search and Discovery Protocol), so it will automatically
+show up in the *Windows Explorer* **Network tab** as a network device.
+
+![soft-WindowsExplorer.jpg](images/soft-WindowsExplorer.jpg)
+
+Once you have found the **theClock3 icon**, you can open up the **Properties**
+for theClock3, and see it's IP address (and/or click on a link to go to the WebUI):
+
+![soft-theClock_properties.jpg](images/soft-theClock_properties.jpg)
+
+
+### 5. Go to the IP Address in a browser (bring up the **WebUI**)
+
+If you now bring up a brower, and go to that IP Address, you will see the WebUI
+
+![soft-WebUI.jpg](images/soft-WebUI.jpg)
+
+Please also see **Sections 4** and **Section 10** in the
+[**Quick Start Guide**](https://github.com/phorton1/Arduino-theClock3/blob/master/docs/QuickStartGuide.pdf)
+for details on how to connect to, and find the WebUI on your local **WiFi network**.
+
+It is not **necessary** to use the WebUI to test, control, and configure the clock,
+but it can make it **much easier** than typing commands, long-hand, into the serial monitor.
+
+The [**WebUI**](./ui.md#e-webui) will be described in more detail on the [UI](ui.md) documentation page.
+
+
+## Summary
 
 That's about it for an introduction to the software.  We just want to make sure
 the PCB basically works before we embed it, the LEDS, and the coils

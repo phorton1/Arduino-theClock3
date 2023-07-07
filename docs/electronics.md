@@ -14,6 +14,14 @@
 **[Troubles](troubles.md)** --
 **[Notes](notes.md)**
 
+On this page we will describe the steps involving in building the electronics for the clock,
+including:
+
+- the [Schematic](#schematic) for the circuit
+- the KiCad [PCB Design](#kicad-pcb-design)
+- [Creating](#creating-the-pcb) the PCB
+- [Soldering](#soldering-the-pcb) the PCB
+- Soldering and Creating the other [Cables and Connectors](#solder-and-create-other-cables) needed for the clock
 
 All of the files and design materials for the PCB can be found
 in the **/docs/kicad/pcb3.1** folder of this repository.
@@ -83,7 +91,7 @@ the magnetic fields collapse.
 
 
 
-### PCB (KiCad) Design
+###  KiCad PCB Design
 
 From the schematic I use the **PCB Design** capabilities of KiCad
 to *layout* the PCB. Here's a screen grab of that:

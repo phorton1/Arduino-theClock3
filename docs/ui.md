@@ -14,14 +14,19 @@
 **[Troubles](troubles.md)** --
 **[Notes](notes.md)**
 
+On the [Software](software.md) page we gave an
+[Overview](./software.md#b-software-overview) of the Software
+of the clock, and described how to use the
+[Serial Monitor](./software.md#c-serial-monitor) and
+[connect to the Webui](./software.md#e-connect-to-webui)WebUI.
+
 On this page, we describe the **User Interfaces** of the clock in terms of:
 
-- the two **Buttons** on the clock
-- the five **LEDS** on the clock
-- All of the **Parameters and Commands** available on the clock
-- the **Serial Monitor**
-- the **WebUI**, including how to do **OTA** Firmware Upgrades
-- the **Telnet** Serial Monitor
+- the two [**Buttons**](#a-buttons) on the clock
+- the five [**LEDS**](#b-leds) on the clock
+- All of the [**Parameters and Commands**](#c-parameters-and-commands) available on the clock
+- [**WebUI details**](#e-webui), including how to do [**OTA**](#3-ota) Firmware Upgrades
+- the [**Telnet**](#f-telnet-serial-monitor) Serial Monitor
 
 
 ## A. Buttons
@@ -191,19 +196,20 @@ ms of the correct time.
 	the 3rd LED turns from <font color='green'><b>green</b></font> to <font color='blue'><b>blue</b></font>
 	as the clock <b>slows down</b></td></tr>
 <tr><td width='200px'><img src='./images/LEDS_small-3_green_to_red.gif'></td><td>
-	the 3rd LED turns from <font color='green'><b>green</b></font> to <font color='red'><b>blue</b></font>
+	the 3rd LED turns from <font color='green'><b>green</b></font> to <font color='red'><b>red</b></font>
 	as the clock <b>speeds up</b></td></tr>
 </table>
 
-Note that the <i>range</i> of this change (150 ms) is determined by the CYCLE_RANGE paremeter as described below.
+Note that the <i>range</i> of this change (150 ms) is determined by the ERROR_RANGE paremeter
+as described below.
 
 
 ### 4. LED4 **Cycle Accuracy**
 
 The 4th LED shows the *instantaneous accuracy* for each **swing** (cycle) of the Pendulum
 to within 50 ms (1/20 of a second) of 1000 milliseconds,
-where <font color='green'><b>green</b></font> is good, and *transitioning* to
-<font color='blue'><b>blue</b></font> as the cycle slows to 1050ms per swing,
+where <font color='green'><b>green</b></font> the cycle is within a few milliseconds,
+and *transitioning* to <font color='blue'><b>blue</b></font> as the cycle slows to 1050ms per swing,
 or transitioning to <font color='red'><b>red</b></font> cycle speeds up to 950 ms
 per swing. Once again, you may need to pay attention to even see this
 LED change because the LED changes *subtly* as the Pendulum speeds up
@@ -216,12 +222,12 @@ or slows down.
 	the 4th LED turns from <font color='green'><b>green</b></font> to <font color='blue'><b>blue</b></font>
 	as the cycle gets <b>slower</b> than 1000 ms per cycle</td></tr>
 <tr><td width='200px'><img src='./images/LEDS_small-4_green_to_red.gif'></td><td>
-	the 4th LED turns from <font color='green'><b>green</b></font> to <font color='red'><b>blue</b></font>
+	the 4th LED turns from <font color='green'><b>green</b></font> to <font color='red'><b>red</b></font>
 	as the cycle gets <b>quicker</b> than 1000 ms per cycle</td></tr>
 </table>
 
 Note that the <i>range</i> of this change (1000 plus or minus 50 ms) is determined by the
-ERROR_RANGE paremeter as described below.
+CYCLE_RANGE paremeter as described below.
 
 ### 5. LED5 the **Sync** LED
 
@@ -246,7 +252,7 @@ and <font color='red'><b>red</b></font> means it is fast and the clock is trying
 	indicates that the clock is running more than 5 seconds slow.
 <tr><td width='200px'><img src='./images/LEDS_small-5_flashing_red.gif'></td><td>
 	if the 5th LED turns is <font color='red'><b>flashing red</b></font> it
-	indicates that the clock is running more than 5 seconds slow.
+	indicates that the clock is running more than 5 seconds fast.
 </table>
 
 After the LED turns to <font color='green'><b>green</b></font> during the
@@ -454,8 +460,13 @@ They are available via the **Serial Monitor**, the **Telnet Monitor**, or on the
 </table>
 
 
-## D. Serial Monitor
+
 ## E. WebUI
+
+We already described how to [connect to the Webui](./software.md#e-connect-to-webui) on the
+[Software](software.md) page.   Here we will describe some details about the WebUI.
+
+The WebUI makes use
 
 - WebSockets
 

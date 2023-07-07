@@ -40,7 +40,7 @@ to this one.
 	- install the *Arduino IDE* and necessary **libraries**
     - build the **code** and upload it, and the *SPIFFS file system* to the ESP32
 	- this page also has a quick *introduction and overview* of the **Software**
-	- do a quick **submodule test** of PCB (Buttons, LEDs, Coils, and Angle Sensor, etc)
+	- do a quick **hardware test** of PCB (Buttons, LEDs, Coils, and Angle Sensor, etc)
 - Create the **[sub-assemblies](assemble.md)** for the clock:
 	- cut and sand the **brass tubes** and **threaded rods** to length
 	- epoxy glue the *tubes* into the **Gears**

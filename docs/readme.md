@@ -58,7 +58,7 @@ On these pages you will find the following:
 - **[Wood](wood.md)** - **Laser Cutting** the wood and building the *Frame*, *Face*, and gluing the *Gears* together
 - **[Coils](coils.md)** - **Winding** the *electromagnet coils*
 - **[Electronics](electronics.md)** - Creating the custom **PCB** (printed circuit board), **Cables**, and **Connectors**
-- **[Software](software.md)** - Compiling and installing the **Software** and doing a submodule **test** of the electronics
+- **[Software](software.md)** - Compiling and installing the **Software** and doing a  **hardware test** of the electronics
 - **[Assemble](assemble.md)** - Build the **sub-assemblies** of the clock, including **cutting the tubes** and assembling the **Gears, Pendulum,** and **Box**
 - **[Build](build.md)** - **Final Build** of the clock, bringing all the *sub-assemblies* together into the finished *Clock*
 - **[Tuning](tuning.md)** - Describes the process of getting the clock to **run accurately**

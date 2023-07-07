@@ -19,17 +19,16 @@ This page will describe the remaining *miscellaneous* steps to build
 the other **sub-assemblies** that are needed before we can proceed to the
 [Final Build](build.md) of the clock.
 
-- Cut and sand the **brass tubes** and **threaded rods** to length
-- Epoxy glue the *tubes* into the **Gears**
-- Assemble the **Pendulum**
-- 3D print the **Box**
+- Cut and sand the [**brass tubes** and **threaded rods**](#a-cut-tubes-and-rods-to-length) to length
+- Epoxy glue the [**tubes** into the **Gears**](#b-glue-tubes-into-gear-assemblies)
+- Assemble the [**Pendulum**](#c-assemble-the-pendulum)
+- 3D print and Assemble the [**Box**](#d-3d-print-and-assemble-the-box)
   - epoxy glue the Coils into the box
   - epoxy glue LED Lenses into the box
-   - hot glue the LED Strip into the box
-   - screw the PCB into the box
-- Epoxy glue the *magnets* into the **Magnetic Spring**
-- Ereate the **Top Tube** with it's *handle*
-
+  - hot glue the LED Strip into the box
+  - screw the PCB into the box
+- Create the [**Top Tube** and **Magnetic Cap**](#e-prepare-top-tube-and-magnetic-sensor-cap)
+- Epoxy glue the *magnets* into the [**Magnetic Spring**](#f-glue-magnets-to-magnetic-spring)
 
 
 ## A. Cut Tubes and Rods to Length
@@ -170,9 +169,7 @@ coil plugs later when we start [Tuning](tuning.md) the clock.
 - center the magnets, as best as possible, in the hole in the wood.
 
 
-
-
-## D. 3D print the Box and glue/screw things into it
+## D. 3D print and Assemble the Box
 
 3D printing the box takes a **long time**.  It took about *9 hours* for me to
 print it on my Prusa MK3s 3D printer.  After printing, **clean it up** to
@@ -263,7 +260,7 @@ and protrude about 1mm out of the front of the box.
 
 
 
-## E. Glue together the Top Tube and Magnetic Sensor Cap
+## E. Prepare Top Tube and Magnetic Sensor Cap
 
 We want to glue a **stopper** onto the Top Tube.  The stopper is necessary
 for the assembly and also provides us with a *handle* to pull the tube out
@@ -294,7 +291,7 @@ to the top tube when we assemble the clock.
 - **Wipe off** any stray epoxy and **re-center** the rings **as close as you can**!!
 
 
-## F. Glue Magnets for the Magnetic Spring
+## F. Glue Magnets to Magnetic Spring
 
 We are going to glue one of the *small* **3x2x2mm** magnets to the shaft of
 the pendulum and the remaining two into the *3D printed* **magnetic spring holder**.

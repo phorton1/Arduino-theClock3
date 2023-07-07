@@ -365,7 +365,7 @@ static const char *clock_tooltips[] = {
 		"based on START_DELAY.",
 	ID_START_DELAY,
 		"Determines, in <i>milliseconds</i>, <b>before</b> or <b>after</b> the "
-		"minute crossing that the <i>Start Sync</i> will take place.",
+		"minute crossing, the time at which <i>Start Sync</i> will take place.",
 	ID_SET_ZERO_ANGLE,
 		"Sets the <b>Zero Angle</b> for the <i>Angle Sensor</i>.",
 	ID_ZERO_ANGLE,
@@ -441,7 +441,7 @@ static const char *clock_tooltips[] = {
 		"before the clock will change to CLOCK_STATE_RUNNING.",
 	ID_MIN_MAX_MS,
 		"The number of <i>milliseconds</i> fast, or slow, that the clock must be running "
-		"for a change between the minimum to the maxium <i>target angle</i> "
+		"for a change between the minimum and maxium <i>target angles</i> "
 		"in MIN_MAX mode.",
 	ID_CYCLE_RANGE,
 		"The <b>instantaneous</b> number of <i>milliseconds</i> fast, or slow, for the current swing, "
@@ -493,7 +493,7 @@ static const char *clock_tooltips[] = {
 	ID_TEST_COILS,
 		"A <i>control</i>, used for <i>testing</i>, that lets you directly energize the <b>coils</b> "
 		"by sending a value for the <b>power</b>, on a scale of <i>0 to 255</i>. "
-		"<br><b>BE SURE TO RETURN THIS TO ZERO AFTER USE!!</b>.",
+		"BE SURE TO RETURN THIS TO ZERO AFTER USE!!</b>.",
 	ID_CHANGE_CLOCK,
 		"A <i>control</i> that lets you <b>add</b> a positive, or <b>subtract</b> a negative "
 		"<i>number of milliseconds</i> to the RTC (Real Time Clock). "
@@ -529,7 +529,6 @@ const char *clock_extra_text[] = {
 		"<b>left</b> means that it will measure the cycle when the Pendulum crosses from "
 		"<i>right to left</i> through <i>zero</i>.",
 	ID_START_DELAY,
-		"will take placed compared to the <i>minute crossing</i>. "
 		"A <i>negative</i> number will start the clock <i>before</i> the minute crossing, and "
 		"a <i>positive</i> number will start the clock <i>after</i> the minute crossing.",
 	ID_DEAD_ZONE,
@@ -541,10 +540,10 @@ const char *clock_extra_text[] = {
 		"ANGLE_MIN and ANGLE_MAX.",
 	ID_LOW_POWER_EN,
 		"Note that if VOLT_INTERVAL is <b>not zero</b>, the clock will still <i>measure</i> "
-		"the voltage and <b>display</b>> the results in the Serial monitor even if "
+		"the voltage and <b>display</b> the results in the Serial monitor even if "
 		"<i>low power mode</i> is <b>disabled</b>.  That allows you to test the <i>power sensing</i> "
 		"and <i>functionality</i> <b>before</b> actually sending the clock into "
-		"<b>low power mode</i> which also <b>Turns the Wifi off</b>.",
+		"<b>low power mode</b> which also <b>Turns the Wifi off</b>.",
 
 	0 };
 

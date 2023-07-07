@@ -17,14 +17,25 @@
 On this page we will describe the process of **tuning** the clock.  We assume
 that you have completed the [Build Process](build.md) and that the clock
 is in *good mechanical shape* and **ticks and tocks** reliably when you
-move the *Pendulum* by hand.
+move the *Pendulum* by hand.  Tuning the clock involves the following steps:
+
+- Doing a [Factory Reset](#a-factory-reset)
+- Setting the [Zero Angle](#b-set-zero-angle)
+- Performing a [Minimum Power](#c-minimum-power-test) test
+- Testing the Pendulum at [Maximum Power](#d-maximum-power-test),
+  and the [Minimum](#e-angle_min-test) and
+  [Maximum](#f-angle_max-test) target angles
+- Adjusting the [Pendulum Weight](#g-adjust-pendulum-weight)
+- Adjusting the [Magnetic Spring](#h-adjust-magnetic-spring)
+- Trying a [MIN_MAX](#i-min_max-test) test, and, finally
+- Putting the clock into it's normal [PID Mode](#j-pid-mode)
 
 We will use the **Arduino Serial Monitor** to perform the tuning actions.
-and ensure the clock is in a *known state* by issuing a **Factory Reset**
+and ensure the clock is in a *known state* by first issuing a **Factory Reset**
 command.
 
 
-## A. Factory Reset and AS5600 connection
+## A. Factory Reset
 
 With the clock *completely still* and the *Pendulum* hanging **straight
 down** type the command **factory_reset** into the serial monitor.
@@ -33,7 +44,7 @@ The ESP32 will reboot and a series of LEDs will light up.
 
 If you see five <font color='red'><b>flashing red LEDs</b></font>
 there is a **problem with the AS5600 cable and/or module**. We already
-described this during the *Submodule Test* on the [Software](software.md)
+described this during the *Hardware Test* on the [Software](software.md)
 page.
 
 ![tuning-LEDS_five_flashing_red.gif](images/tuning-LEDS_five_flashing_red.gif)
@@ -43,7 +54,7 @@ problem with the cable and connection to the AS5600 module before
 proceeding.
 
 
-## B. Zero Angle Setting
+## B. Set Zero Angle
 
 Once we are certain that the *AS5600 connection* is good, we can see
 if we need to *adjust* the **Magnetic Cap** on the *Top Tube*.
@@ -99,7 +110,7 @@ Once the Zero Angle has been succesfully set, we can proceed
 to the next step *3. Minimum Power Coil and Pendulum Test*.
 
 
-## C. Minimum Power Coil and Pendulum Test
+## C. Minimum Power Test
 
 We will now verify that the orientation of the the **magnet**
 in the Pendulum, the **coils** and their **plugs** are correct.
@@ -108,7 +119,7 @@ so that they both have the **same color** wires going to the
 center, and outer lead of the coils, respectively, and that
 you have plugged them into the PCB into the correct sockets
 with the **same color** on each side, as shown in the
-**submodule test** portion of the [Software](software.md) page.
+**hardware test** portion of the [Software](software.md) page.
 
 Issue the following *two* commands into the serial monitor:
 
@@ -151,7 +162,7 @@ into the Serial monitor sto stop the Pendulum.
 
 
 
-## D. Maximum Power Pendulum Test
+## D. Maximum Power Test
 
 In this step we will verify that the Pendulum can swing at
 the **maximum target angle**.  *Note* that this test
@@ -205,9 +216,6 @@ running=0
 In any case, once we have verified that the clock can run at least at the *maximum
 target angle* at **maximum power**, issue the **running=0** command to stop the clock,
 and you can proceed to the next step.
-
-
-
 
 
 ## E. ANGLE_MIN test
@@ -309,7 +317,7 @@ the ANGLE_MAX target angle, we can move to the next step,
 *7. Adjust the Pendulum Weight*.
 
 
-## G. Adjust the Pendulum Weight
+## G. Adjust Pendulum Weight
 
 Here we will **adjust** the weight on the Pendulum so that the
 Pendulum swings slightly *slower* than 1 second (more than 1000 millieconds) per swing.
@@ -335,7 +343,7 @@ swings that are much over *1020 ms*.
 *Design Note:  as currently designed in **v3.3** the weight typically needs to
 be adjusted far **up** on the rod to achieve the correct swing.*
 
-## H. Adjust the Magnetic Spring
+## H. Adjust Magnetic Spring
 
 In this (final) adjustment step, we will *fix the position* of the **Magnetic Spring**.
 During assembly, and up to this point, the Magnetic Spring *should have* been adjusted
@@ -406,7 +414,7 @@ until, at **-50 (negative 50 ms) or less**, it should **swtich** back to the min
 target angle, repeating the process over and over again.
 
 
-## J. PID Mode (Tuning Finished!)
+## J. PID Mode
 
 The clock normally runs in **PID mode**.  Start the clock for **normal operation**
 by typing the following:
@@ -415,6 +423,7 @@ by typing the following:
 clock_mode=pid
 running=1
 ```
+It should now start running and keep **accurate** time!
 
 **CONGRATULATIONS!!!**  You now have a completely working **accurate magnetically
 driven wooden geared clock** !!!
