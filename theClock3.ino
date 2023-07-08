@@ -24,6 +24,7 @@
 
 	#define THE_CLOCK             	"theClock1.3"
 	#define THE_CLOCK_VERSION     	"1.3"
+	#define THE_CLOCK_URL			"https://github.com/phorton1/Arduino-theClock3"
 
 	#define DEFAULT_START_DELAY     -600			// negative ms BEFORE 0 crossing to start clock
 		// Note that clock 1.3 firmware has NOT been updated to this new code!
@@ -65,6 +66,7 @@
 
 	#define THE_CLOCK             	"theClock3.2"
 	#define THE_CLOCK_VERSION     	"3.2"
+	#define THE_CLOCK_URL			"https://github.com/phorton1/Arduino-theClock3"
 
 	#define DEFAULT_START_DELAY     -100		// negative ms BEFORE 0 crossing to start clock
 	#define DEFAULT_ANGLE_START 	10.0		// starting value for clock_pid control
@@ -104,6 +106,7 @@
 
 	#define THE_CLOCK             	"theClock3.3"
 	#define THE_CLOCK_VERSION     	"3.3"
+	#define THE_CLOCK_URL			"https://github.com/phorton1/Arduino-theClock3"
 
 	#define DEFAULT_START_DELAY     200			// postive ms AFTER 0 crossing to start clock
 	#define DEFAULT_ANGLE_START 	10.0		// starting value for clock_pid control
@@ -646,6 +649,8 @@ void setup()
 
     theClock::setDeviceType(THE_CLOCK);
     theClock::setDeviceVersion(THE_CLOCK_VERSION);
+	theClock::setDeviceUrl(THE_CLOCK_URL);
+
 
     LOGU("");
     LOGU("");
