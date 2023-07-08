@@ -1,4 +1,4 @@
-# theClock3 - Electronics Schematics and PCB (Build Continued)
+# theClock3 - Electronics PCB and Cables/Connectors(Build Continued)
 
 **[Home](readme.md)** --
 **[Design](design.md)** --
