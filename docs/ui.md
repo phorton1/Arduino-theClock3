@@ -1,4 +1,4 @@
-# theClock3 - User Interface
+# theClock3 - User Interface(s)
 
 **[Home](readme.md)** --
 **[Design](design.md)** --
@@ -20,12 +20,12 @@ On the [Firmware](firmware.md) page we already described how to use the
 we will decribe the rest of the **User Interface** of the clock
 in more detail, including:
 
-- the two [**Buttons**](#a-buttons) on the clock,
-- the five [**LEDS**](#b-leds) on the clock,
-- how to [**connect to your Wifi Network**](#c-connect-to-wifi), and access the
-- browser bawed [**WebUI**](#d-webui) for the clock,
-  including how to do [**OTA**](#3-ota) Firmware Upgrades
-- connecting to the clock using [**Telnet**](#e-telnet-serial-monitor) Serial Monitor
+- the two [Buttons](#a-buttons) on the clock,
+- the five [LEDS](#b-leds) on the clock,
+- how to [connect to your Wifi Network](#c-connect-to-wifi), and access the
+- browser bawed [WebUI](#d-webui) for the clock,
+  including how to do [OTA](#3-ota) Firmware Upgrades
+- connecting to the clock using [Telnet](#e-telnet-serial-monitor) Serial Monitor
 
 
 ## A. Buttons

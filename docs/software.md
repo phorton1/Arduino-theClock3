@@ -1,4 +1,4 @@
-# theClock3 - User Interface
+# theClock3 - Software
 
 **[Home](readme.md)** --
 **[Design](design.md)** --

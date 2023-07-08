@@ -120,7 +120,8 @@ so that they both have the **same color** wires going to the
 center, and outer lead of the coils, respectively, and that
 you have plugged them into the PCB into the correct sockets
 with the **same color** on each side, as shown in the
-[Hardware Test](firmware.md#d-hardware-test) portion of the [Firmware](firmware.md) page.
+[Hardware Test](firmware.md#c-hardware-test)
+portion of the [Firmware](firmware.md) page.
 
 Issue the following *two* commands into the serial monitor:
 

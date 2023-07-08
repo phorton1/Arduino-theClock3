@@ -20,16 +20,16 @@ This page will describe the remaining *miscellaneous* steps to build
 the other **sub-assemblies** that are needed before we can proceed to the
 [Final Build](build.md) of the clock.
 
-- Cut and sand the [**brass tubes** and **threaded rods**](#a-cut-tubes-and-rods-to-length) to length
-- Epoxy glue the [**tubes** into the **Gears**](#b-glue-tubes-into-gear-assemblies)
-- Assemble the [**Pendulum**](#c-assemble-the-pendulum)
-- 3D print and Assemble the [**Box**](#d-3d-print-and-assemble-the-box)
+- Cut and sand the [brass tubes and threaded rods](#a-cut-tubes-and-rods-to-length) to length
+- Epoxy glue the [tubes into the Gears](#b-glue-tubes-into-gear-assemblies)
+- Assemble the [Pendulum](#c-assemble-the-pendulum)
+- 3D print and Assemble the [Box](#d-3d-print-and-assemble-the-box)
   - epoxy glue the Coils into the box
   - epoxy glue LED Lenses into the box
   - hot glue the LED Strip into the box
   - screw the PCB into the box
-- Create the [**Top Tube** and **Magnetic Cap**](#e-prepare-top-tube-and-magnetic-sensor-cap)
-- Epoxy glue the *magnets* into the [**Magnetic Spring**](#f-glue-magnets-to-magnetic-spring)
+- Create the [Top Tube and Magnetic Cap](#e-prepare-top-tube-and-magnetic-sensor-cap)
+- Epoxy glue the *magnets* into the [Magnetic Spring](#f-glue-magnets-to-magnetic-spring)
 
 
 ## A. Cut Tubes and Rods to Length
