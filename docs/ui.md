@@ -25,8 +25,8 @@ On this page, we describe the **User Interfaces** of the clock in terms of:
 - the two [**Buttons**](#a-buttons) on the clock
 - the five [**LEDS**](#b-leds) on the clock
 - All of the [**Parameters and Commands**](#c-parameters-and-commands) available on the clock
-- [**WebUI details**](#e-webui), including how to do [**OTA**](#3-ota) Firmware Upgrades
-- the [**Telnet**](#f-telnet-serial-monitor) Serial Monitor
+- [**WebUI details**](#d-webui), including how to do [**OTA**](#3-ota) Firmware Upgrades
+- the [**Telnet**](#e-telnet-serial-monitor) Serial Monitor
 
 
 ## A. Buttons
@@ -461,20 +461,204 @@ They are available via the **Serial Monitor**, the **Telnet Monitor**, or on the
 
 
 
-## E. WebUI
+## D. WebUI
 
 We already described how to [connect to the Webui](./software.md#e-connect-to-webui) on the
-[Software](software.md) page.   Here we will describe some details about the WebUI.
+[Software](software.md) page.   Here we will describe a few more details about the WebUI.
 
-The WebUI makes use
+The WebUI makes use of **WebSockets** to communicate with the ESP32.  At the top
+of the WebUI page there is some cryptic text that describes how the WebUI is
+connecting, or connected, to the ESP32 via the Websockts (**WD**).
+Because of this, the WebUI **knows** when the ESP32 has been *rebooted*,
+and will *automatically reconnect* to the ESP32 any time communications
+are interrupted.
 
-- WebSockets
+The **parameters and commands** have already been described, above, and
+obviously, they can be viewed and modified via the WebUI.
+Here we will merely list some of the other important aspects of the
+Webui.
 
 ### 1. Panes
+
+There are four **panes** in the WebUI
+
+- the **Dashboard** pane shows the most **important** Clock commands and parameters
+
+![ui-pane_Dashboard.jpg](images/ui-pane_Dashboard.jpg)
+
+- the **Config** pane shows the Clock **configuration** commands and parameters
+
+![ui-pane_Config.jpg](images/ui-pane_Config.jpg)
+
+- the **Device** pane shows the parameters and commands common to all
+[**MyIOT**](https://github.com/phorton1/Arduino-libraries-myIOT) devices.
+
+![ui-pane_Device.jpg](images/ui-pane_Device.jpg)
+
+- the **SPIFFS** pane shows a listing of the SPIFFS **FileSystem** and has the **OTA** button.
+
+![ui-pane_SPIFFS.jpg](images/ui-pane_SPIFFS.jpg)
+
 ### 2. Clock Status Messages
+
+There are seven strings of **status messages** on the *Dashboard* pane of theClock.
+These status messages are sent from the ESP32 to the Webui,
+every 30 seconds (as given by the STAT_INTERVAL parameter).
+*while the clock is running*.
+
+Note that you can **Turn Statistics Off** by setting **STAT_INTERVAL=0**,
+modify the rate at which they are sent, by assinging a different value
+and **clear them** (reset and start accumulating new statistics without
+stoppping the clock) by using the **CLEAR_STATS** command.
+
+
+The seven strings of text are explained here
+
+#### STAT_MSG0 - num_bad and low_power stuff
+
+```text
+num_bad(5) restarts(0) NORMAL volts(5.20) vbus(5.69) num_low_powers(8)
+LAST_DOWN(2023-07-05 05:52:55.000)
+LAST_UP(2023-07-05 05:54:44.000)
+```
+
+The first thing in this line,  **num_bad(5)**, indicates that, since the clock
+was started, there were five *bad reads* of the Angle Sensor. It is *normal*
+for the Clock to occasionally fail to properly read the Angle Sensor.  If the Clock
+gets a reading that is more than *25 degrees* from the *Zero Angle* it will ignore
+that reading.  That number, in this example, is five bad reads out of the **billions**
+of reads that have taken place, 250 times per second, over the **211 hours** the clock
+has been running!
+
+The **rest** of this line is only shown if the VOLT_INTERVAL parameter is non-zero,
+and relate to the optional **low power mode** of the clock.  These lines are telling
+us that the clock is currently in **NORMAL** power mode (as opposed to **LOW** power
+mode), that the current **voltage** of the ESP32 is 5.20V, and that the cicruit is
+detecting 5.69V on the **VBUS** pin it monitors for sensing low power.
+
+We have had a lot of power outages here recently, and with **num_low_power(8)** the
+Clock is telling us that we have had eight power outages since the clock started!
+It then gives the dates and times of the **LAST_DOWN**, the last time the vbus voltage
+went below the VOLT_CUTOFF parameter, and the **LAST_UP**, the last time the vbus
+voltage rose back above the VOLT_RESTORE parameter.
+
+#### STAT_MSG1 - times
+
+```text
+TIME_START(2023-06-28 12:43:00.517)
+TIME_INIT(2023-06-28 12:43:02.104)
+CUR_TIME(2023-07-07 08:33:32.464)
+```
+
+This line gives three **date-times**.
+
+- TIME_START is the date and time of the **initial starting pulse** delivered to te coils
+- TIME_INIT is the date and time of the **first full cycle** of the clock
+- CUR_TIME is the current time from the ESP32 **RTC** (Real Time Clock)
+
+#### STAT_MSG2 - running seconds and beats
+
+```text
+RUNNING 211:50:30 == 762630 SECS 762630 BEATS
+```
+
+This line says that the clock has been **running** for 211 hours, 50 minutes, and 30
+seconds, which is equal to 762630 **seconds**, as well as telling us that the Pendulum
+has swung the same number of **beats**.
+
+#### STAT_MSG3 - accumulated overall statistics
+
+This line gives us a number of statistics that have been accumulated since the clock was started.
+Due to startup considerations and anomolies, while the clock is initially stabilizing,
+these values *aren't very useful*.
+*I probably should have used the CLEAR_STATS command before I wrote this
+section*, but this is an **actual run**, from an **actual clock**, that has been
+ticking within *1 second* of accuracy for well over a week.
+
+```text
+ALL cycle(964,1996) error(-93,1000) power(60,255) ang_error(-7.931,14.600)
+ANGLE target(9.000,11.500) left(-13.600,5.500) right(5.500,12.000)
+```
+
+- cycle(964,1996) - indicates that the pendulum has swung as quickly
+  as 964ms, and (probably on the first beat),
+  as slowely as 1996ms, in the 211 hours it has been running.
+- error(-93,1000) - says that the clock has been as much as 93ms fast,
+  and 1000ms slow over the 211 hours,
+- power(60,255) - says that the clock has variously sent out the full range
+  of power pulses from POWER_MIN to POWER_MAX
+- ang_err(-7.931,14.600) - is the accumulated angular error,
+  which has been as low as -7.931 degrees and as high as 14.6 degrees
+- ANGLE target(9.000,11.500) - says the clock has used target
+  angles over the entire range from ANGLE_MIN to ANGLE_MAX
+- left(-13.6,5.5) and right(5.5, 12.0) - saying the clock has swung
+  between -13.6 and 5.5 degrees to the left, and
+  between 5.5 and 12 degrees over to the right.
+
+
+#### STAT_MSG4 - statistics for the last 30 seconds
+
+This line gives us a number of statistics about how the clock has run in this most recent
+STAT_INTERVAL number of seconds. These numbers are much more reasonable.
+
+```text
+RECENT cycle(989,1008) error(-15,3) power(68,111) ang_error(-0.024,2.524)
+ANGLE target(10.289,10.478) left(-11.600,-10.800) right(9.200,10.000)
+```
+
+
+- cycle(989,1008) - indicates that the pendulum has between 989ms and 1008ms,
+  so no swing has been off by more than 1/100 of second or so, for the last 30 seconds
+- error(-15,3) - says that overall error has been between -15 and 3 milliseconds,
+  so, overall the clock has been accurate to within 15/1000, or about 1/60th of second over the last 30 seconds
+- power(68,111) - says that the clock has sent out pulses of between 68 and 111
+  (on a scale of 0..255) power.  This is a nice range, and not taxing the coils.
+- ang_err(-0.024,2.524) - the accumulated angular error has been between zero,
+  essentially, and 2.5 degrees, which is totally reasonable.
+- ANGLE target(10.289,10.478) - the clock has narrowed into a target angle between 10.289
+  and 10.478 degrees, or less than 1/4 degree difference, to get it to run at the correct time.
+- left(-11.6,-10.8) and right(9.2,10.0) - saying the clock has swung between -11.6
+  and -10.8 degrees to the left, and between 9.2 and 10.0 degrees to the right,
+  changes to the angle of the Pendulum's swing that would be hardly noticable to a human.
+
+So, this messsage indicates that the clock is running really well.
+
+#### STAT_MSG5 - SyncRTC stats
+
+```text
+SYNC(212/212) last(-56) total(-13342) abs(30560)
+```
+
+This message says that the clock has undergone 212 sucessfuly
+**synchornization cycles**, in total, slowing the clock
+down by just over 13 seconds (-13342 ms) over the last 211 hours
+to keep it accurate to the RTC.  The last correction
+was -56 milliseconds.  The abs(30560) (sum of the absolute values
+of all corrections) indicates that it has both corrected
+the clock forward, and backwards, in some cases.
+
+#### STAT_MSG6 - SyncNTP stats
+
+```text
+NTP(50/52) fails(2) last(-62) total (-4440) abs(5844)
+```
+
+This messages says tha the clock has syncronized to **NTP** 50 out of 52 times it tried.
+It is normal for the NTP synchronization (which uses UDP internet packet) to fail occasionally
+on my Wifi network, which does not maintain connectivity 100.000% of the time.
+
+In the 211 hours it has been running, the ESP RTC clock has been off (running fast)
+by about 4.4 seconds (-4440 ms).  That accounts for a large part of the corrections
+made above in the synchronizations.  The fact that the abs(5844) is much closer
+to the total than in STAT_MSG5 indicates that *most* of the NTP corrections have
+been in the same (negative) direction.
+
+
+
+### 3. SPIFFS upload
 ### 3. OTA
 
-## F. Telnet Serial Monitor
+## E. Telnet Serial Monitor
 
 
 **Next:** [**Trouble Shooting**](troubles.md) potential problems with the clock ...

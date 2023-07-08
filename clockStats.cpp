@@ -249,10 +249,6 @@ void updateStatsPidAngle(float pid_angle)
 // used in run()
 //=============================================
 
-void incStatRestarts()
-{
-	stat_num_restarts++;
-}
 
 void incStatBadReads()
 {
@@ -366,9 +362,7 @@ void formatTimeToStatBuf(const char *label, uint32_t time_s, uint32_t time_ms, b
 
 const char *getStatBufMain()
 {
-	sprintf(msg_buf,"num_bad(%d)  restarts(%d)",
-		stat_num_bad_reads,
-		stat_num_restarts);
+	sprintf(msg_buf,"num_bad(%d)",stat_num_bad_reads);
 
 	#if WITH_VOLTAGES
 		char *b = &msg_buf[strlen(msg_buf)];
