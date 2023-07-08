@@ -1,4 +1,4 @@
-# theClock3 - Accurate Wooden Geared Clock with Electromagnetic Pendulum
+# theClock3 - Accurate Electromagnetic Wooden Geared Clock
 
 **Home** --
 **[Design](design.md)** --
