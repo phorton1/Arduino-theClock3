@@ -6,11 +6,12 @@
 **[Wood](wood.md)** --
 **Coils** --
 **[Electronics](electronics.md)** --
-**[Software](software.md)** --
+**[Firmware](firmware.md)** --
 **[Assemble](assemble.md)** --
 **[Build](build.md)** --
 **[Tuning](tuning.md)** --
 **[UI](ui.md)** --
+**[Software](software.md)** --
 **[Troubles](troubles.md)** --
 **[Notes](notes.md)**
 

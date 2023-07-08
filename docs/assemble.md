@@ -6,11 +6,12 @@
 **[Wood](wood.md)** --
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
-**[Software](software.md)** --
+**[Firmware](firmware.md)** --
 **Assemble** --
 **[Build](build.md)** --
 **[Tuning](tuning.md)** --
 **[UI](ui.md)** --
+**[Software](software.md)** --
 **[Troubles](troubles.md)** --
 **[Notes](notes.md)**
 
@@ -157,7 +158,7 @@ in the slot.
 ### 3. Glue the **main magnets** to the pendulum
 
 **You *should* have determined the *correct orientation* of the magnets
-previously when testing the Software on the [previous page](software.md).*
+when testing the Firmware on the [previous page](firmware.md).*
 If you don't remember the correct orientation, or if you get it wrong
 **it's ok**.  You will merely need to reverse the orientation of the
 coil plugs later when we start [Tuning](tuning.md) the clock.

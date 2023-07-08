@@ -6,44 +6,16 @@
 **[Wood](wood.md)** --
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
-**[Software](software.md)** --
+**[Firmware](firmware.md)** --
 **[Assemble](assemble.md)** --
 **[Build](build.md)** --
 **[Tuning](tuning.md)** --
 **[UI](ui.md)** --
+**[Software](software.md)** --
 **[Troubles](troubles.md)** --
 **Notes**
 
-
-TODO:
-
-
-- Write Tuning Page
-- Write User Manual Page
-- Write Trouble Shooting Page
-
-- Notes - add photos and better desription of 2nd USB option
-- Notes - add photos and better desription of USB_UPS option
-
-
-TODO2:
-
-Build 3 more clocks, producing videos/pics along the way
-
-- Wood - Wood Cutting, sanding, and Frame assembly YouTube video
-- Coils - Coil Making YouTube Video
-- Electronics - Making PCB YouTube Video
-- Other/Assembly - Other and Assembly Build Montage YouTube video
-
-Photos:
-
-- Coils - correct rod orientation in coil winding pics
-- Electronics - better pic of coil soldering
-- Electronics - pic of coil heat shrink stress relief glue
-- Electronics - image of completed LED strip
-- Other - photo montage of gluing coils, led lenses, and led strip into the box
-
-
+- the Model Webpage in SSDP should point to the correct repository (theClock, bilgeAlarm)
 
 ## Cam Mechanism and Fusion 360 [pyJoints Addin](https://github.com/phorton1/fusionAddIns-pyJoints)
 

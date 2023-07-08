@@ -6,11 +6,12 @@
 **[Wood](wood.md)** --
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
-**[Software](software.md)** --
+**[Firmware](firmware.md)** --
 **[Assemble](assemble.md)** --
 **[Build](build.md)** --
 **[Tuning](tuning.md)** --
 **[UI](ui.md)** --
+**[Software](software.md)** --
 **[Troubles](troubles.md)** --
 **[Notes](notes.md)**
 
@@ -136,18 +137,21 @@ the clock presents a **User Interface** over the **Serial Port** and/or
 a browser based **WebUI** and/or **Telnet** UI via **WiFi** that
 lets you control and monitor the clock.
 
-Much of the **behavior** of the clock can be modified using these UI's.
+Much of the **behavior** of the clock can be modified by changing
+the *parameters* of the clock.
 For instance, the **minimum and maximum working angle** and the
 **duration of the pulses** are parametrized and can be modified
 at run-time in order to better [Tune](tuning.md) the clock.
 
 Likewise, the **PID controller values** for both PID controllers are also
 parametrized. as well as things like **the interval for syncing
-the RTC and NTP clocks**.  In fact the firmware can even be **re-compiled
+the RTC and NTP clocks**.  In fact the software can even be **re-compiled
 and uploaded** to the ESP32 via WiFi with **OTA** (Over the Air) updates.
 
-Please see the **[User Interface](ui.md)** page for more details on
+Please see the **[User Interface](ui.md)** and
+**[Software](software.md)** pages for more details on
 the capabilities of the software and how to use it.
+
 
 ## 2. Mechanical Calculations
 

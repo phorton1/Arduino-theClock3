@@ -1,4 +1,4 @@
-# theClock3 - Installing and Building the Software (Build Continued)
+# theClock3 - User Interface
 
 **[Home](readme.md)** --
 **[Design](design.md)** --
@@ -6,89 +6,23 @@
 **[Wood](wood.md)** --
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
-**Software** --
+**[Firmware](firmware.md)** --
 **[Assemble](assemble.md)** --
 **[Build](build.md)** --
 **[Tuning](tuning.md)** --
 **[UI](ui.md)** --
+**Software** --
 **[Troubles](troubles.md)** --
 **[Notes](notes.md)**
 
-
-This page describes how to install and build the **software**, upload it to the **ESP32**
-and do an initial **test** of the PCB cables and sub components.
-
-- [Install and Build the Software](#a-install-and-build)
-- Do an [Overview](#b-software-overview) of the Software
-- Boot up the ESP32 and explore the [Serial Monitor](#c-serial-monitor)
-- Do a [Hardware Test](#d-hardware-test) of the PCB and components
-- Connect to the [WebUI](#e-connect-to-webui)
-
-
-## A. Install and Build
-
-### 1. Install the [**myIOT**](https://github.com/phorton1/Arduino-libraries-myIOT/blob/master/docs/getting_started.md) Library
-
-The software is built within the [**Arduino IDE**](https://www.arduino.cc/en/software) development environment and depends
-on the [**myIOT**](https://github.com/phorton1/Arduino-libraries-myIOT) library.  Please follow the below link for
-instructions on how to *prepare your Arduino IDE to build ESP32 projects* and install the *myIOT library*
-
-[**Getting Started with the myIOT Library**](https://github.com/phorton1/Arduino-libraries-myIOT/blob/master/docs/getting_started.md)
-
-As described there, you will also need to install the following dependencies:
-
-- **WebSockets** by Markus Sattler - Version 2.3.6
-- **ArduinoJson** by Benoit Blanchon - Version 6.18.5
-- **ESP Telnet** by Lennart Hennings - Version 1.2.2
-- [**Arduino ESP32 filesystem uploader**](https://github.com/me-no-dev/arduino-esp32fs-plugin)
-
-### 2. Copy or clone **this** repository into your **Arduino Sketch Folder**
-
-The location of your Arduino Sketch Folder can be found in the Arduino IDE via
-the **File - Preferences** menu.
-
-![soft-ide_location.jpg](images/soft-ide_location.jpg)
-
-I have set mine to *C:\src\Arduino*, but yours will probably be something like **C:\Users\YOUR_NAME\Documents\Arduino**
-(**Arduino** under your **documents** folder).
-
-To install it from the **Zip File** go to the [main repository page](https://github.com/phorton1/Arduino-theClock3)
-and press the green **CODE** button.  Download the **Arduino-theClock3-master.zip** file, and copy it's inner
-folder (*Arduino-theClock3-master*) into your *Arduino Sketch Directory* and **rename the folder to "theClock3"**.
-
-To clone it from github, open a **command prompt** window, change directories  to your *Arduino Sketch Directory*
-and clone the repository
-
-```
-C> cd C:\Users\YOUR_NAME\Documents\Arduino
-C> git clone https://github.com/phorton1/Arduino-theClock3.git theClock3
-```
-
-In either case you should now be able to open **theClock3.ino** within the Arduino IDE.
-
-### 3. Install additional libraries
-
-From the Arduino IDE **Library Manager**, install
-
-- the **AS5600** library, version 0.3.5, by **Rob Tillart**
-- the **Adafruit NeoPixels** library
-
-### 4. Building and Uploading
-
-Start with a **bare ESP32 Dev Module** that is **NOT** plugged into the PCB we created.
-
-1. Connect the **ESP32 Dev Module** to your computer via a USB Cable
-2. Open **theClock3.ino** in the *Arduino IDE*
-3. In the Arduino IDE **Tools** Menu, set the *Board* to **ESP32 Dev Module**
-4. Make sure that the *Partition Scheme* is set to **Default 4MB with spiffs (1.2MB App/1.5MB SPIFFS)**
-5. Make sure that the correct **COM Port** for your ESP32 is selected.
-6. Press the **Right Arrow** icon to **compile and upload** the **code** to the ESP32
-7. Use the **ESP32 Sketch Data Upload** command from the *Tools* menu to upload the
-   contents of the sketches' **data** folder to the **SPIFFS File System** on the ESP32
+This *reference* page gives an **Overview** of the software, and
+list all of the [**Parameters and Commands**](#b-parameters-and-commands)
+available on the clock.
 
 
 
-## B. Software Overview
+
+## A. Software Overview
 
 The software is divided into a number of separate **classes** and **files**.
 
@@ -224,377 +158,188 @@ the instantaneous and cumulative **milliseconds error**.
   *milliseconds errors* simultaneously.
 
 
-## C. Serial Monitor
-
-There is a **lot** of Serial Output from the ESP32.  Use the *Arduino IDE
-**Serial Monitor*** to see the output and to **type commands** to control the clock.
-The Serial monitor must be set to **115200 baud** and to send **Both NL and
-CR** (new line and carriage return).
-
-The first time you boot it, you should see something like this in the
-serial monitor:
-
-![soft-start1.jpg](images/soft-start1.jpg)
-
-When you boot a [**myIOT device**](https://github.com/phorton1/Arduino-libraries-myIOT),
-like **theClock3**, the serial output tells you a lot about the device as it boots,
-including providing a complete listing of the **ESP32 partitions** and **contents
-of the SPIFFS file system**. Each line starts with **time stamp**.  Since we have
-not yet connected to NTP (Network Time Protocol), the ESP32 does not know what time
-it is, and so it defaults to starting at midnight on January 1, 1970.
-The messages are **nested** (in many cases) by their **call level** within the code
-
-The most important thing to note in the above log output,
-as highlighted in <font color='red'><b>red</b></font>,
-is that the ESP32
-**failed to initialize the AS5600** angle sensor module.
-That's ok!! We haven't *plugged it in yet* !!  The listing then continues:
-
-![soft-start2.jpg](images/soft-start2.jpg)
-
-A **myIOT device**, by default, sets itself up as a **WiFi Access Point**,
-as highlighted in <font color='blue'><b>blue</b></font>
-in the serial output. You can see that the *SSID* of the Access Point
-is **theClock3.3** and the *IP Address* is 192.168.1.254. Also we see,
-highlighted in <font color='red'><b>red</b></font> that the ESP32
-**COULD NOT SET** the **AS5600 zero angle** five times.
-That's ok too!  We just want to draw your attention to
-these messages for later.
-
-
-
-### 1. See a list of the Clock's PARAMETERS (Values)
-
-If we now type the command **"values"**, followed by a carriage return,
-into the serial monitor, the clock will display a list of all of it's
-**PARAMETERS** and their values.
-
-![soft-values.jpg](images/soft-values.jpg)
-
-### 2. Try settting a PARAMETER and REBOOTING
-
-There are a **lot** of different parameters available for controlling
-and understanding the clock.  They will be described more fully as we
-move forward through the [Tuning](tuning.md) and [User Interface](ui.md) pages,
-but for now it is good to learn that you can **set parameters**
-by typing their **name**, followed by an **equals sign**, followed
-by the **value** you want to set them to.
-
-**parameter = value &lt;carriage return>**
-
-For instance (from the Serial Monitor), we can **turn the ESP32
-WiFi off** and back **on** by typing the following into the Serial Monitor (where
-each line is followed by a *carriage return*)
-
-```
-wifi=0
-wifi=1
-```
-
-Note that you can type the word **"reboot"**, followed by a carriage
-return, into the serial monitor to reboot the ESP32.
-
-![soft-wifi_on_off_reboot.jpg](images/soft-wifi_on_off_reboot.jpg)
-
-Try it!
-
-
-
-## D. Hardware Test
-
-The point of introducing the **software** at this point in the documentation is so that
-we can do a quick test of the **PCB** and some of the **peripherals and cables**
-that were built on the **[Electronics](electronics.md)** page.
-
-Particularly, we can test that the **LEDs** and **buttons** are working,
-that we can connect to the **AS5600 angle sensor module**, and that the
-**coils** *energize* and can *repel* a magnet.
-
-To begin with, you should have already **uploaded the firmware and the
-contents of the SPIFFS filesystem** to a bare ESP32 as described above, and
-be able to connect to it and see, and type input into the **Serial Monitor**.
-
-You should have already (also) checked the PCB out with a *multimeter* to
-make sure there are **no short circuits**, particularly between any of the
-power rails and ground,.
-
-
-### 1. Unpower everything and plug the ESP32 into the PCB
-
-**Plug the ESP32 into the PCB** and **power it up** by attaching it to your computer via a serial cable.
-
-It should boot normally and not **explode** or overheat!
-
-In the *Serial Monitor*, you should see the same thing as before.
-
-**De-power the ESP32**.
-
-
-### 2. Plug in the LED Strip and Repower
-
-**Plug in the LED Strip** and **power up the ESP32**.
-
-*note: the LEDs are in installed in the box from right to left, so
-the **last** LED in the strip becomes the **leftmost** LED in the box
-and the **first** LED in the strip becomes the **rightmost** LED in the box*.
-
-You should see a series of 5 LEDs lighting up in <font color='cyan'><b>cyan</b></font>.
-Then, because it cannot initialize the AS5600, all five LEDs should start flashing.
-It flashes <font color='red'><b>red</b></font> **five times** for each failed attempt,
-and *it will retry five times* to initialize the AS5600, so, in total you
-*should* see **25 red flashes of all five LEDs** as it boots.
-
-After 30 seconds or so the last LED in the strip should turn
-<font color='purple'><b>purple</b></font>, or
-<font color='green'><b>green</b></font> if you have previously connected to the WebUI.
-
-In either case the 2nd to last LED should continue to flash <font color='red'><b>red</b></font>
-to remind you that, *without the AS5600 module, the **clock will not work***.  That's
-ok!  We can still test the PCB!
-
-
-
-### 3. Test the button(s)
-
-**Short Press** (quickly press and release) the **right** button a few times.
-Each time you do it, the *1st LED* in the strip should turn **white** while the button
-is pressed, and the LEDs should get brighter when you release it.
-There are **15 levels** of brightness for the LEDs, then they will
-turn off, then on again at their minimum level to repeat the cycle.
-
-While you do this you should see various output in the console window.
-if you are running the *Web UI* you should see the **LED BRIGHTNESS**
-parameter change values each time you press the button.
-
-To test the left button, **Medium Press** the **left** button by holding for two or more seconds
-(but *less than 8 seconds!!*) until the 1st LED changes from **white**
-to <font color='cyan'><b>cyan</b></font>.
-When you let it up, you will toggle the **WiFi on and off**.
-
-The last LED in the strip will turn <font color='blue'><b>blue</b></font> when
-the WiFi is turned **off** and will turn back to <font color='green'><b>green</b></font>
-when it connects to your WiFi, or to <font color='purple'><b>purple</b></font>
-when it starts an Access Point.
-
-If you are running the *WebUI* and you turn WiFi **off** you will notice that
-the buttons and entry controls in the browser will be *greyed out* and *disabled*
-while WiFi is turned off.  When you turn WiFi back **on** again, after a
-few seconds, the WebUI *should* **reconnect** to the clock and *enable*
-the buttons and entry controls.
-
-You probably want to make sure that you *leave the ESP32* with the **WiFi** turned on,
-and the **LEDS** at medium brightness after this step!!
-
-When you are done testing the buttons, **De-power the ESP32**.
-
-
-### 4. Test the AS5600 Connection
-
-**Plug in the AS5600 cable** and *power up the ESP32**.
-
-If we plug the AS5600 in with it's cable, and reboot the ESP32, the AS5600 should now initialize
-properly, **no longer flashing RED 25 times**, and giving the **AS5600 connected=1** message
-in the console as shown below:
-
-![soft-AS5600_connected.jpg](images/soft-AS5600_connected.jpg)
-
-The last LED in the strip should eventually turn
-<font color='green'><b>green</b></font> or <font color='purple'><b>purple</b></font>,
-as before, but now, instead of **red** the 2nd to last LED will flash <font color='orange'><b>orange</b></font>
-indicating that, although the AS5600 initialized, we **still could not set the zero angle**.
-
-That's because there's no **magnet** in front of the AS5600!  That's ok!!  All
-we wanted to do here was test that we can connect to the AS5600 correctly via the cable.
-
-
-### 5. Test the coils
-
-Use a **multimeter** to ensure that the coils have some resistance (about 6 ohms) **BEFORE
-CONNECTING THEM TO THE CIRCUIT**!!!
-
-Have a **magnet** handy.
-
-We plug the coils **in series** into the two **serial coil** connectors.
-The orientation of the plugs depends on and/or determines the orientation of the magnets
-that will be glued into the pendulum.  Plug the coils in such that the
-same colors are on each side, with **orange** on the left and **white** on the right.
-
-![soft-coil_plugs.jpg](images/soft-coil_plugs.jpg)
-
-**De-power the ESP32** (unplug the serial cable), **plug in the coils**, and **power up**
-the ESP32.
-
-**WATCH OUT FOR SMOKE AND BE READY TO UNPLUG THE POWER SUPPLY!!**
-
-After it has finished booting, type the command **"test_coils=80"** into the Serial Monitor.
-This command energizes the coils at 80/255 power (80 on a scale from 0 to 255) which
-should be enough for you to detect the forces. Obviously, if any thing gets **hot**
-or **starts smoking**, you should remove the power supply immediately and figure out
-what is wrong, and **correct the short circuit** before continuing.
-
-You should be able to hold the magnet near the face of each coil and feel a
-repulsion or attraction. Increase the power (*gingerly!*) as necessary.
-
-This is a good opportunity to determine the **orientation** of the *magnets and coils*.
-We want to figure out how to arrange the coils and magnets such that
-the magnet is repulsed by each coil when the coils are facing each other and the magnet
-is in between them.   Once you have determined that, **mark** the **front coil** with
-a piece of tape or felt marker, and **mark the front** of the magnet.
-
-**Remember** (write down) the orientation of the coils, plugs, and magnets, so that
-you can glue the magnets in the pendulum in the correct orientation in the
-next steps of assembly!
-
-De-energize the coils by typing **test_coils=0** into the Serial Monitor.
-
-
-## E. Connect to WebUI
-
-The other thing that can be tested with the bare ESP32 and **PCB** at this point is
-that you can properly attach to the ESP32 via WiFi and access the *browser based*
-**WebUI** (Web User Interface).
-
-On a new ESP32, or after a *Factory Reset*, the ESP32 will boot with *Wifi ON*
-and go into **Access Point Mode**, which can be seen in the *Serial Monitor*,
-and which will be indicated by the last LED in the strip turning
-<font color='purple'><b>purple</b></font>.
-
-When in **AP** (Access Point) *mode*, the Clock will present itself as
-a **WiFi Network** that you can *attach to* from your computer, laptop
-or phone. The following example shows how to connect to the *WebUI*
-from a **Windows Laptop Computer**, but should work about the same from
-any other device.
-
-- Connect to the **theClock3** *WiFi Network*.  The default password is **11111111** (eight ones).
-- A browser *should* pop up asking you to change the **Access Point** password.
-- After you change the AP password, you will be presented with a window letting you specify the *SSID and password* to **your** *WiFi network*
-- After you enter the SSID and Password, theClock will connect to your WiFi Network
-
-Once theClock has connected to your WiFi network, you can
-access the **WebUI** at the **IP Address** of theClock on your network.
-You can get the IP address of the clock in a variety of ways:
-
-- it *may* have shown up in the browser when you connected theClock to your Wifi network
-- it **will** show in the *Serial Monitor*
-- it *may* be found by going to the **Windows Explorer Network Tab** and *right-clicking* on **refresh**
-- it **can** be found by going to your **router's WebUI** and seeing what **IP Address** the router assigned to theClock
-
-Note that in the following example, on **my** home Wifi network, the router assigned
-theClock an IP address of **10.237.50.13**.  Yours will be different, most likely
-something like **192.168.X.YYY** where X is 0 or 1, and YYY is some number between
-100 and 200 (i.e. **192.168.0.123**).
-
-### 1. Connect to theClock Access Point
-
-Select the **theClock3.3** Wifi Network from the list of available networks.
-
-![soft-selectAP.jpg](images/soft-selectAP.jpg)
-![soft-enterAP_password.jpg](images/soft-enterAP_password.jpg)
-
-Enter the default password  **11111111** (eight ones)
-
-### 2. Change the AP Password
-
-After a few seconds your system browser should *automatically* **pop up** with a (redirect page and then)
-a **page** which requires you to set a new password.  On some newer Android phones this page does not pop
-up automatically.  **IF YOU DON’T SEE THE BELOW WINDOW**, please open a browser on your machine and enter
-**192.168.1.254/captive** into the location bar to bring up the clock’s AP Mode UI (user interface).
-
-![soft-change_pass.jpg](images/soft-change_pass.jpg)
-
-Enter (and re-enter) and write down!! a new password for your clock's AP Mode.
-You will need this password (or a Factory Reset) in the future if you change your home
-network SSID or credentials.
-
-### 3. Specify the SSID and Password of your WiFi network
-
-After you set the new password, you will be presented with a page that allows you to tell the clock
-the **SSID and password** of your home Wi-Fi network.
-These credentials are stored in an encrypted form on the clock's c
-omputer and will never be shown to anyone.
-
-![soft-enter_SSID.jpg](images/soft-enter_SSID.jpg)
-
-Enter the SSID and password of your home Wi-Fi network and press the **Join** Button.
-<b>The last LED should turn <font color='orange'>Orange</font></b> as theClock
-connects to your WiFi network at this point.
-
-The clock tries to report when it has successfully connected to your home Wi-Fi network,
-but, because it *cannot be connected in both AP and STA mode at the same time*
-(unless your home Wi-Fi network happens to be on the same "channel" as the clock's AP mode),
-typically it is not able to report to the browser that it connected successfully.
-However, you *may get* lucky and see a message of the form "theClock3 successfully
-connected to YOUR_SSID at IP Address XXX.XXX.XXX.XXX", as in the window below:
-
-![soft-StationConnected.jpg](images/soft-StationConnected.jpg)
-
-In any case, if you **DONT** see an error message at this point after
-10-15 seconds then the clock has successfully connected to your home Wi-Fi network
-
-
-
-### 4. Determine the IP address of theClock
-
-- **Disconnect** from theClock and **reconnect** to your *home Wifi network*.
-- **Reboot** the clock.
-- The last LED should turn <font color='green'><b>green</b></font>.
-
-We need to determine the **IP Address** of the Clock, so that we can open the WebUI in a browser.
-You *may* have already gotten the IP address of theClock in the previous step.  Here are
-three other ways to get the IP Address.
-
-#### a. Get the IP Address from the Serial Monitor
-
-You should be able to see the IP Address of the clock in the **Serial
-Monitor** when you connected:
-
-![soft-STA_connect_serial.jpg](images/soft-STA_connect_serial.jpg)
-
-#### b. Get the IP Address from Router DHCP table
-
-If you bring the WebUI of your Wifi network **router** up in a browser, you
-should be able to find the **DHCP Client Table** of IP addresses
-the router has assigned. Here is an example of the DHCP client
-table from my Wifi Router, showing the IP address of **theClock3**.
-
-![soft-WiFiRouterTable.jpg](images/soft-WiFiRouterTable.jpg)
-
-#### c. Get the IP Address from Windows Explorer
-
-The clock supports **SSDP** (Service Search and Discovery Protocol), so it will automatically
-show up in the *Windows Explorer* **Network tab** as a network device.
-
-![soft-WindowsExplorer.jpg](images/soft-WindowsExplorer.jpg)
-
-Once you have found the **theClock3 icon**, you can open up the **Properties**
-for theClock3, and see it's IP address (and/or click on a link to go to the WebUI):
-
-![soft-theClock_properties.jpg](images/soft-theClock_properties.jpg)
-
-
-### 5. Go to the IP Address in a browser (bring up the **WebUI**)
-
-If you now bring up a brower, and go to that IP Address, you will see the WebUI
-
-![soft-WebUI.jpg](images/soft-WebUI.jpg)
-
-Please also see **Sections 4** and **Section 10** in the
-[**Quick Start Guide**](https://github.com/phorton1/Arduino-theClock3/blob/master/docs/QuickStartGuide.pdf)
-for details on how to connect to, and find the WebUI on your local **WiFi network**.
-
-It is not **necessary** to use the WebUI to test, control, and configure the clock,
-but it can make it **much easier** than typing commands, long-hand, into the serial monitor.
-
-The [**WebUI**](./ui.md#e-webui) will be described in more detail on the [UI](ui.md) documentation page.
-
-
-## Summary
-
-That's about it for an introduction to the software.  We just want to make sure
-the PCB basically works before we embed it, the LEDS, and the coils
-into the **Box**, and the AS5600 cable and Sensor into **Frame**, as
-we continue building the clock.
-
-
-
-**Next:** - Finish the other [**Sub-Assemblies**](assemble.md) of the clock, including the **gears, pendulum, and box**
+## B. Parameters and Commands
+
+Many parameters can be *modified* to *experiment* with, or possibly to *correct problems*
+with the clock.
+
+### 1. Clock Specific
+
+All Parameters and Commands *specific* to **theClock** are shown in this section.
+They are available via the **Serial Monitor**, the **Telnet Monitor**, or on the
+**Dashboard** and **Config** pages of the *WebUI*.
+
+
+<table>
+<tr><td valign='top'><b>CLOCK_TYPE</b></td><td valign='top'>ENUM</td><td valign='top'>Determines which <b>direction</b> will be used for measuring the <i>zero crossing</i> for a <i>full 1000 ms cycle</i>. <b>Right</b> means that it will measure the cycle when the Pendulum crosses from <i>left to right</i> through <i>zero</i> and <b>left</b> means that it will measure the cycle when the Pendulum crosses from <i>right to left</i> through <i>zero</i>.
+   <br><i>allowed</i> : <b>0</b>=Right, <b>1</b>=Left
+   <br><i>default</i> : <b>0</b>=Right</td></tr>
+<tr><td valign='top'><b>CLOCK_MODE</b></td><td valign='top'>ENUM</td><td valign='top'>Allows you to set different <b>modes</b> of operation for <i>tuning</i> and <i>experimenting</i> with the clock.
+   <br><i>allowed</i> : <b>0</b>=Sensor_Test, <b>1</b>=Power_Min, <b>2</b>=Power_Max, <b>3</b>=Angle_Start, <b>4</b>=Angle_Min, <b>5</b>=Angle_Max, <b>6</b>=Min_Max, <b>7</b>=PID
+   <br><i>default</i> : <b>7</b>=PID</td></tr>
+<tr><td valign='top'><b>RUNNING</b></td><td valign='top'>BOOL</td><td valign='top'>Starts <b>running</b> the clock in the current <i>mode</i>. Is set automatically, at the correct time if START_SYNC is used.
+   <br><i>default</i> : <b>0</b>=off
+   <br><i>Memory Only</i></td></tr>
+<tr><td valign='top'><b>START_SYNC</b></td><td valign='top'>BOOL</td><td valign='top'><b>Starts</b> the clock at the next <i>minute crossing</i> based on START_DELAY.
+   <br><i>default</i> : <b>0</b>=off
+   <br><i>Memory Only</i></td></tr>
+<tr><td valign='top'><b>START_DELAY</b></td><td valign='top'>INT</td><td valign='top'>Determines, in <i>milliseconds</i>, <b>before</b> or <b>after</b> the minute crossing that the <i>Start Sync</i> will take place. will take placed compared to the <i>minute crossing</i>. A <i>negative</i> number will start the clock <i>before</i> the minute crossing, and a <i>positive</i> number will start the clock <i>after</i> the minute crossing.
+   <br><i>default</i> : <b>200</b>&nbsp;&nbsp;&nbsp;<i>min</i> : -5000&nbsp;&nbsp;&nbsp;<i>max</i> : 5000</td></tr>
+<tr><td valign='top'><b>SET_ZERO_ANGLE</b></td><td valign='top'>COMMAND</td><td valign='top'>Sets the <b>Zero Angle</b> for the <i>Angle Sensor</i>.</td></tr>
+<tr><td valign='top'><b>ZERO_ANGLE</b></td><td valign='top'>INT</td><td valign='top'>The <i>raw integer</i> value of the zero angle reading, on a scale from <i>0 to 4095</i>.
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>ZERO_ANGLE_F</b></td><td valign='top'>FLOAT</td><td valign='top'>The <i>floating point</i> value of the zero angle reading, on a scale from <i>0 to 360 degrees</i>.
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>DEAD_ZONE</b></td><td valign='top'>FLOAT</td><td valign='top'>An angle, in <i>degrees about zero</i> where the coils will <b>not</b> be energized on each swing. This is necessary so that we don't send a <i>pulse</i> to thecoil until <b>after</b> the Pendulum has crossed zero.
+   <br><i>default</i> : <b>0.300</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 15</td></tr>
+<tr><td valign='top'><b>ANGLE_START</b></td><td valign='top'>FLOAT</td><td valign='top'>The starting <i>target angle</i> in <i>degrees</i> for PID and MIN_MAX clock modes. The clock will attempt to reach this angle before changing state from CLOCK_STARTING to CLOCK_RUNNING. This value should be set <i>between</i>  ANGLE_MIN and ANGLE_MAX.
+   <br><i>default</i> : <b>10.000</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 15</td></tr>
+<tr><td valign='top'><b>ANGLE_MIN</b></td><td valign='top'>FLOAT</td><td valign='top'>The <i>minimum</i> target angle in <i>degrees</i> that will be used in PID and MIN_MAX clock modes.
+   <br><i>default</i> : <b>9.000</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 15</td></tr>
+<tr><td valign='top'><b>ANGLE_MAX</b></td><td valign='top'>FLOAT</td><td valign='top'>The <i>maximum</i> target angle in <i>degrees</i> that will be used in PID and MIN_MAX clock modes.
+   <br><i>default</i> : <b>11.500</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 15</td></tr>
+<tr><td valign='top'><b>POWER_MIN</b></td><td valign='top'>INT</td><td valign='top'>The <i>minimum</i> <b>power</b>, on a scale from 0 to 255, that will be delivered to the coils.
+   <br><i>default</i> : <b>60</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 255</td></tr>
+<tr><td valign='top'><b>POWER_PID</b></td><td valign='top'>INT</td><td valign='top'>The <b>power</b>, on a scale from 0 to 255, that will be used as the starting input for the <b>1st PID controller</b> which tries to get the Pendulum to swing at the <i>target angle</i> by modifying the <i>power</i>.
+   <br><i>default</i> : <b>100</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 255</td></tr>
+<tr><td valign='top'><b>POWER_MAX</b></td><td valign='top'>INT</td><td valign='top'>The <i>maxium</i> <b>power</b>, on a scale from 0 to 255, that will be delivered to the coils.
+   <br><i>default</i> : <b>255</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 255</td></tr>
+<tr><td valign='top'><b>POWER_START</b></td><td valign='top'>INT</td><td valign='top'>The <b>power</b>, on a scale from 0 to 255, that will be used for the <b>initial starting pulse</b> to the Pendulum.
+   <br><i>default</i> : <b>255</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 255</td></tr>
+<tr><td valign='top'><b>DUR_PULSE</b></td><td valign='top'>INT</td><td valign='top'>The duration, in <i>milliseconds</i>, for the <b>pulses</b> delivered each time the Pendulum <i>crosses zero</i> (in either direction).
+   <br><i>default</i> : <b>120</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 1000</td></tr>
+<tr><td valign='top'><b>DUR_START</b></td><td valign='top'>INT</td><td valign='top'>The duration, in <i>milliseconds</i>, for the <i>initial starting pulse</i>.
+   <br><i>default</i> : <b>250</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 1000</td></tr>
+<tr><td valign='top'><b>PID_P</b></td><td valign='top'>FLOAT</td><td valign='top'>The <i>proportional</i> factor, which is muliplied by the <i>instantaneous angular error</i>, for the <b>1st PID controller</b>, which tries to get the Pendulum to swing at the <i>target angle</i> by modifying the <i>power</i>.
+   <br><i>default</i> : <b>20.000</b>&nbsp;&nbsp;&nbsp;<i>min</i> : -1000&nbsp;&nbsp;&nbsp;<i>max</i> : 1000</td></tr>
+<tr><td valign='top'><b>PID_I</b></td><td valign='top'>FLOAT</td><td valign='top'>The <i>integral</i> factor, which is muliplied by the <i>cumulative angular error</i>, for the <b>1st PID controller</b>, which tries to get the Pendulum to swing at the <i>target angle</i> by modifying the <i>power</i>.
+   <br><i>default</i> : <b>0.500</b>&nbsp;&nbsp;&nbsp;<i>min</i> : -1000&nbsp;&nbsp;&nbsp;<i>max</i> : 1000</td></tr>
+<tr><td valign='top'><b>PID_D</b></td><td valign='top'>FLOAT</td><td valign='top'>The <i>derivative</i> factor. which is multiplied by the <i>difference</i> in the change in the degrees from the previous swing, for the <b>1st PID controller</b>, which tries to get the Pendulum to swing at the <i>target angle</i> by modifying the <i>power</i>.
+   <br><i>default</i> : <b>-9.000</b>&nbsp;&nbsp;&nbsp;<i>min</i> : -1000&nbsp;&nbsp;&nbsp;<i>max</i> : 1000</td></tr>
+<tr><td valign='top'><b>APID_P</b></td><td valign='top'>FLOAT</td><td valign='top'>The <i>proportional</i> factor, which is muliplied by the <i>instantaneous cycle error</i>, for the <b>2nd PID controller</b>, which tries to get the Pendulum to swing at the <i>the correct rate</i> by modifying the <i>target angle</i>.
+   <br><i>default</i> : <b>0.200</b>&nbsp;&nbsp;&nbsp;<i>min</i> : -1000&nbsp;&nbsp;&nbsp;<i>max</i> : 1000</td></tr>
+<tr><td valign='top'><b>APID_I</b></td><td valign='top'>FLOAT</td><td valign='top'>The <i>integral</i> factor, which is muliplied by the <i>cumulative milliseconds error</i>, for the <b>2nd PID controller</b>, which tries to get the Pendulum to swing at the <i>the correct rate</i> by modifying the <i>target angle</i>.
+   <br><i>default</i> : <b>0.025</b>&nbsp;&nbsp;&nbsp;<i>min</i> : -1000&nbsp;&nbsp;&nbsp;<i>max</i> : 1000</td></tr>
+<tr><td valign='top'><b>APID_D</b></td><td valign='top'>FLOAT</td><td valign='top'>The <i>derivative</i> factor. which is multiplied by the <i>difference</i> in the milliseconds per swing from the previous swing, for the <b>2nd PID controller</b>, which tries to get the Pendulum to swing at the <i>the correct rate</i> by modifying the <i>target angle</i>.
+   <br><i>default</i> : <b>0.002</b>&nbsp;&nbsp;&nbsp;<i>min</i> : -1000&nbsp;&nbsp;&nbsp;<i>max</i> : 1000</td></tr>
+<tr><td valign='top'><b>RUNNING_ANGLE</b></td><td valign='top'>FLOAT</td><td valign='top'>The <b>angle</b>, in <i>degrees</i> at which the Pendulum must swing in clock_modes ANGLE_START and higher before the clock will change to CLOCK_STATE_RUNNING.
+   <br><i>default</i> : <b>4.000</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 12</td></tr>
+<tr><td valign='top'><b>RUNNING_ERROR</b></td><td valign='top'>FLOAT</td><td valign='top'>The <b>cumulative angular error</b>, in <i>degrees</i> which the clock must fall under in clock_modes ANGLE_START and higher before the clock will change to CLOCK_STATE_RUNNING.
+   <br><i>default</i> : <b>2.000</b>&nbsp;&nbsp;&nbsp;<i>min</i> : 1&nbsp;&nbsp;&nbsp;<i>max</i> : 100</td></tr>
+<tr><td valign='top'><b>MIN_MAX_MS</b></td><td valign='top'>INT</td><td valign='top'>The number of <i>milliseconds</i> fast, or slow, that the clock must be running for a change between the minimum to the maxium <i>target angle</i> in MIN_MAX mode.
+   <br><i>default</i> : <b>50</b>&nbsp;&nbsp;&nbsp;<i>min</i> : 10&nbsp;&nbsp;&nbsp;<i>max</i> : 1000</td></tr>
+<tr><td valign='top'><b>CYCLE_RANGE</b></td><td valign='top'>INT</td><td valign='top'>The <b>instantaneous</b> number of <i>milliseconds</i> fast, or slow, for the current swing, that will cause the <i>4th LED</i> to change from <b>green</b> to <b>red</b> or <b>blue</b>.
+   <br><i>default</i> : <b>50</b>&nbsp;&nbsp;&nbsp;<i>min</i> : 10&nbsp;&nbsp;&nbsp;<i>max</i> : 1000</td></tr>
+<tr><td valign='top'><b>ERROR_RANGE</b></td><td valign='top'>INT</td><td valign='top'>The <b>cumulative</b> number of <i>milliseconds</i> fast, or slow, that will cause the <i>3rd LED</i> to change from <b>green</b> to <b>red</b> or <b>blue</b>.
+   <br><i>default</i> : <b>150</b>&nbsp;&nbsp;&nbsp;<i>min</i> : 10&nbsp;&nbsp;&nbsp;<i>max</i> : 5000</td></tr>
+<tr><td valign='top'><b>LED_BRIGHTNESS</b></td><td valign='top'>INT</td><td valign='top'>Sets the brightness, on a scale of 0 to 254, where 0 turns the LEDS <b>off</b>.
+   <br><i>default</i> : <b>40</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 254</td></tr>
+<tr><td valign='top'><b>PLOT_VALUES</b></td><td valign='top'>ENUM</td><td valign='top'>If <b>not Off</b>, this parameter <i>suspends</i> normal Serial and Telnet Monitor output, and instead, outputs a series of numbers every few milliseconds for use with the Arduino <b>Serial Plotter</b> to visualize the swing of the Pendulum, the pulses delivered to the clock, and so on.
+   <br><i>allowed</i> : <b>0</b>=Off, <b>1</b>=Waves, <b>2</b>=Pause, <b>3</b>=Clock
+   <br><i>default</i> : <b>0</b>=Off
+   <br><i>Memory Only</i></td></tr>
+<tr><td valign='top'><b>SYNC_RTC</b></td><td valign='top'>COMMAND</td><td valign='top'>A <b>manual command</b> that allows you to immediatly trigger a synchronization of the <b>Clock</b> to the <b>RTC</b> (embedded Real Time Clock). Only can be done while the clock is <i>Running</i>. </td></tr>
+<tr><td valign='top'><b>SYNC_INTERVAL</b></td><td valign='top'>INT</td><td valign='top'>How often, in <i>seconds</i>, between attempts to synchronize the <b>Clock</b> to the <b>RTC</b> (embedded Real Time Clock).
+   <br><i>default</i> : <b>3600</b>&nbsp;&nbsp;&nbsp;<i>min</i> : 0=off&nbsp;&nbsp;&nbsp;<i>max</i> : 3000000</td></tr>
+<tr><td valign='top'><b>SYNC_NTP</b></td><td valign='top'>COMMAND</td><td valign='top'>A <b>manual command</b> that allows you to immediatly trigger a synchronization of the <b>RTC</b> (Real Time Clock) to <b>NTP</b> (Network Time Protocol). Only can be done while the clock connected to <b>WiFi</b> in <i>Station Mode</i>.</td></tr>
+<tr><td valign='top'><b>NTP_INTERVAL</b></td><td valign='top'>INT</td><td valign='top'>How often, in <i>seconds</i>, between attempts to synchronize the <b>RTC</b> (Real Time Clock) to <b>NTP</b> (Network Time Protocol).
+   <br><i>default</i> : <b>14400</b>&nbsp;&nbsp;&nbsp;<i>min</i> : 0=off&nbsp;&nbsp;&nbsp;<i>max</i> : 3000000</td></tr>
+<tr><td valign='top'><b>CLEAR_STATS</b></td><td valign='top'>COMMAND</td><td valign='top'>A command that will <i>clear</i> the accumulated <b>statistics</b> that are sent to the <i>WebUI</i> as if the clock was freshly <b>started</b></td></tr>
+<tr><td valign='top'><b>STAT_INTERVAL</b></td><td valign='top'>INT</td><td valign='top'>How often, in <i>seconds</i> between sending updated <b>statistics</b> to the <i>WebUI</i>.
+   <br><i>default</i> : <b>30</b>&nbsp;&nbsp;&nbsp;<i>min</i> : 0=off&nbsp;&nbsp;&nbsp;<i>max</i> : 3000000</td></tr>
+<tr><td valign='top'><b>STAT_MSG0</b></td><td valign='top'>STRING</td><td valign='top'>A <i>String</i> that is sent to the WebUI to display <b>statistics</b>.
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>STAT_MSG1</b></td><td valign='top'>STRING</td><td valign='top'>A <i>String</i> that is sent to the WebUI to display <b>statistics</b>.
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>STAT_MSG2</b></td><td valign='top'>STRING</td><td valign='top'>A <i>String</i> that is sent to the WebUI to display <b>statistics</b>.
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>STAT_MSG3</b></td><td valign='top'>STRING</td><td valign='top'>A <i>String</i> that is sent to the WebUI to display <b>statistics</b>.
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>STAT_MSG4</b></td><td valign='top'>STRING</td><td valign='top'>A <i>String</i> that is sent to the WebUI to display <b>statistics</b>.
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>STAT_MSG5</b></td><td valign='top'>STRING</td><td valign='top'>A <i>String</i> that is sent to the WebUI to display <b>statistics</b>.
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>STAT_MSG6</b></td><td valign='top'>STRING</td><td valign='top'>A <i>String</i> that is sent to the WebUI to display <b>statistics</b>.
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>TEST_COILS</b></td><td valign='top'>INT</td><td valign='top'>A <i>control</i>, used for <i>testing</i>, that lets you directly energize the <b>coils</b> by sending a value for the <b>power</b>, on a scale of <i>0 to 255</i>. <br><b>BE SURE TO RETURN THIS TO ZERO AFTER USE!!</b>.
+   <br><i>default</i> : <b>0</b>=off&nbsp;&nbsp;&nbsp;<i>min</i> : 0=off&nbsp;&nbsp;&nbsp;<i>max</i> : 255
+   <br><i>Memory Only</i></td></tr>
+<tr><td valign='top'><b>CHANGE_CLOCK</b></td><td valign='top'>INT</td><td valign='top'>A <i>control</i> that lets you <b>add</b> a positive, or <b>subtract</b> a negative <i>number of milliseconds</i> to the RTC (Real Time Clock). This can be used to <i>test</i> syncing to <b>NTP</b> or other aspects of the clock's <i>algorithms</i>.
+   <br><i>default</i> : <b>0</b>&nbsp;&nbsp;&nbsp;<i>min</i> : -3000000&nbsp;&nbsp;&nbsp;<i>max</i> : 3000000
+   <br><i>Memory Only</i></td></tr>
+<tr><td valign='top'><b>VOLT_INTERVAL</b></td><td valign='top'>INT</td><td valign='top'>With the <i>optional</i> <b>external power supply</b>, this parameter tells how often, <i>in seconds</i> to check for <i>low power</i> or <i>power restored</i> conditions.
+   <br><i>default</i> : <b>0</b>=off&nbsp;&nbsp;&nbsp;<i>min</i> : 0=off&nbsp;&nbsp;&nbsp;<i>max</i> : 86400</td></tr>
+<tr><td valign='top'><b>VOLT_CALIB</b></td><td valign='top'>FLOAT</td><td valign='top'>With the <i>optional</i> <b>external power supply</b>, this parameter is <i>multiplied</i> by the <i>calculated voltage</i> to get a more reasonable <b>voltage</b> for use in the <i>low power sensing</i> algorithm.
+   <br><i>default</i> : <b>1.030</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 2</td></tr>
+<tr><td valign='top'><b>VOLT_CUTOFF</b></td><td valign='top'>FLOAT</td><td valign='top'>With the <i>optional</i> <b>external power supply</b>, this parameter defines the <b>voltage</b> under which the clock will switch to <i>low power mode</i>
+   <br><i>default</i> : <b>4.000</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 120</td></tr>
+<tr><td valign='top'><b>VOLT_RESTORE</b></td><td valign='top'>FLOAT</td><td valign='top'>With the <i>optional</i> <b>external power supply</b>, this parameter defines the <b>voltage</b> over which the clock will leave <i>low power mode</i>
+   <br><i>default</i> : <b>5.000</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 120</td></tr>
+<tr><td valign='top'><b>LOW_POWER_EN</b></td><td valign='top'>BOOL</td><td valign='top'>With the <i>optional</i> <b>external power supply</b>, this parameter <b>enables</b> the clock to actually <i>go</i> into <i>low power mode</i>.  Note that if VOLT_INTERVAL is <b>not zero</b>, the clock will still <i>measure</i> the voltage and <b>display</b>> the results in the Serial monitor even if <i>low power mode</i> is <b>disabled</b>.  That allows you to test the <i>power sensing</i> and <i>functionality</i> <b>before</b> actually sending the clock into <b>low power mode</i> which also <b>Turns the Wifi off</b>.
+   <br><i>default</i> : <b>0</b>=off</td></tr>
+</table>
+
+
+### 2. myIOT General
+
+The Parameters and Commands shown in this table are common to all
+[**MyIOT**](https://github.com/phorton1/Arduino-libraries-myIOT) devices.
+They are available via the **Serial Monitor**, the **Telnet Monitor**, or on the
+**Device** page of the *WebUI*.
+
+<table>
+<tr><td valign='top'><b>REBOOT</b></td><td valign='top'>COMMAND</td><td valign='top'>Reboots the device.</td></tr>
+<tr><td valign='top'><b>FACTORY_RESET</b></td><td valign='top'>COMMAND</td><td valign='top'>Performs a Factory Reset of the device, restoring all of the <i>parameters</i> to their initial values and rebooting</td></tr>
+<tr><td valign='top'><b>VALUES</b></td><td valign='top'>COMMAND</td><td valign='top'>From Serial or Telnet monitors, shows a list of all of the current <i>parameter</i> <b>values</b></td></tr>
+<tr><td valign='top'><b>DEVICE_NAME</b></td><td valign='top'>STRING</td><td valign='top'><i>User Modifiable</i> <b>name</b> of the device that will be shown in the <i>WebUI</i>, as the <i>Access Point</i> name, and in </i>SSDP</i> (Service Search and Discovery)
+   <br><b>Required</b> (must not be blank)
+   <br><i>default</i> : theClock3.3</td></tr>
+<tr><td valign='top'><b>DEVICE_TYPE</b></td><td valign='top'>STRING</td><td valign='top'>The <b>type</b> of the device as determined by the implementor
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>DEVICE_VERSION</b></td><td valign='top'>STRING</td><td valign='top'>The <b>version number</b> of the device as determined by the implementor
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>DEVICE_UUID</b></td><td valign='top'>STRING</td><td valign='top'>A <b>unique identifier</b> for this device.  The last 12 characters of this are the <i>MAC Address</i> of the device
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>DEVICE_IP</b></td><td valign='top'>STRING</td><td valign='top'>The most recent WiFi <b>IP address</b> of the device. Assigned by the WiFi router in <i>Station mode</i> or hard-wired in <i>Access Point</i> mode.
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>DEVICE_BOOTING</b></td><td valign='top'>BOOL</td><td valign='top'>A value that indicates that the device is in the process of <b>rebooting</b>
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>DEBUG_LEVEL</b></td><td valign='top'>ENUM</td><td valign='top'>Sets the amount of detail that will be shown in the <i>Serial</i> and <i>Telnet</i> output.
+   <br><i>allowed</i> : <b>0</b>=NONE, <b>1</b>=USER, <b>2</b>=ERROR, <b>3</b>=WARNING, <b>4</b>=INFO, <b>5</b>=DEBUG, <b>6</b>=VERBOSE
+   <br><i>default</i> : <b>5</b>=DEBUG</td></tr>
+<tr><td valign='top'><b>LOG_LEVEL</b></td><td valign='top'>ENUM</td><td valign='top'>Sets the amount of detail that will be shown in the <i>Logfile</i> output. <b>Note</b> that a logfile is only created if the device is built with an <b>SD Card</b> on which to store it!!
+   <br><i>allowed</i> : <b>0</b>=NONE, <b>1</b>=USER, <b>2</b>=ERROR, <b>3</b>=WARNING, <b>4</b>=INFO, <b>5</b>=DEBUG, <b>6</b>=VERBOSE
+   <br><i>default</i> : <b>0</b>=NONE</td></tr>
+<tr><td valign='top'><b>LOG_COLORS</b></td><td valign='top'>BOOL</td><td valign='top'>Sends standard <b>ansi color codes</b> to the <i>Serial and Telnet</i> output to highlight <i>errors, warnings,</i> etc
+   <br><i>default</i> : <b>0</b>=off</td></tr>
+<tr><td valign='top'><b>LOG_DATE</b></td><td valign='top'>BOOL</td><td valign='top'>Shows the <b>date</b> in Logfile and Serial output
+   <br><i>default</i> : <b>1</b>=on</td></tr>
+<tr><td valign='top'><b>LOG_TIME</b></td><td valign='top'>BOOL</td><td valign='top'>Shows the current <b>time</b>, including <i>milliseconds</i> in Logfile and Serial output
+   <br><i>default</i> : <b>1</b>=on</td></tr>
+<tr><td valign='top'><b>LOG_MEM</b></td><td valign='top'>BOOL</td><td valign='top'>Shows the <i>current</i> and <i>least</i> <b>memory available</b>, in <i>KB</i>, on the ESP32, in Logfile and Serial output
+   <br><i>default</i> : <b>0</b>=off</td></tr>
+<tr><td valign='top'><b>WIFI</b></td><td valign='top'>BOOL</td><td valign='top'>Turns the device's <b>WiFi</b> on and off
+   <br><i>default</i> : <b>1</b>=on</td></tr>
+<tr><td valign='top'><b>AP_PASS</b></td><td valign='top'>STRING</td><td valign='top'>The <i>encrypted</i> <b>Password</b> for the <i>Access Point</i> when in AP mode
+   <br><i>default</i> : 11111111</td></tr>
+<tr><td valign='top'><b>STA_SSID</b></td><td valign='top'>STRING</td><td valign='top'>The <b>SSID</b> (name) of the WiFi network the device will attempt to connect to as a <i>Station</i>.  Setting this to <b>blank</b> force the device into <i>AP</i> (Access Point) mode</td></tr>
+<tr><td valign='top'><b>STA_PASS</b></td><td valign='top'>STRING</td><td valign='top'>The <i>encrypted</i> <b>Password</b> for connecting in <i>STA</i> (Station) mode</td></tr>
+<tr><td valign='top'><b>SSDP</b></td><td valign='top'>BOOL</td><td valign='top'>Turns <b>SSDP</b> (Service Search and Discovery Protocol) on and off.  SSDP allows a device attached to WiFi in <i>Station mode</i> to be found by other devices on the LAN (Local Area Network). Examples include the <b>Network tab</b> in <i>Windows Explorer</i> on a <b>Windows</b>
+   <br><i>default</i> : <b>1</b>=on</td></tr>
+<tr><td valign='top'><b>TIMEZONE</b></td><td valign='top'>ENUM</td><td valign='top'>Sets the <b>timezone</b> for the RTC (Real Time Clock) when connected to WiFi in <i>Station mode</i>. There is a very limited set of timezones currently implemented.
+   <br><i>allowed</i> : <b>0</b>=EST - Panama, <b>1</b>=EDT - New York, <b>2</b>=CDT - Chicago, <b>3</b>=MST - Phoenix, <b>4</b>=MDT - Denver, <b>5</b>=PDT - Los Angeles
+   <br><i>default</i> : <b>0</b>=EST - Panama</td></tr>
+<tr><td valign='top'><b>NTP_SERVER</b></td><td valign='top'>STRING</td><td valign='top'>Specifies the NTP (Network Time Protocol) <b>Server</b> that will be used when connected to WiFi as a <i>Station</i>
+   <br><i>default</i> : pool.ntp.org</td></tr>
+<tr><td valign='top'><b>LAST_BOOT</b></td><td valign='top'>TIME</td><td valign='top'>The <b>time</b> at which the device was last rebooted.
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>UPTIME</b></td><td valign='top'>INT</td><td valign='top'>LAST_BOOT value as integer seconds since Jan 1, 1970.  Displayed as he number of <i>hours, minutes, and seconds</i> since the device was last rebooted in the WebUI
+   <br><i>Readonly</i></td></tr>
+<tr><td valign='top'><b>RESET_COUNT</b></td><td valign='top'>INT</td><td valign='top'>The number of times the <b>Factory Reset</b> command has been issued on this device
+   <br><i>default</i> : <b>0</b></td></tr>
+</table>
+
+
+
+
+**Next:** [**Trouble Shooting**](troubles.md) potential problems with the clock ...

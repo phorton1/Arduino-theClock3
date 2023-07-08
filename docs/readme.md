@@ -6,11 +6,12 @@
 **[Wood](wood.md)** --
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
-**[Software](software.md)** --
+**[Firmware](firmware.md)** --
 **[Assemble](assemble.md)** --
 **[Build](build.md)** --
 **[Tuning](tuning.md)** --
 **[UI](ui.md)** --
+**[Software](software.md)** --
 **[Troubles](troubles.md)** --
 **[Notes](notes.md)**
 
@@ -39,30 +40,36 @@ Roughly stated, the goal of this project is to produce a **wooden geared clock**
 that will be accurate to within one second per day, or, when connected to the
 internet, within one second at any given time over it's working lifetime.
 
-
-## Documentation Outline
-
 This documentation is mostly geared towards makers who might like to build
 one of these clocks. Though it is not a trivial task, this repository should
 contain all of the information needed for you to build one.
+
+## Documentation Outline
 
 If you have received one of these clocks as a gift, please see the
 **[Quick Start Guide](QuickStartGuide.pdf)** and the
 **[User Interface](ui.md)** page for information on how to unpack,
 setup, start, and use your clock.
 
-On these pages you will find the following:
+The following pages of documentation are intended to as a *tutorial* for
+a **maker** who is *building* a clock, and describes the step-by-step
+process of constructing the clock and getting it running:
 
 - **[Design](design.md)** - An overview of the **requirements** and **design** of the clock
-- **[Plan](plan.md)** - An *plan* for **building** the clock, and the **BOM** (Bill of Materials)
+- **[Plan](plan.md)** - A *plan* for **building** the clock, and the **BOM** (Bill of Materials)
 - **[Wood](wood.md)** - **Laser Cutting** the wood and building the *Frame*, *Face*, and gluing the *Gears* together
 - **[Coils](coils.md)** - **Winding** the *electromagnet coils*
 - **[Electronics](electronics.md)** - Creating the custom **PCB** (printed circuit board), **Cables**, and **Connectors**
-- **[Software](software.md)** - Compiling and installing the **Software** and doing a  **hardware test** of the electronics
+- **[Firmware](firmware.md)** - Compiling and installing the **Firmware** and doing a  **hardware test** of the electronics
 - **[Assemble](assemble.md)** - Build the **sub-assemblies** of the clock, including **cutting the tubes** and assembling the **Gears, Pendulum,** and **Box**
 - **[Build](build.md)** - **Final Build** of the clock, bringing all the *sub-assemblies* together into the finished *Clock*
 - **[Tuning](tuning.md)** - Describes the process of getting the clock to **run accurately**
-- **[User Interface](ui.md)** - A more detailed guide to the **User Interface** of the clock, including the *Buttons, LEDs, WebUI*, and *Telnet*
+
+The remaining pages are considered **reference** materials for more
+deeply understanding the clock and it's software:
+
+- **[User Interface](ui.md)** - A detailed guide to the **User Interface** of the clock, including the *Buttons and LEDs*, and connecting to *WiFi* to use the *WebUI* and *Telnet*
+- **[Software](software.md)** - A deeper look the **Software** of the clock, including an *Overview* of the functionality and a description of all of the *Parameters* for the clock
 - **[Trouble Shooting](troubles.md)** - Some common potential **problems** and possible **solutions**
 - **[Notes](notes.md)** - Other Notes and information about the clock
 
@@ -75,7 +82,7 @@ The main outputs from Fusion 360 are the **DXF Files** (drawings) used to laser
 cut the wood, and the **STL Files** (3D models) used to 3D print the plastic parts.
 
 The clock was *implemented* by using the **Lightburn** laser CNC machine
-control software to cut the wood from the Fusion DXF files using my
+control program to cut the wood from the Fusion DXF files using my
 [**20mm CNC machine**](https://github.com/phorton1/Arduino-esp32_cnc20mm),
 and the **Prusa Slicer** and **OctoPrint** to slice the Fusion STL files and send
 them to my **Prusa MK3S 3d printer** to make the plastic parts.
@@ -194,7 +201,7 @@ machine that I built, and the wooden parts were cut using the laser configuratio
 [**20mm CNC machine**](https://github.com/phorton1/Arduino-esp32_cnc20mm) that I subsequently built.
 Both of those projects depend on my port of the
 [**FluidNC**](https://github.com/phorton1/Arduino-libraries-FluidNC)
-ESP32 based CNC controller software, and include my
+ESP32 based CNC controller firmware, and include my
 [**FluidNC UI**](https://github.com/phorton1/Arduino-libraries-FluidNC_UI)
 (touchscreen user interface) and
 [**other extensions**](https://github.com/phorton1/Arduino-libraries-FluidNC_Extensions)

@@ -6,11 +6,12 @@
 **[Wood](wood.md)** --
 **[Coils](coils.md)** --
 **Electronics** --
-**[Software](software.md)** --
+**[Firmware](firmware.md)** --
 **[Assemble](assemble.md)** --
 **[Build](build.md)** --
 **[Tuning](tuning.md)** --
 **[UI](ui.md)** --
+**[Software](software.md)** --
 **[Troubles](troubles.md)** --
 **[Notes](notes.md)**
 
@@ -256,4 +257,4 @@ once it is glued into the *box* and we slide the *frame* onto the *box*.
 
 
 
-**Next:** Installing the **[Software](software.md)** and testing the PCB ...
+**Next:** Installing the **[Firmware](firmware.md)** and testing the PCB ...

@@ -6,11 +6,12 @@
 **[Wood](wood.md)** --
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
-**[Software](software.md)** --
+**[Firmware](firmware.md)** --
 **[Assemble](assemble.md)** --
 **[Build](build.md)** --
 **[Tuning](tuning.md)** --
 **[UI](ui.md)** --
+**[Software](software.md)** --
 **[Troubles](troubles.md)** --
 **[Notes](notes.md)**
 
@@ -36,10 +37,10 @@ to this one.
 	- **continuity test** the PCB
 	- **solder components** to the PCB
 	- **make cables/connectors** for the LEDs, Coils and AS5600 angle sensor
-- Install and Build the **[Software](software.md)**
+- Install and Build the **[Firmware](firmware.md)**
 	- install the *Arduino IDE* and necessary **libraries**
     - build the **code** and upload it, and the *SPIFFS file system* to the ESP32
-	- this page also has a quick *introduction and overview* of the **Software**
+	- this page also has a quick *introduction and overview* of the **Firmware**
 	- do a quick **hardware test** of PCB (Buttons, LEDs, Coils, and Angle Sensor, etc)
 - Create the **[sub-assemblies](assemble.md)** for the clock:
 	- cut and sand the **brass tubes** and **threaded rods** to length

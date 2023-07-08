@@ -17,7 +17,6 @@ extern void updateStatsPidAngle(float pid_angle);
 
 // used in run();
 
-extern void incStatRestarts();
 extern void incStatBadReads();
 extern void updateStatsCycle(int32_t cur_cycle, int32_t total_millis_error);
 extern void updateStatsMinAngle(float min_angle);

@@ -6,11 +6,12 @@
 **[Wood](wood.md)** --
 **[Coils](coils.md)** --
 **[Electronics](electronics.md)** --
-**[Software](software.md)** --
+**[Firmware](firmware.md)** --
 **[Assemble](assemble.md)** --
 **[Build](build.md)** --
 **Tuning** --
 **[UI](ui.md)** --
+**[Software](software.md)** --
 **[Troubles](troubles.md)** --
 **[Notes](notes.md)**
 
@@ -44,8 +45,8 @@ The ESP32 will reboot and a series of LEDs will light up.
 
 If you see five <font color='red'><b>flashing red LEDs</b></font>
 there is a **problem with the AS5600 cable and/or module**. We already
-described this during the *Hardware Test* on the [Software](software.md)
-page.
+described this during the [Hardware Test](firmware.md#c-hardware-test)
+on the [Firmware](firmware.md) page.
 
 ![tuning-LEDS_five_flashing_red.gif](images/tuning-LEDS_five_flashing_red.gif)
 
@@ -119,7 +120,7 @@ so that they both have the **same color** wires going to the
 center, and outer lead of the coils, respectively, and that
 you have plugged them into the PCB into the correct sockets
 with the **same color** on each side, as shown in the
-**hardware test** portion of the [Software](software.md) page.
+[Hardware Test](firmware.md#d-hardware-test) portion of the [Firmware](firmware.md) page.
 
 Issue the following *two* commands into the serial monitor:
 
@@ -432,4 +433,4 @@ driven wooden geared clock** !!!
 
 
 
-**Next:** [**User Interface**](ui.md) - describes the buttons, LEDS, Parameters, etc
+**Next:** [**User Interface**](ui.md) - describes the buttons, LEDS, and WebUI
