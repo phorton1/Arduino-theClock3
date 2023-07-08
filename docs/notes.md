@@ -24,9 +24,9 @@ including the following **Optional Features**:
 
 and **Historical Notes** about the clock:
 
-- [Serial Plotter Example](#serial-plotter-example)
-- [pyJoints Addin](#pyjoints-addin)
-- [Ugraded MOSFET PCB](#ugraded-mosfet-pcb)
+- [Serial Plotter Example](#1-serial-plotter-example)
+- [pyJoints Addin](#2-pyjoints-addin)
+- [Ugraded MOSFET PCB](#3-ugraded-mosfet-pcb)
 
 ... as well as a list of
 [Possible Future Changes](#c-possible-future-changes)
@@ -176,12 +176,42 @@ it was able to power the clock for over **8 hours**.
 
 ## B. Historical Notes
 
-### Serial Plotter Example
+### 1. Serial Plotter Example
 
+If you are connected to the clock with a *Serial Cable**, then you
+can use the **Arduino Serial Plotter** to see a graphical representation
+of the Pendulum's *movement*, the *pulses* delivered to the Coils,
+and so on, by changing the PLOT_VALUES parameter
+from the WebUI.
 
+- Select **PLOT_VALUES=waves** from the WebUI
+- Bring up the **Arduino Serial Plotter**
+- Start the clock **Running** in any CLOCK_MODE
 
+The values are *scaled* to a range of **0 to 1000** for
+display purposes. Please see **theClockRun.cpp** for
+the exact scaling factors used.
+The values are sent out approximately *250* times per second, or every **4 milliseconds**.
 
-### pyJoints Addin
+![notes-plot_values.jpg](images/notes-plot_values.jpg)
+
+In the above image we above image we
+
+- a <font color='green'><b>green</b></font> line showing the **angle of the pendulum**,
+  which traces a nice *sine wave* in this image.
+- a <font color='purple'><b>purple</b></font> line showing the **maximum right angle**,
+- an <font color='orange'><b>orange</b></font> line showing the **maximum left angle** (which is negative),
+- a <font color='red'><b>red</b></font> line which shows which **side** of the clock
+  the Pendulum is on, and which **crosses zero**
+- a <font color='blue'><b>blue</b></font> line showing which **direction** the Pendulum is moving, and
+- a <font color='cyan'><b>cyan</b></font> line showing the **pulses of energy** delivered to the coils
+  slightly after each zero crossing.
+
+The <font color='grey'><b>grey</b></font> line shows that the *error value* is
+decreasing during these beats of the clock.  I used this plot while developing
+the software to better visualize what was going on with the clock.
+
+### 2. pyJoints Addin
 
 While designing theClock3's Cam Mechanism, I wrote the Fusion 360
 [pyJoints Addin](https://github.com/phorton1/fusionAddIns-pyJoints).
@@ -205,7 +235,7 @@ to Fusion 360 to allow me to animate the design and visualize
 the actual mechanism in action.
 
 
-### Ugraded MOSFET PCB
+### 3. Ugraded MOSFET PCB
 
 My earliest builds of this clock made use of a circuit that utilized
 an L293D h-bridge integrated circuit to drive the coils, inherited from
@@ -238,7 +268,7 @@ instead of the L293D, to drive the coils.
 
 ## C. Possible Future Changes
 
-### Bigger Holes and 4mm Tubes for Arms && Washers
+### 1. Bigger Holes and 4mm Tubes for Arms && Washers
 
 It is difficult to align the Washers onto the Arms for gluing.
 The are supposed to fit *loosely* on an M3 machine screw.
@@ -249,7 +279,7 @@ One solution would be to make the holes 3.85mm, and to
 align them using a 9.6mm piece of 4mm tubing. They could
 be clamped.
 
-### 3D printed spacer for Top Tube Assembly
+### 2. 3D printed spacer for Top Tube Assembly
 
 It is difficult to align the Pendulum in the Channel while
 assembling the Top Tube.   The Pendulum ends up smashed
@@ -261,7 +291,7 @@ and then removed for final acjustment of the spacing.
 Another solution would be to laser cut, and glue, the
 correct thicknesses of U shaped wooden pieces.
 
-### Shorter Clock and Pendulum
+### 3. Shorter Clock and Pendulum
 
 As currently designed in v3.2 the Pendulum Weight tends to need to be
 adjusted far **up** on the rod to achieve the correct swing.
