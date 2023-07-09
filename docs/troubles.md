@@ -43,19 +43,19 @@ please feel free to **contact me**.
 	- ESP32 burnt out - replace the **ESP32**
 	- bad LED cable - replace the **LED strip** and **cable**
 	- LEDS burnt out - replace the **LED strip** and **cable**
-	- bad PCB -	test for **short circuits** and/or replace the **PCB*
+	- bad PCB -	test for **short circuits** and/or replace the **PCB**
 - All LEDs flashing <font color='red'><b>red</b></font> during boot and
   after booting the **2nd LED** continues flashing <font color='red'><b>red</b></font>
 	- bad Angle Sensor Cable - replace the **cable**
-	- bad AS5600 Angle Sensor Module - replace the **module***
-	- bad PCB - test for **short circuits** and/or replace the **PCB*
+	- bad AS5600 Angle Sensor Module - replace the **module**
+	- bad PCB - test for **short circuits** and/or replace the **PCB**
 - After booting the **2nd LED** continues flashing <font color='orange'><b>orange</b></font>
   indicating a failure to set the **Zero Angle** for the clock
 	- set the *Zero Angle* using the [Buttons](ui.md#a-buttons)
 	- set the *Zero Angle* using the [WebUI](ui.md#d-webui)
 	- set the *Zero Angle* uisng the [Serial](tuning.md#b-set-zero-angle) or [Telnet](ui.md#e-telnet-serial-monitor) Monitors
 - The Pendulum does **not** start **Swinging** after attempting to start the clock
-    - check for, and resolve any *Mechanical** issues
+    - check for, and resolve any *Mechanical* issues
 	- try re-setting the *Zero Angle* using one of the above methods
 	- increase the POWER_START parameter
 	- increase or decrease the DUR_START parameter
@@ -96,7 +96,7 @@ be advised that *WD40 is **not** a lubricant* and will actually *remove* the
 lubrication from the clock.  A small amount, however, will *dilute* the existing
 oil and perhaps make the clock run better.
 
-In **extreme* cases, it may be necessary to **disassemble** the clock to
+In *extreme cases*, it may be necessary to **disassemble** the clock to
 clean and lubricate the *tubes* and *bearings* more fully.
 
 - remove the **Hands** and the front **Hours Spacer**
@@ -110,7 +110,7 @@ clean and lubricate the *tubes* and *bearings* more fully.
 - **reassemble** the clock.
 
 I have no idea how long the clock will last, what it's **lifetime** will be.
-However, I recommend that, at least once *every year( the clock is **lubricated**, and
+However, I recommend that, at least *once per year* the clock is **lubricated**, and
 that at least once *every five years* the clock is disassembled and a **deep clean**
 and lubrication are performed.
 
@@ -120,9 +120,9 @@ It extreme cases, it may be neccessary to do a complete [**Tuning Cycle**](tunin
 of the clock.  This mostly amounts to the following:
 
 - adjust the **Pendulum Weight** so that the clock beats slightly slower than 1000ms per swing
-  at the *minimum target angle** (ANGLE_MIN)
+  at the *minimum target angle* (ANGLE_MIN)
 - adjust the **Magnetic Spring** so that the clock beats slightly quicker than 1000ms per swing
-  at the *maximum target angle** (ANGLE_MAX)
+  at the *maximum target angle* (ANGLE_MAX)
 
 However, *even then* there may be cases where the clock does not function correctly,
 and cannot sufficiently **speed up** or **slow down** the Pendulum.  These cases

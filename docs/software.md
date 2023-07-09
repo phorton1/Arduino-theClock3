@@ -275,7 +275,7 @@ They are available via the **Serial Monitor**, the **Telnet Monitor**, or on the
    <br><i>default</i> : <b>4.000</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 120</td></tr>
 <tr><td valign='top'><b>VOLT_RESTORE</b></td><td valign='top'>FLOAT</td><td valign='top'>With the <i>optional</i> <b>external power supply</b>, this parameter defines the <b>voltage</b> over which the clock will leave <i>low power mode</i>
    <br><i>default</i> : <b>5.000</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 120</td></tr>
-<tr><td valign='top'><b>LOW_POWER_EN</b></td><td valign='top'>BOOL</td><td valign='top'>With the <i>optional</i> <b>external power supply</b>, this parameter <b>enables</b> the clock to actually <i>go</i> into <i>low power mode</i>.  Note that if VOLT_INTERVAL is <b>not zero</b>, the clock will still <i>measure</i> the voltage and <b>display</b>> the results in the Serial monitor even if <i>low power mode</i> is <b>disabled</b>.  That allows you to test the <i>power sensing</i> and <i>functionality</i> <b>before</b> actually sending the clock into <b>low power mode</i> which also <b>Turns the Wifi off</b>.
+<tr><td valign='top'><b>LOW_POWER_EN</b></td><td valign='top'>BOOL</td><td valign='top'>With the <i>optional</i> <b>external power supply</b>, this parameter <b>enables</b> the clock to actually <i>go</i> into <i>low power mode</i>.  Note that if VOLT_INTERVAL is <b>not zero</b>, the clock will still <i>measure</i> the voltage and <b>display</b> the results in the Serial monitor even if <i>low power mode</i> is <b>disabled</b>.  That allows you to test the <i>power sensing</i> and <i>functionality</i> <b>before</b> actually sending the clock into <b>low power mode</i> which also <b>Turns the Wifi off</b>.
    <br><i>default</i> : <b>0</b>=off</td></tr>
 </table>
 
