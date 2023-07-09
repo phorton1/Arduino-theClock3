@@ -90,7 +90,7 @@ them to my **Prusa MK3S 3d printer** to make the plastic parts.
 The PCB (printed circuit board) is almost it's own sub-project.
 The outputs from *KiCad* include the basic **schematic**, and
 the **Gerber** and **Excellon** files used to make the PCB.
-The program [**FlatCAM**](https://bitbucket.org/jpcgt/flatcam/downloads/) \
+The program [**FlatCAM**](https://bitbucket.org/jpcgt/flatcam/downloads/)
 was used to generate the GCODE files from those files for running my
 [**cnc3018**](https://github.com/phorton1/Arduino-esp32_cnc3018)
 to **mill, epoxy coat, drill, and cut out** the PCB (printed circuit board.

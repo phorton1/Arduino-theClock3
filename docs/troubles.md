@@ -91,7 +91,7 @@ to ensure they turn freely.
 - apply *small* drops of *light machine oil* to the various *bearings* on the clock
 - replace the **Hands**
 
-I have found that a small squire of **WD40** can also help with Lubrication, but
+I have found that a small squirt of **WD40** can also help with Lubrication, but
 be advised that *WD40 is **not** a lubricant* and will actually *remove* the
 lubrication from the clock.  A small amount, however, will *dilute* the existing
 oil and perhaps make the clock run better.
@@ -138,7 +138,7 @@ are indicated by the following **LED symptoms**.
 - the *rightmost LED* remains <font color='red'><b>red</b></font> for more than a few minutes,
   indicating that the clock got stuck in a *synchronization cycle* and could not **slow down**
   sufficiently to finish the cycle
-- the *3rd or 4th LEDS** are consistently turning **solid**
+- the *3rd or 4th LEDS* are consistently turning **solid**
   <font color='red'><b>red</b></font> or <font color='blue'><b>blue</b></font>
   indicating that the *individual cycles* are more than 50ms fast or slow,
   or that the *overall clock accuracy* is more than 150ms fast or slow
