@@ -164,7 +164,7 @@ The choice of **batteries** for the UPS makes a **big** difference!
 
 I tested it first with some *cheap yellow* chinese 18650 batteries
 and it was only able to power the clock for about **30-45 minutes**
-before the batteries dropped below 2.9 and the ESP32 would no longer
+before the batteries dropped below 2.9V and the ESP32 would no longer
 boot.
 
 Then I switched to some new *high quality* **LG** batteries, and
@@ -178,7 +178,7 @@ it was able to power the clock for over **8 hours**.
 
 ### 1. Serial Plotter Example
 
-If you are connected to the clock with a *Serial Cable**, then you
+If you are connected to the clock with a *Serial Cable*, then you
 can use the **Arduino Serial Plotter** to see a graphical representation
 of the Pendulum's *movement*, the *pulses* delivered to the Coils,
 and so on, by changing the PLOT_VALUES parameter
@@ -205,7 +205,7 @@ In the above image we above image we
   the Pendulum is on, and which **crosses zero**
 - a <font color='blue'><b>blue</b></font> line showing which **direction** the Pendulum is moving, and
 - a <font color='cyan'><b>cyan</b></font> line showing the **pulses of energy** delivered to the coils
-  slightly after each zero crossing.
+  slightly at zero crossing.
 
 The <font color='grey'><b>grey</b></font> line shows that the *error value* is
 decreasing during these beats of the clock.  I used this plot while developing
@@ -268,16 +268,16 @@ instead of the L293D, to drive the coils.
 
 ## C. Possible Future Changes
 
-### 1. Bigger Holes and 4mm Tubes for Arms && Washers
+### 1. Bigger Holes and 4mm Tubes for Arms & Washers
 
 It is difficult to align the Washers onto the Arms for gluing.
 The are supposed to fit *loosely* on an M3 machine screw.
 If you use an M3 machine screw for the alighment, you are
 likely to **not center** the holes correctly.
-
 One solution would be to make the holes 3.85mm, and to
 align them using a 9.6mm piece of 4mm tubing. They could
-be clamped.
+be then be properly clamped during gluing, and the 4mm
+tube would ride well on a M3 machine screw.
 
 ### 2. 3D printed spacer for Top Tube Assembly
 
@@ -287,8 +287,7 @@ against the front frame and has to be moved back which
 is difficult.  One solution would be to 3D print a U-shaped
 spacer that could be inserted while pushing the Tube through,
 and then removed for final acjustment of the spacing.
-
-Another solution would be to laser cut, and glue, the
+Another slution would be to laser cut, and glue, the
 correct thicknesses of U shaped wooden pieces.
 
 ### 3. Shorter Clock and Pendulum

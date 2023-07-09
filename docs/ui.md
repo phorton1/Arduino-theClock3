@@ -640,16 +640,23 @@ to the ESP32 and the ESP32 will reboot.
 
 ## E. Telnet Serial Monitor
 
-Finally, we would like to mention that, once the Clock has been connected
+Finally, plese note that, once the Clock has been connected
 to Wifi, you can access it via **Telnet** by using a free telnet client program
 like [**Putty**](https://www.putty.org/).
 
-Here is a screen shot a *Putty Telnet Session* with the Clock, with
+Here is a screen shot of a *Putty Telnet Session* with the Clock, with
 the LOG_COLORS paremeter turned on:
 
 ![ui-telnet_putty.jpg](images/ui-telnet_putty.jpg)
 
-
+**Telnet** access to the clock is *useful* during [Tuning](tuning.md)
+and over the *lifetime* of the clock.  By using Telnet (instead of
+the *Serial Monitor*) you can plug the clock into a more robust
+**2 to 3 Amp power supply** instead of the one on your laptop/computer which
+is typically limited to *500 milliamps*.
+Telnet is also *handy*, to see the **timing lines**,
+if you want to *adjust*, or [Tune](tuning.md) the clock, without *moving it*
+from a shelf or other location to your desk or work area.
 
 
 

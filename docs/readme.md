@@ -185,11 +185,11 @@ Please see [LICENSE.TXT](../LICENSE.TXT) for more information.
 ## Please Also See
 
 This project directly or indirectly brings together a number of other projects of mine.
-It supersedes my previous clock projects: [**theClocks 1&2**](https://github.com/phorton1/Arduino-theClock)
+It supersedes my previous clock projects, [**theClocks 1&2**](https://github.com/phorton1/Arduino-theClock),
 and makes direct use of my
 [**MyIOT**](https://github.com/phorton1/Arduino-libraries-myIOT)
 ("my internet of things*) repository, which provides a generalized approach to building parameter
-driven ESP32 devices that include a Web UI as the basis for the software.
+driven ESP32 devices that include a Web UI, as the basis for the software.
 
 Another project that also make user of the *myIOT* repository is the
 [**Bilge Alarm**](https://github.com/phorton1/Arduino-bilgeAlarm)
@@ -211,7 +211,7 @@ There is also a quick and dirty
 [**Coil Winding Machine**](https://github.com/phorton1/Arduino-CoilWindingMachine)
 project repository for the machine I made to wind the coils for these clocks and
 a [Fusion 360 Plugin](https://github.com/phorton1/fusionAddIns-pyJoints)
-thatI created which allowed me to do animations of the clock to visually see how the
+that I created which allowed me to do animations of the clock to visually see how the
 mechanism might work before actually building it.
 
 I hope you will take a few minutes to check out some of these other pages too!!
