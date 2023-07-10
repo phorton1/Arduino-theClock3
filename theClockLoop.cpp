@@ -124,8 +124,6 @@ void theClock::doButtons()
 							m_low_power_time = 0;
 							m_low_power_mode = VOLT_MODE_NORMAL;
 							setLowPowerMode(0);
-							setStatsPower(m_low_power_mode, m_volts_5v, m_volts_vbus);
-							setString(ID_STAT_MSG0,getStatBufMain());
 						}
 					#endif
 

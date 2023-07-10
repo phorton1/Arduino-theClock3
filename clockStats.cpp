@@ -360,19 +360,22 @@ const char *getStatBufMain()
 	sprintf(msg_buf,"num_bad(%d)",stat_num_bad_reads);
 
 	#if WITH_VOLTAGES
-	if (any_volts)
+		if (any_volts)
 		{
 			char *b = &msg_buf[strlen(msg_buf)];
-			sprintf(b," %s volts(%0.2f) vbus(%0.2f) num_low_powers(%d) %s",
-				stat_low_power_mode == VOLT_MODE_LOW ? "LOW_POWER_MODE!!" :
-				stat_low_power_mode == VOLT_DETECT_LOW ? "low power!" :
+			sprintf(b," %s volts(%0.2f) vbus(%0.2f)",
+				stat_low_power_mode == VOLT_MODE_LOW ? "!! LOW_POWER_MODE !!" :
+				stat_low_power_mode == VOLT_DETECT_LOW ? "!! low power detected !!" :
 				"NORMAL",
 				stat_volts_5v,
-				stat_volts_vbus,
-				stat_num_low_powers,
-				stat_num_low_powers ? "<br>" : "");
+				stat_volts_vbus);
+
 			if (stat_num_low_powers)
 			{
+				b = &msg_buf[strlen(msg_buf)];
+				sprintf(b," num_low_powers(%d) <br>",
+					stat_num_low_powers);
+
 				formatTimeToStatBuf("LAST_DOWN", last_low_power_time, 0, last_restore_power_time);
 				if (last_restore_power_time)
 					formatTimeToStatBuf("LAST_UP", last_restore_power_time, 0, false);
@@ -453,7 +456,17 @@ void initRecentStats()
 #if WITH_VOLTAGES
 
 	void setStatsPower(int low_power_mode, float volts_5v, float volts_vbus)
+		// there are three states for low_power_mode
+		// 	#define VOLT_MODE_NORMAL    0
+		//  #define VOLT_DETECT_LOW     1
+		//  #define VOLT_MODE_LOW		2
+		// changes between VOLT_MODE_NORMAL and VOLT_DETECT_LOW
+		//    do NOT increment the number of low_powers or set times.
+		// changes between VOLT_MODE_LOW and VOLT_MODE_NORMAL
+		//    DO increment number of low_power and set times
+
 	{
+		any_volts = 1;
 		stat_volts_5v = volts_5v;
 		stat_volts_vbus = volts_vbus;
 
@@ -461,15 +474,17 @@ void initRecentStats()
 
 		if (stat_low_power_mode != low_power_mode)
 		{
-			if (!stat_low_power_mode && low_power_mode)
+			if (low_power_mode == VOLT_MODE_LOW)
 			{
 				stat_num_low_powers++;
 				last_low_power_time = time(NULL);
 			}
-			else if (stat_low_power_mode && !low_power_mode)
+			else if (stat_low_power_mode == VOLT_MODE_LOW &&
+					 low_power_mode == VOLT_MODE_NORMAL)
 			{
 				last_restore_power_time = time(NULL);
 			}
+
 			stat_low_power_mode = low_power_mode;
 		}
 	}

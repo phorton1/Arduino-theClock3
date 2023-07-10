@@ -200,7 +200,7 @@
 	#define ID_VOLT_CALIB	 	"VOLT_CALIB"		// calibration of voltages
 	#define ID_VOLT_CUTOFF	 	"VOLT_CUTOFF"		// vbus volts at which to enter low power mode
 	#define ID_VOLT_RESTORE	 	"VOLT_RESTORE"		// vbus volts at which to leave low power mode
-	#define ID_LOW_POWER_EN "LOW_POWER_EN"	    // enables actually going into low power mode
+	#define ID_LOW_POWER_EN 	"LOW_POWER_EN"	    // enables actually going into low power mode
 #endif
 
 
