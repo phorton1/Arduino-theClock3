@@ -82,7 +82,8 @@ wood and machine **screws, nuts, and bolts**.   There is an **M3x45mm bolt** in 
 which could be done with a section of 3mm threaded rod instead.
 
 The main electronic components include an **ESP32 Dev Board**, an **AS5600** magnetic angle sensor
-module, and a **L293D** H Bridge Integrated Circuit, a short length of a **WS2812b** LED Strip,
+module, a **1RD9540N** *mosfet* driven by a **BC548** NPN *transistor* with a **1N4701** fly back *diode*,
+a short length of a **WS2812b** LED Strip,
 along with various connectors, buttons, and cables.  I also separately cost a good quality 2A
 5V micro-usb power supply at about $7.00.
 
@@ -186,7 +187,7 @@ Without further adoo, here is the **BOM** (Bill of Materials):
 <tr>
 	<td colspan='5'>Tubes, Bearings, Weights</td>
 </tr>
-	<tr><td></td><td>Brass Tube, 6mm	</td><td>approx 28mm (1.3")</td><td>$7.00</td><td rowspan='3'>you can buy a set of telescoping brass tubes for about $12-14. ang get two clocks per set from them</td></tr>
+	<tr><td></td><td>Brass Tube, 6mm	</td><td>approx 28mm (1.3")</td><td>$7.00</td><td rowspan='3'>you can buy a set of telescoping brass tubes for about $12-14 and get two clocks per set from it</td></tr>
 	<tr><td></td><td>Brass Tube, 5mm	</td><td>approx 130mm (5.1")</td><td></td><td></td></tr>
 	<tr><td></td><td>Brass Tube, 4mm	</td><td>approx 140mm (5.5")</td><td></td><td></td></tr>
 	<tr><td></td><td>m3 threaded rod	</td><td>approx 140mm (5.5")</td><td>$2.00  </td><td></td></tr>
@@ -220,10 +221,11 @@ Without further adoo, here is the **BOM** (Bill of Materials):
 	<tr><td></td><td>LEDs							</td><td>5	</td><td>$0.50</td><td>1/12th of a WS2812b (60/meter) LED strip</td></tr>
 	<tr><td></td><td>Coils							</td><td>2	</td><td>$1.00</td><td>approx 18' 30 gauge wire each</td></tr>
 	<tr><td></td><td>Buttons						</td><td>2	</td><td>$1.00</td><td></td></tr>
-	<tr><td></td><td>L293D driver IC				</td><td>1	</td><td>$1.00</td><td></td></tr>
+	<tr><td></td><td>IRF9540 MOSFET 				</td><td>1	</td><td>$1.00</td><td></td></tr>
+	<tr><td></td><td>BC548 NPN transistor			</td><td>1	</td><td>$0.25</td><td></td></tr>
+	<tr><td></td><td>1N4701 zener diode 			</td><td>1	</td><td>$0.25</td><td></td></tr>
 	<tr><td></td><td>10K resistor					</td><td>7	</td><td>$0.40</td><td></td></tr>
 	<tr><td></td><td>100 uf electrolytic cap		</td><td>2	</td><td>$0.75</td><td></td></tr>
-	<tr><td></td><td>10 uf electrolytic cap			</td><td>1	</td><td>$0.10</td><td></td></tr>
 	<tr><td></td><td>15 pin female header			</td><td>2	</td><td>$0.50</td><td></td></tr>
 	<tr><td></td><td>2 pin female header			</td><td>2	</td><td>$0.50</td><td></td></tr>
 	<tr><td></td><td>JST 4 pin header				</td><td>2	</td><td>$0.25</td><td></td></tr>
