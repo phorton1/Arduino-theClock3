@@ -7,7 +7,7 @@
 
 // used in various methods
 
-extern void initClockStats(int how);
+extern void initClockStats();
 
 extern const char *getStatBufRTC(int32_t sync_millis);
 #if CLOCK_WITH_NTP

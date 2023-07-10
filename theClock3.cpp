@@ -419,6 +419,8 @@ void theClock::setup()	// override
 
 
 void theClock::initMotor()
+	// called during start(), resets all relevant
+	// variables involved in RUNNING the clock
 {
 	motor(0);
 
@@ -431,12 +433,8 @@ void theClock::initMotor()
 
 	m_time_zero = 0;
 	m_time_zero_ms = 0;
-}
 
-
-void theClock::initStats(int how)
-{
-	m_update_stats = false;
+	// used to be in initStats
 
 	m_cur_cycle = 0;
 	m_last_cycle = 0;
@@ -454,21 +452,27 @@ void theClock::initStats(int how)
 	m_sync_millis = 0;
 
 	m_last_sync = 0;
-	m_last_stats = 0;
 	m_last_ntp = 0;
+	m_last_stats = 0;
+}
 
-	initClockStats(how);
 
-	if (how > INIT_STATS_RESTART)
-		the_clock->setString(ID_STAT_MSG0,"");
+void theClock::initStats()
+	// merely resets the STATISTICS about the clock
+	// does not reset the START time, num_beats, or
+	// any other variables used in RUNNING the clock
+{
+	m_update_stats = false;
 
+	initClockStats();
+
+	the_clock->setString(ID_STAT_MSG0,"");
 	the_clock->setString(ID_STAT_MSG1,"");
 	the_clock->setString(ID_STAT_MSG2,"");
 	the_clock->setString(ID_STAT_MSG3,"");
 	the_clock->setString(ID_STAT_MSG4,"");
 	the_clock->setString(ID_STAT_MSG5,"");
 	the_clock->setString(ID_STAT_MSG6,"");
-
 }
 
 
@@ -476,12 +480,7 @@ void theClock::clearStats()
 	// ONLY called from the UI!!
 {
 	LOGU("STATISTICS CLEARED");
-
-	initStats(INIT_STATS_ALL);
-	struct timeval tv_now;
-	gettimeofday(&tv_now, NULL);
-	m_time_start = tv_now.tv_sec;
-	m_time_start_ms = tv_now.tv_usec / 1000L;
+	initStats();
 	m_update_stats = true;
 }
 
@@ -533,7 +532,7 @@ void theClock::startClock(bool restart /*=0*/)
 
 	initMotor();
 	initAS5600(_zero_angle);
-	initStats(restart ? INIT_STATS_RESTART : INIT_STATS_START_CLOCK);
+	initStats();
 
 	if (_clock_mode == CLOCK_MODE_SENSOR_TEST)
 	{

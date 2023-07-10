@@ -385,7 +385,7 @@ private:
 
 	static void setClockState(int state);
 	static void initMotor();
-	static void initStats(int how);
+	static void initStats();
 	static void motor(int power);
 
 	static void run();

@@ -58,7 +58,6 @@ static char msg_buf[512];
 
 
 static uint32_t stat_num_bad_reads;
-static uint32_t stat_num_restarts;
 
 static int 		stat_min_cycle;
 static int 		stat_max_cycle;
@@ -104,6 +103,7 @@ static  int32_t stat_total_ntp_changes = 0;
 static uint32_t stat_total_ntp_changes_abs = 0;
 
 #if WITH_VOLTAGES
+	static bool  any_volts;
 	static float stat_volts_5v;
 	static float stat_volts_vbus;
 	static int stat_low_power_mode;
@@ -118,26 +118,11 @@ static uint32_t stat_total_ntp_changes_abs = 0;
 // used in method
 //===================================================
 
-void initClockStats(int how)
+void initClockStats()
+	// resets all STATISTICS, has nothing to do with
+	// the variables that are used RUNNING the clock
 {
-	if (how > INIT_STATS_RESTART)
-	{
-		stat_num_bad_reads = 0;
-		stat_num_restarts = 0;
-	}
-
-	#if WITH_VOLTAGES
-		if (how == INIT_STATS_ALL)
-		{
-			stat_volts_5v = 0;
-			stat_volts_vbus = 0;
-			stat_low_power_mode = 0;
-			stat_num_low_powers = 0;
-			last_low_power_time = 0;
-			last_restore_power_time = 0;
-		}
-	#endif
-
+	stat_num_bad_reads = 0;
 
 	stat_min_cycle = MAX_INT;
 	stat_max_cycle = MIN_INT;
@@ -180,6 +165,16 @@ void initClockStats(int how)
 	stat_last_ntp_change = 0;
 	stat_total_ntp_changes = 0;
 	stat_total_ntp_changes_abs = 0;
+
+	#if WITH_VOLTAGES
+		any_volts = 0;
+		stat_volts_5v = 0;
+		stat_volts_vbus = 0;
+		stat_low_power_mode = 0;
+		stat_num_low_powers = 0;
+		last_low_power_time = 0;
+		last_restore_power_time = 0;
+	#endif
 }
 
 
@@ -365,20 +360,23 @@ const char *getStatBufMain()
 	sprintf(msg_buf,"num_bad(%d)",stat_num_bad_reads);
 
 	#if WITH_VOLTAGES
-		char *b = &msg_buf[strlen(msg_buf)];
-		sprintf(b," %s volts(%0.2f) vbus(%0.2f) num_low_powers(%d) %s",
-			stat_low_power_mode == VOLT_MODE_LOW ? "LOW_POWER_MODE!!" :
-			stat_low_power_mode == VOLT_DETECT_LOW ? "low power!" :
-			"NORMAL",
-			stat_volts_5v,
-			stat_volts_vbus,
-			stat_num_low_powers,
-			stat_num_low_powers ? "<br>" : "");
-		if (stat_num_low_powers)
+	if (any_volts)
 		{
-			formatTimeToStatBuf("LAST_DOWN", last_low_power_time, 0, last_restore_power_time);
-			if (last_restore_power_time)
-				formatTimeToStatBuf("LAST_UP", last_restore_power_time, 0, false);
+			char *b = &msg_buf[strlen(msg_buf)];
+			sprintf(b," %s volts(%0.2f) vbus(%0.2f) num_low_powers(%d) %s",
+				stat_low_power_mode == VOLT_MODE_LOW ? "LOW_POWER_MODE!!" :
+				stat_low_power_mode == VOLT_DETECT_LOW ? "low power!" :
+				"NORMAL",
+				stat_volts_5v,
+				stat_volts_vbus,
+				stat_num_low_powers,
+				stat_num_low_powers ? "<br>" : "");
+			if (stat_num_low_powers)
+			{
+				formatTimeToStatBuf("LAST_DOWN", last_low_power_time, 0, last_restore_power_time);
+				if (last_restore_power_time)
+					formatTimeToStatBuf("LAST_UP", last_restore_power_time, 0, false);
+			}
 		}
 	#endif
 
