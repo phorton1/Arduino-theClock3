@@ -247,7 +247,7 @@ sanding of the small (pinon) gears by aligning each pair of pinon gears
 on a **brass tube** and then doing the second pass at sanding their teeth
 *before* doing any gluing.
 
-I also give a *light sand* with *320 grit** paper to all of the **faces**
+I also give a *light sand* with *320 grit* paper to all of the **faces**
 of the *gears, arms, pawls,* and *arm supports* .. any place where two
 pices of wood will be facing each other.
 

@@ -194,7 +194,7 @@ which is the key parameter used with the **FM Gears** function of Fusion 360 to
 generate the gear drawings.  For example *min1a and min1b* have a ratio of *8:1*,
 for **nine parts overall**. The smaller gear takes 1/9th of the distance and the larger
 gear takes 8/9ths of the distance between them.  So the min1b gear has a *radius* of
-8/9 * 60mm, or approximately **53.33 mm", which gives a *diameter* of **106.66 mm**.
+8/9 * 60mm, or approximately *53.33 mm*, which gives a *diameter* of **106.66 mm**.
 *Dividing the diameter by the number of teeth results in the modulus*.
 106.66 / 64 equals approximately **1.66** for the calculated modulus of the
 1st gear pair which we then plug into Fusion to generate the drawing

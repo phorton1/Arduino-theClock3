@@ -121,16 +121,16 @@
 
 	#define DEFAULT_DUR_PULSE		120
 
-	#define DEFAULT_PID_P			20.0
-	#define DEFAULT_PID_I			0.50
-	#define DEFAULT_PID_D			-9.0
+	#define DEFAULT_PID_P			20.0  	// #3203 = 8
+	#define DEFAULT_PID_I			0.50  	// #3203 = 0.2
+	#define DEFAULT_PID_D			-9.0	// #3203 = -5
 
 	#define DEFAULT_APID_P			0.2
 	#define DEFAULT_APID_I			0.025
 	#define DEFAULT_APID_D			0.002
 
 	#define DEFAULT_RUNNING_ANGLE   4.0
-	#define DEFAULT_RUNNING_ERROR   2.0
+	#define DEFAULT_RUNNING_ERROR   4.0
 
 	#define DEFAULT_CYCLE_RANGE 	50
 	#define DEFAULT_ERROR_RANGE 	150
