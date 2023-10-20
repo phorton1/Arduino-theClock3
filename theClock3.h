@@ -3,15 +3,18 @@
 #include <myIOTDevice.h>
 
 #define CLOCK_COMPILE_VERSION    3		// 1, 2, 3
-	// 1 == clock 1.3, modified from 1.1 by adding an AS5600 sensor and 5 LEDs
+	// 1 == NO LONGER USED
+	//		clock 1.3, modified from 1.1 by adding an AS5600 sensor and 5 LEDs
 	// 		it has separate ENA, ENB, INA, and INB pins and one button and
 	//      completely different default (factory reset) parameters
 	//      The pcb had connectors for hall and optical mouse sensors
 	//      which I repurposed to connect the A5600 sensor.
 	//		NOT WORKING!!
-	// 2 == the three clocks I made as gifts, two of which were gifted
-	//      on 2023-06-08, and the previous board in my original clock 3.1
+	// 2 == CHRIS'S CLOCK and PAMELAS CLOCK
+	//		the three clocks I made as gifts, two of which were gifted
+	//      on 2023-06-08
 	// 3 == the original v3 clock with new MOSFET power board
+	//      and DANIELS v3 clock as well
 
 
 // VOLTAGE CHECKS and associated LOW_POWER_MODE are only
