@@ -16,7 +16,7 @@
 **[Notes](notes.md)**
 
 On the [Firmware](firmware.md) page we already described how to use the
-[Serial Monitor](firmware.md#c-serial-monitor).  On this page
+[Serial Monitor](./firmware.md#b-serial-monitor).  On this page
 we will decribe the rest of the **User Interface** of the clock
 in more detail, including:
 
