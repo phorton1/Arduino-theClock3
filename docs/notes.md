@@ -45,18 +45,18 @@ to the *right side* of the Box.
 ![notes-opt_usb2.jpg](images/notes-opt_usb2.jpg)
 ![notes-opt_usb1.jpg](images/notes-opt_usb1.jpg)
 
-In the [Fusion 360 Design](./fusion/clock3.2.f3z)
+In the [Fusion 360 Design](fusion/clock3.2.f3z)
 there is a *selection* set that
 consists of a number of *features* that are, by default,
 *suppressed* for this option.  If you **unsuppress** those features, then
 the Box will include
 a **hole** on the right side and a **mount** for a USB connector.
 Also, in this repository, you can find the
-[STL](./fusion/stl/the_box_usb.stl) file
+[STL](fusion/stl/the_box_usb.stl) file
 for this version of the box, as well as
-[Prusa](./prusa/the_box_usb.3mf)
+[Prusa](prusa/the_box_usb.3mf)
 project, and the
-[GCODE](./prusa/gcode/the_box_usb.gcode) file for 3D Printing
+[GCODE](prusa/gcode/the_box_usb.gcode) file for 3D Printing
 this version of the Box.
 
 To add the **2nd USB connector**:
@@ -93,18 +93,18 @@ purpose, using two **18650** batteries, is shown below.
 
 [![notes-opt_usb2.jpg](images/notes-opt_ups1.jpg)](https://www.ebay.com/itm/394629392845)
 
-In the [Fusion 360 Design](./fusion/clock3.2.f3z)
+In the [Fusion 360 Design](fusion/clock3.2.f3z)
 there is a *selection* set that
 consists of a number of *features* that are, by default,
 *suppressed* for this option.  If you **unsuppress** those features, then
 the **Clock Box** will include
 a **hole** on the right side for a **connector**.
 Also, in this repository, you can find the
-[STL](./fusion/stl/the_box_ups.stl) file
+[STL](fusion/stl/the_box_ups.stl) file
 for this version of the Clock box, as well as
-[Prusa](./prusa/the_box_ups.3mf)
+[Prusa](prusa/the_box_ups.3mf)
 project, and the
-[GCODE](./prusa/gcode/the_box_ups.gcode) file for 3D Printing
+[GCODE](prusa/gcode/the_box_ups.gcode) file for 3D Printing
 this version of the Clock Box.
 
 ![notes-opt_usb2.jpg](images/notes-opt_ups2.jpg)
@@ -146,14 +146,14 @@ the assembled electronics look something like this:
 
 There is a **3D Printable** box for this UPS included in this repository.
 
-![notes-USB_UPS.gif](images/notes-USB_UPS.gif)
+![notes-UPS_USB.gif](images/notes-UPS.gif)
 
-There is a separate [Fusion 360 Design](./fusion/USB_UPS.f3z), for it,
+There is a separate [Fusion 360 Design](fusion/UPS.f3z), for it,
 as well as the STL files for the
-[top](./fusion/stl/ups_top.stl) and
-[bottom](./fusion/stl/ups_bottom.stl) of the UPS box, as well as the
-[Prusa](./prusa/USB_UPS.3mf) project and
-[GCODE](./prusa/gcode/USB_UPS.gcode) file for Printing
+[top](fusion/stl/ups_top.stl) and
+[bottom](fusion/stl/ups_bottom.stl) of the UPS box, as well as the
+[Prusa](prusa/UPS.3mf) project and
+[GCODE](prusa/gcode/UPS.gcode) file for Printing
 both parts.   When assembled it looks something like this:
 
 ![notes-opt_ups5.jpg](images/notes-opt_ups5.jpg)
@@ -303,9 +303,9 @@ to cut.
 
 ## D. Clock Version History
 
-- [**v1.0**](https://github.com/phorton1/theClock) - the first clock I **built**, with *5 coils* that could tick, but not keep good time
-- [**v1.1**](https://github.com/phorton1/theClock) - modified v1.0 to a *single coil* and made it keep rudimentary time
-- [**v2.0**](https://github.com/phorton1/theClock) - Improved from v1.0 and **built** as a *gift*
+- [**v1.0**](https://github.com/phorton1/Arduino-theClock) - the first clock I **built**, with *5 coils* that could tick, but not keep good time
+- [**v1.1**](https://github.com/phorton1/Arduino-theClock) - modified v1.0 to a *single coil* and made it keep rudimentary time
+- [**v2.0**](https://github.com/phorton1/Arduino-theClock) - Improved from v1.0 and **built** as a *gift*
 - **v3.0** - complete re-design and **build**, especially the *frame* and *cam mechanism* and switch from *hall sensors* to the *angle sensor*
 - **v1.3** - retrofitted my v1.1 clock with *angle sensor* and new *software*
 - **v3.1** - redesigned the *arms and pawls* for more reliability

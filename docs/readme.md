@@ -113,7 +113,7 @@ The following sub-folders and their children can be found within this 'docs' fol
     contains the Gerber/Excelon files output from kiCAD, along with the
     **FlatCAM** project used to produce the gcode files for milling, epoxy coating,
 	drilling, and cutting out the PCB
-    - [**gcode**](https://github.com/phorton1/Arduino-theClock3/tree/master/docs/kicad/pcb3.1/gcode) -
+    - [**gcode**](https://github.com/phorton1/Arduino-theClock3/tree/master/docs/kicad/pcb3.1/plot/gcode) -
 	contains the final output gcode files for the PCB
 - [**lightburn**](https://github.com/phorton1/Arduino-theClock3/tree/master/docs/lightburn) -
    contains **LBRN2** Lightburn files that contain all of

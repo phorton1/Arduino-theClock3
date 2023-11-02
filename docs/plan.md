@@ -53,7 +53,7 @@ to this one.
 	- screw the PCB into the box
 	- epoxy glue the *magnets* into the **Magnetic Spring**
 	- create the **Top Tube** with it's *handle*
-- [Final Assembly](assembly.md) includes:
+- [Final Assembly](assemble.md) includes:
 	- press the **Bearings** into the *Frame*
 	- attach the **Angle Sensor** to the *Frame*
 	- assemble the **Gear Train** and add the **Bridge**

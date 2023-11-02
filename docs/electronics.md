@@ -186,7 +186,7 @@ the socket on the PCB.  **Red** goes to the **5V** on the strip,
 **Black** goes to **ground** on the strip, and the
 middle **White** goes to the strip's **data in** connector.
 
-![other-led_strip.jpg](images/other-led_strip.jpg)
+todo: other-led_strip.jpg
 
 **DOUBLE CHECK** the orientation of the pins on the connector and
 LED strip versus the **PCB and schematic** BEFORE plugging the LED's

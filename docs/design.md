@@ -259,7 +259,7 @@ of about 0.9 amps at 4.94 volts.   The resistance I measured was roughtly about
 I have designed (at least) two **options** into the construction of the clock.
 
 - an optional **2nd usb connector** to allow the power cable to come in the right, rather than the left side of the clock
-- an optional **USB UPS** (Uninteruptable Power Supply) for the clock
+- an optional **UPS** (Uninteruptable Power Supply) for the clock
 
 These relativly minor options involve **3D printing a slightly different box** and/or
 adding additional **cables and connectors** as far as the clock's construction is concerned.
