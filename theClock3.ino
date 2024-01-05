@@ -19,6 +19,16 @@
 #if CLOCK_COMPILE_VERSION == 1
 
 	// My original clock v1.1 retrofitted with angle sensor and 5 LEDS
+	// Is-no-more ... I disassmbled it.
+	//
+	// I have thoughts of bringing it up to the MOSFET board, but
+	// it doesn't act correctly (it speeds up when swing gets smaller).
+	// I think the best approach would be to have it swing at a constant
+	// angle and then introduce a magenetic spring, either by a second
+	// coil or set of coils, or a servo moving a magnet into the area.
+	//
+	// For now, these are the old settings, with the #define being available
+	// for a different scheme.
 
 	#pragma message "Compiling Clock v1.3"
 
@@ -57,10 +67,9 @@
 
 #elif CLOCK_COMPILE_VERSION == 2
 
-	// PREVIOUS VERSION 3 USING DEFAULT CONFIGURATION PARAMETERS
-	// Thee are the clocks I gifted on 2023-06-08 and my previous
-	// clock 3.1 (though 3.0 did not use the voltage stuff) which
-	// is now turned off in all clocks
+	// VERSION 3.2 USING LM293D motor driver
+	// These are the two clocks I gifted on 2023-06-08 to Pamela and Chris.
+	// They are labeled v3.2 1/3 and 2/3 respectively
 
 	#pragma message "Compiling Clock v3.2"
 
@@ -98,9 +107,15 @@
 
 #else	// CLOCK_V3
 
-	// The STANDARD and my ORIGINAL CLOCK 3 which is now using MOSFET circuit board
-	// has different defaults for ANGLE_MIN and POWER_MIN from version 3 gifts.
+	// The STANDARD CLOCK 3 using MOSFET circuit board.
+	//
+	// Includes my Clock 3.3 (unlabeled 0/3) and Daniel's (labeled v2 3/3),
+	// which I renamed to theClock3.3.0 and theClock3.3-Daniels respectively.
 	// Note that the coils are wired in series.
+	//
+	// At this time the only difference with Daniels, is that I set the start
+	// delay to -500 instead of 200. I had a different setup for a while, shown
+	// below in comments "old 3.3"
 
 	#pragma message "Compiling Clock v3.3"
 
@@ -108,22 +123,23 @@
 	#define THE_CLOCK_VERSION     	"3.3"
 	#define THE_CLOCK_URL			"https://github.com/phorton1/Arduino-theClock3"
 
-	#define DEFAULT_START_DELAY     200			// postive ms AFTER 0 crossing to start clock
+	#define DEFAULT_START_DELAY     200			// plus/minus ms AFTER/BEFORE 0 crossing to start clock
+		// Daniels 3.3 = -500
 	#define DEFAULT_ANGLE_START 	10.0		// starting value for clock_pid control
 	#define DEFAULT_ANGLE_MIN 		9.0			// !!! MOSFET CIRCUIT BOARD
 	#define DEFAULT_ANGLE_MAX 		11.5
 	#define DEFAULT_DEAD_ZONE		0.3			// dead degrees about zero
 
 	#define DEFAULT_POWER_START     255
-	#define DEFAULT_POWER_MIN		60			// !!! MOSFET CIRCUIT BOARD
+	#define DEFAULT_POWER_MIN		60			// old #3.3: 40
 	#define DEFAULT_POWER_PID		100
 	#define DEFAULT_POWER_MAX		255
 
 	#define DEFAULT_DUR_PULSE		120
 
-	#define DEFAULT_PID_P			20.0  	// #3203 = 8
-	#define DEFAULT_PID_I			0.50  	// #3203 = 0.2
-	#define DEFAULT_PID_D			-9.0	// #3203 = -5
+	#define DEFAULT_PID_P			20.0  		// old #3.3 = 8
+	#define DEFAULT_PID_I			0.50  		// old #3.3 = 0.2
+	#define DEFAULT_PID_D			-9.0		// old #3.3 = -5
 
 	#define DEFAULT_APID_P			0.2
 	#define DEFAULT_APID_I			0.025
