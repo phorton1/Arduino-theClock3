@@ -15,55 +15,76 @@
 //------------------------
 // theClock definition
 //------------------------
+// The STANDARD CLOCK 3 using MOSFET circuit board.
+//
+// Includes my Clock 3.3 (unlabeled 0/3) and Daniel's (labeled v2 3/3),
+// which I renamed to theClock3.3.0 and theClock3.3-Daniels respectively.
+// Note that the coils are wired in series.
+//
+// At this time the only difference with Daniels, is that I set the start
+// delay to -500 instead of 200. I had a different setup for a while, shown
+// below in comments "old 3.3"
 
-#if CLOCK_COMPILE_VERSION == 1
 
-	// My original clock v1.1 retrofitted with angle sensor and 5 LEDS
-	// Is-no-more ... I disassmbled it.
-	//
-	// I have thoughts of bringing it up to the MOSFET board, but
-	// it doesn't act correctly (it speeds up when swing gets smaller).
-	// I think the best approach would be to have it swing at a constant
-	// angle and then introduce a magenetic spring, either by a second
-	// coil or set of coils, or a servo moving a magnet into the area.
-	//
-	// For now, these are the old settings, with the #define being available
-	// for a different scheme.
+#define DEFAULT_RUNNING			0				// factory reset == clock not running
+#define DEFAULT_CLOCK_MODE		CLOCK_MODE_PID	// factory reset == PID mode turned on
+#define DEFAULT_LED_BRIGHTNESS  40
 
-	#pragma message "Compiling Clock v1.3"
+#define DEFAULT_ZERO_ANGLE		0			// 0 means it's not yet set
+#define DEFAULT_ZERO_ANGLE_F	0.00		// 0 means it's not yet set
+#define DEFAULT_DEAD_ZONE		0.3			// dead degrees about zero
 
-	#define THE_CLOCK             	"theClock1.3"
-	#define THE_CLOCK_VERSION     	"1.3"
+#define DEFAULT_ANGLE_START 	10.0		// starting value for clock_pid control
+#define DEFAULT_ANGLE_MIN 		9.0
+#define DEFAULT_ANGLE_MAX 		11.5
+
+#define DEFAULT_POWER_MIN		60
+#define DEFAULT_POWER_PID		100
+#define DEFAULT_POWER_MAX		255
+#define DEFAULT_POWER_START     255
+
+#define DEFAULT_DUR_PULSE		120
+#define DEFAULT_DUR_START		250
+
+#define DEFAULT_PID_P			20.0
+#define DEFAULT_PID_I			0.50
+#define DEFAULT_PID_D			-9.0
+
+#define DEFAULT_APID_P			0.2
+#define DEFAULT_APID_I			0.025
+#define DEFAULT_APID_D			0.002
+
+#define DEFAULT_RUNNING_ANGLE   4.0
+#define DEFAULT_RUNNING_ERROR   4.0
+
+#define DEFAULT_MIN_MAX_MS		50
+#define DEFAULT_START_DELAY     200			// plus/minus ms AFTER/BEFORE 0 crossing to start clock
+	// Daniels 3.3 = -500
+
+#define DEFAULT_CYCLE_RANGE 	50
+#define DEFAULT_ERROR_RANGE 	150
+
+#define DEFAULT_RESTART_MILLIS  0
+
+#define DEFAULT_STAT_INTERVAL	30
+#define DEFAULT_SYNC_INTERVAL	3600L	// one hour
+#define DEFAULT_NTP_INTERVAL	14400L	// four hours
+
+#if WITH_VOLTAGES
+	#define DEFAULT_VOLT_INTERVAL	0
+	#define DEFAULT_VOLT_SCALE		1.03
+	#define DEFAULT_VOLT_CUTOFF		4.00
+	#define DEFAULT_VOLT_RESTORE    4.50
+#endif
+
+
+#if CLOCK_COMPILE_VERSION == 3
+
+	#pragma message "Compiling Clock v3.3"
+
+	#define THE_CLOCK             	"theClock3.3"
+	#define THE_CLOCK_VERSION     	"3.3"
 	#define THE_CLOCK_URL			"https://github.com/phorton1/Arduino-theClock3"
-
-	#define DEFAULT_START_DELAY     -600			// negative ms BEFORE 0 crossing to start clock
-		// Note that clock 1.3 firmware has NOT been updated to this new code!
-
-	#define DEFAULT_ANGLE_START 	10.5 		// starting value for clock_pid control
-	#define DEFAULT_ANGLE_MIN 		10.3
-	#define DEFAULT_ANGLE_MAX 		11.0
-	#define DEFAULT_DEAD_ZONE		0.5			// dead degrees about zero
-
-	#define DEFAULT_POWER_START     255
-	#define DEFAULT_POWER_MIN		140
-	#define DEFAULT_POWER_PID		210
-	#define DEFAULT_POWER_MAX		240
-
-	#define DEFAULT_DUR_PULSE		120
-
-	#define DEFAULT_PID_P			20.0
-	#define DEFAULT_PID_I			0.5
-	#define DEFAULT_PID_D			0.01
-
-	#define DEFAULT_APID_P			0.09
-	#define DEFAULT_APID_I			0.05
-	#define DEFAULT_APID_D			0.005
-
-	#define DEFAULT_RUNNING_ANGLE   6.0
-	#define DEFAULT_RUNNING_ERROR   4.0
-
-	#define DEFAULT_CYCLE_RANGE 	80
-	#define DEFAULT_ERROR_RANGE 	300
 
 #elif CLOCK_COMPILE_VERSION == 2
 
@@ -78,106 +99,56 @@
 	#define THE_CLOCK_URL			"https://github.com/phorton1/Arduino-theClock3"
 
 	#define DEFAULT_START_DELAY     -100		// negative ms BEFORE 0 crossing to start clock
-	#define DEFAULT_ANGLE_START 	10.0		// starting value for clock_pid control
-	#define DEFAULT_ANGLE_MIN 		9.5
-	#define DEFAULT_ANGLE_MAX 		11.5
-	#define DEFAULT_DEAD_ZONE		0.3			// dead degrees about zero
 
-	#define DEFAULT_POWER_START     255
 	#define DEFAULT_POWER_MIN		120
 	#define DEFAULT_POWER_PID		210
-	#define DEFAULT_POWER_MAX		255
 
-	#define DEFAULT_DUR_PULSE		120
+#elif CLOCK_COMPILE_VERSION == 1
 
-	#define DEFAULT_PID_P			20.0
-	#define DEFAULT_PID_I			0.50
-	#define DEFAULT_PID_D			-9.0
-
-	#define DEFAULT_APID_P			0.2
-	#define DEFAULT_APID_I			0.025
-	#define DEFAULT_APID_D			0.002
-
-	#define DEFAULT_RUNNING_ANGLE   4.0
-	#define DEFAULT_RUNNING_ERROR   2.0
-
-	#define DEFAULT_CYCLE_RANGE 	50
-	#define DEFAULT_ERROR_RANGE 	150
-
-
-#else	// CLOCK_V3
-
-	// The STANDARD CLOCK 3 using MOSFET circuit board.
+	// My original clock v1.1 retrofitted to PCB 1.4 MOSFET board
+	// with explicit "spring" coil.
 	//
-	// Includes my Clock 3.3 (unlabeled 0/3) and Daniel's (labeled v2 3/3),
-	// which I renamed to theClock3.3.0 and theClock3.3-Daniels respectively.
-	// Note that the coils are wired in series.
+	// This clock works by running at a set ANGLE_START (to ensure it ticks),
+	// tuned to run at slightly over 1000 ms, and will modify the cycle time
+	// by energizing a "spring" coil, causing the cycle time to go under 1000ms.
 	//
-	// At this time the only difference with Daniels, is that I set the start
-	// delay to -500 instead of 200. I had a different setup for a while, shown
-	// below in comments "old 3.3"
+	// It uses the same MIN and MAX power algorithm, to control the power to
+	// maintain the given angle, unchanged from VERSION3.
+	//
+	// Instead of using using the 2nd PID controller to control the angle,
+	// in order to modify the time of the swings, we use the 2nd PID to
+	// control the power delivered to the spring.
+	//
+	// All values listed here are changed from VERSION 3
 
-	#pragma message "Compiling Clock v3.3"
+	#pragma message "Compiling Clock v1.4"
 
-	#define THE_CLOCK             	"theClock3.3"
-	#define THE_CLOCK_VERSION     	"3.3"
+	#define THE_CLOCK             	"theClock1.4"
+	#define THE_CLOCK_VERSION     	"1.4"
 	#define THE_CLOCK_URL			"https://github.com/phorton1/Arduino-theClock3"
 
-	#define DEFAULT_START_DELAY     200			// plus/minus ms AFTER/BEFORE 0 crossing to start clock
-		// Daniels 3.3 = -500
-	#define DEFAULT_ANGLE_START 	10.0		// starting value for clock_pid control
-	#define DEFAULT_ANGLE_MIN 		9.0			// !!! MOSFET CIRCUIT BOARD
-	#define DEFAULT_ANGLE_MAX 		11.5
-	#define DEFAULT_DEAD_ZONE		0.3			// dead degrees about zero
+	#define DEFAULT_ANGLE_START 	12.5		// 12.5 degrees guarantees a tick
+	#define DEFAULT_RUNNING_ANGLE   10.0		// start running at bigger angle, sooner
+	#define DEFAULT_RUNNING_ERROR   25.0
 
-	#define DEFAULT_POWER_START     255
-	#define DEFAULT_POWER_MIN		60			// old #3.3: 40
-	#define DEFAULT_POWER_PID		100
-	#define DEFAULT_POWER_MAX		255
-
-	#define DEFAULT_DUR_PULSE		120
-
-	#define DEFAULT_PID_P			20.0  		// old #3.3 = 8
-	#define DEFAULT_PID_I			0.50  		// old #3.3 = 0.2
-	#define DEFAULT_PID_D			-9.0		// old #3.3 = -5
-
-	#define DEFAULT_APID_P			0.2
-	#define DEFAULT_APID_I			0.025
+	#define DEFAULT_APID_P			10.0
+	#define DEFAULT_APID_I			7
 	#define DEFAULT_APID_D			0.002
 
-	#define DEFAULT_RUNNING_ANGLE   4.0
-	#define DEFAULT_RUNNING_ERROR   4.0
+	// added for Spring
 
-	#define DEFAULT_CYCLE_RANGE 	50
-	#define DEFAULT_ERROR_RANGE 	150
+	// The spring will turned on after the left zero crossing
+	// and the motor impulse stops with a delay, a duration,
+	// and a power level. Based on a 120ms pulse somewhat
+	// after the zero crossing, and 500ms per side, with a
+	// 10ms delay, we turn it on for 200ms
+
+	#define DEFAULT_SPRING_DELAY   10
+	#define DEFAULT_SPRING_DUR     200
+	#define DEFAULT_SPRING_POWER   180
 
 #endif
 
-
-// common
-
-#define DEFAULT_RUNNING			0				// factory reset == clock not running
-#define DEFAULT_CLOCK_MODE		CLOCK_MODE_PID	// factory reset == PID mode turned on
-#define DEFAULT_LED_BRIGHTNESS  40
-
-#define DEFAULT_ZERO_ANGLE		0			// 0 means it's not yet set
-#define DEFAULT_ZERO_ANGLE_F	0.00		// 0 means it's not yet set
-
-#define DEFAULT_DUR_START		250
-
-#define DEFAULT_MIN_MAX_MS		50
-#define DEFAULT_RESTART_MILLIS  0
-
-#define DEFAULT_STAT_INTERVAL	30
-#define DEFAULT_SYNC_INTERVAL	3600L	// one hour
-#define DEFAULT_NTP_INTERVAL	14400L	// four hours
-
-#if WITH_VOLTAGES
-	#define DEFAULT_VOLT_INTERVAL	0
-	#define DEFAULT_VOLT_SCALE		1.03
-	#define DEFAULT_VOLT_CUTOFF		4.00
-	#define DEFAULT_VOLT_RESTORE    4.50
-#endif
 
 
 // what shows up on the "dashboard" UI tab
@@ -204,6 +175,9 @@ static valueIdType dash_items[] = {
 	ID_ZERO_ANGLE_F,
 #endif
 	ID_TEST_COILS,
+#if CLOCK_COMPILE_VERSION == 1
+	ID_TEST_SPRING,
+#endif
 	ID_CHANGE_CLOCK,
 	0,
 };
@@ -218,6 +192,11 @@ static valueIdType device_items[] = {
 	ID_ANGLE_MIN,
 	ID_ANGLE_MAX,
 	ID_DEAD_ZONE,
+#if CLOCK_COMPILE_VERSION == 1
+	ID_SPRING_DELAY,
+	ID_SPRING_DUR,
+	ID_SPRING_POWER,
+#endif
 	ID_POWER_MIN,
     ID_POWER_PID,
 	ID_POWER_MAX,
@@ -307,6 +286,13 @@ const valDescriptor theClock::m_clock_values[] =
 	{ ID_ANGLE_MIN,  		VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_angle_min,		NULL,  { .float_range = { DEFAULT_ANGLE_MIN,    0,  OVER_MAX_ANGLE}} },
 	{ ID_ANGLE_MAX,  		VALUE_TYPE_FLOAT,	VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_angle_max,		NULL,  { .float_range = { DEFAULT_ANGLE_MAX,    0,  OVER_MAX_ANGLE}} },
 
+#if CLOCK_COMPILE_VERSION == 1
+	{ ID_SPRING_DELAY,  	VALUE_TYPE_INT,		VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_spring_delay,	NULL,  { .int_range = 	{ DEFAULT_SPRING_DELAY, 0,  1000}} },
+	{ ID_SPRING_DUR,  		VALUE_TYPE_INT,		VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_spring_dur,		NULL,  { .int_range = 	{ DEFAULT_SPRING_DUR,   0,  1000}} },
+	{ ID_SPRING_POWER,  	VALUE_TYPE_INT,		VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_spring_power,	NULL,  { .int_range = 	{ DEFAULT_SPRING_POWER, 0,  255}} },
+#endif
+
+
 	{ ID_POWER_MIN,  		VALUE_TYPE_INT,		VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_power_min,		NULL,  { .int_range = 	{ DEFAULT_POWER_MIN,  	0,  255}} },
 	{ ID_POWER_PID,  		VALUE_TYPE_INT,		VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_power_pid,		NULL,  { .int_range = 	{ DEFAULT_POWER_PID,   	0,  255}} },
 	{ ID_POWER_MAX,  		VALUE_TYPE_INT,		VALUE_STORE_PREF,	VALUE_STYLE_NONE,       (void *) &_power_max,		NULL,  { .int_range = 	{ DEFAULT_POWER_MAX,   	0,  255}} },
@@ -354,6 +340,10 @@ const valDescriptor theClock::m_clock_values[] =
 	{ ID_STAT_MSG6,      	VALUE_TYPE_STRING, 	VALUE_STORE_PUB,      VALUE_STYLE_READONLY,	(void *) &_stat_msg6, },
 
 	{ ID_TEST_COILS,  		VALUE_TYPE_INT,    	VALUE_STORE_PUB,      VALUE_STYLE_OFF_ZERO,	(void *) &_test_coils,		(void *) onTestCoils, 		{ .int_range = { 0, 0, 255}} },
+#if CLOCK_COMPILE_VERSION == 1
+	{ ID_TEST_SPRING,  		VALUE_TYPE_INT,    	VALUE_STORE_PUB,      VALUE_STYLE_OFF_ZERO,	(void *) &_test_spring,		(void *) onTestSpring, 		{ .int_range = { 0, 0, 255}} },
+#endif
+
 	{ ID_CHANGE_CLOCK,  	VALUE_TYPE_INT,    	VALUE_STORE_PUB,      VALUE_STYLE_NONE,   	(void *) &_change_clock,	(void *) onChangeClock,  	{ .int_range = { 0, -3000000L, 3000000L}} },
 
 #if WITH_VOLTAGES
@@ -513,6 +503,12 @@ static const char *clock_tooltips[] = {
 		"A <i>control</i>, used for <i>testing</i>, that lets you directly energize the <b>coils</b> "
 		"by sending a value for the <b>power</b>, on a scale of <i>0 to 255</i>. "
 		"BE SURE TO RETURN THIS TO ZERO AFTER USE!!</b>.",
+#if CLOCK_COMPILE_VERSION == 1
+	ID_SPRING_DELAY,    "Delay after coil turns off on left swing before starting Spring to speed up.",
+	ID_SPRING_DUR,      "Duration of spring power cycle.",
+	ID_SPRING_POWER,    "Power to apply to spring coil during its cycle."
+	ID_TEST_SPRING,		"Test the Spring Coil",
+#endif
 	ID_CHANGE_CLOCK,
 		"A <i>control</i> that lets you <b>add</b> a positive, or <b>subtract</b> a negative "
 		"<i>number of milliseconds</i> to the RTC (Real Time Clock). "
@@ -586,6 +582,12 @@ float   theClock::_angle_start;
 float 	theClock::_angle_min;
 float 	theClock::_angle_max;
 
+#if CLOCK_COMPILE_VERSION == 1
+	int theClock::_spring_delay;
+	int theClock::_spring_dur;
+	int theClock::_spring_power;
+#endif
+
 int  	theClock::_power_min;
 int  	theClock::_power_pid;
 int  	theClock::_power_max;
@@ -637,6 +639,9 @@ uint32_t theClock::_sync_interval;
 // remember, 'int' is 32 bits on ESP32 !!
 
 int 	theClock::_test_coils;
+#if CLOCK_COMPILE_VERSION == 1
+	int theClock::_test_spring;
+#endif
 int		theClock::_change_clock;
 
 

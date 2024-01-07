@@ -43,10 +43,6 @@ void startAS5600()
 	// We allow it past here to test other things like the coils and motors and particularly
 	// so we can upload a new executable via the WebUI
 {
-	#if CLOCK_COMPILE_VERSION == 1
-		Wire.setPins(PIN_SDA, PIN_SCL);
-	#endif
-
 	int count = 0;
 	as5600_connected = false;
 	while (!as5600_connected && count++<AS5600_TRY_COUNT)

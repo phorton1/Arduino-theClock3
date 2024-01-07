@@ -13,7 +13,7 @@ extern const char *getStatBufRTC(int32_t sync_millis);
 #if CLOCK_WITH_NTP
 	extern const char *getStatBufNTP(int32_t delta_ms, bool fail);
 #endif
-extern void updateStatsPidAngle(float pid_angle);
+extern void updateStatsPid2(float pid_angle);
 
 // used in run();
 

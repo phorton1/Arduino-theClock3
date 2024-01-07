@@ -16,14 +16,7 @@ static int cur_motor_power = 0;
 void theClock::motor(int power)
 {
 	cur_motor_power = power;
-#if CLOCK_COMPILE_VERSION == 1
-	ledcWrite(0, power);
-	digitalWrite(PIN_INA1,0);
-	digitalWrite(PIN_INA2,power ? 1 : 0);
-	ledcWrite(1, power);
-	digitalWrite(PIN_INB1,0);
-	digitalWrite(PIN_INB2,power ? 1 : 0);
-#elif CLOCK_COMPILE_VERSION == 2
+#if CLOCK_COMPILE_VERSION == 2
 	ledcWrite(0, power);
 	digitalWrite(PIN_IN1,0);
 	digitalWrite(PIN_IN2,power ? 1 : 0);
@@ -33,45 +26,106 @@ void theClock::motor(int power)
 }
 
 
+#if CLOCK_COMPILE_VERSION == 1
+	void theClock::spring(int power)
+		// ledc channel 1 is PWM2, the "spring"
+	{
+		ledcWrite(1, power);
+	}
+#endif
+
+
 
 //===================================================================
 // PID CONTROLLERS
 //===================================================================
 
-float theClock::getPidAngle()  // APID parameters
-{
-	// this_p == current ms error
-	// this_i == total ms error (including m_sync_millis)
-	// this_d == delta ms error this cycle
+#if CLOCK_COMPILE_VERSION == 1
 
-	float this_p = m_cur_cycle;
-	this_p -= 1000.0;
-	float this_i = m_total_millis_error + m_sync_millis;
-	float this_d = m_prev_millis_error - this_p;;
-	m_prev_millis_error = this_p;
+	int theClock::getSpringPower()  // APID parameters
+	{
+		// this_p == current ms error
+		// this_i == total ms error (including m_sync_millis)
+		// this_d == delta ms error this cycle
 
-	this_p = this_p / 1000;
-	this_i = this_i / 1000;
-	this_d = this_d / 1000;
+		float this_p = m_cur_cycle;
+		this_p -= 1000.0;
+		float this_i = m_total_millis_error + m_sync_millis;
+		float this_d = m_prev_millis_error - this_p;;
+		m_prev_millis_error = this_p;
 
-	float factor = 1 + (_apid_P * this_p) + (_apid_I * this_i) + (_apid_D * this_d);
-	float new_angle = m_pid_angle * factor;
-	if (new_angle > _angle_max) new_angle = _angle_max;
-	if (new_angle  < _angle_min) new_angle = _angle_min;
+		this_p = this_p / 1000;
+		this_i = this_i / 1000;
+		this_d = this_d / 1000;
 
-	// LOGD("getPidAngle pid(%0.3f) cur(%d) P(%0.3f) I(%0.3f) D(%0.3f) factor(%0.3f) new(%0.3f)",
-	// 	m_pid_angle,
-	// 	m_cur_cycle,
-	// 	this_p,
-	// 	this_i,
-	// 	this_d,
-	// 	factor,
-	// 	new_angle);
+		float factor = 1 + (_apid_P * this_p) + (_apid_I * this_i) + (_apid_D * this_d);
 
-	m_pid_angle = new_angle;
-	updateStatsPidAngle(m_pid_angle);
-	return m_pid_angle;
-}
+		// we allow the PID controller to completely turn off the spring
+		// but, since it multiplies for its results, we use an arbitrary
+		// factor cutoff of 1, and if so, restore the spring_power to a
+		// minimum of 10.
+
+		if (factor > 1 && m_spring_power == 0)
+			m_spring_power = 10;
+
+		float new_power = m_spring_power;
+
+		new_power *= factor;
+		if (new_power > 255) new_power = 255;
+		if (new_power  < 0) new_power =  0;
+
+		// LOGD("getSpringPower start(%d) cycle(%d) P(%0.3f) I(%0.3f) D(%0.3f) factor(%0.3f) new(%0.3f)",
+		// 	m_spring_power,
+		// 	m_cur_cycle,
+		// 	this_p,
+		// 	this_i,
+		// 	this_d,
+		// 	factor,
+		// 	new_power);
+
+		m_spring_power = new_power;
+		updateStatsPid2(m_spring_power);
+		return m_spring_power;
+	}
+
+#else
+
+	float theClock::getPidAngle()  // APID parameters
+	{
+		// this_p == current ms error
+		// this_i == total ms error (including m_sync_millis)
+		// this_d == delta ms error this cycle
+
+		float this_p = m_cur_cycle;
+		this_p -= 1000.0;
+		float this_i = m_total_millis_error + m_sync_millis;
+		float this_d = m_prev_millis_error - this_p;;
+		m_prev_millis_error = this_p;
+
+		this_p = this_p / 1000;
+		this_i = this_i / 1000;
+		this_d = this_d / 1000;
+
+		float factor = 1 + (_apid_P * this_p) + (_apid_I * this_i) + (_apid_D * this_d);
+		float new_angle = m_pid_angle * factor;
+		if (new_angle > _angle_max) new_angle = _angle_max;
+		if (new_angle  < _angle_min) new_angle = _angle_min;
+
+		// LOGD("getPidAngle pid(%0.3f) cur(%d) P(%0.3f) I(%0.3f) D(%0.3f) factor(%0.3f) new(%0.3f)",
+		// 	m_pid_angle,
+		// 	m_cur_cycle,
+		// 	this_p,
+		// 	this_i,
+		// 	this_d,
+		// 	factor,
+		// 	new_angle);
+
+		m_pid_angle = new_angle;
+		updateStatsPid2(m_pid_angle);
+		return m_pid_angle;
+	}
+#endif
+
 
 
 int theClock::getPidPower(float avg_angle)	// PID parameters
@@ -342,6 +396,12 @@ void theClock::run()
 			abs(m_total_ang_error) < _running_error)
 		{
 			setClockState(CLOCK_STATE_RUNNING);
+
+			#if CLOCK_COMPILE_VERSION == 1
+				if (_clock_mode == CLOCK_MODE_PID)
+					m_spring_on = 1;
+			#endif
+
 			// clearStats();
 		}
 
@@ -369,31 +429,53 @@ void theClock::run()
 
 				if (_clock_mode == CLOCK_MODE_PID)
 				{
-					m_pid_angle = getPidAngle();
+					#if CLOCK_COMPILE_VERSION == 1
+						if (as5600_side < 0)
+							m_spring_power = getSpringPower();
+					#else
+						m_pid_angle = getPidAngle();
+					#endif
 				}
 				else if (_clock_mode == CLOCK_MODE_MIN_MAX)
 				{
-					if (m_pid_angle == _angle_min &&
-						m_total_millis_error + m_sync_millis > _min_max_ms)
-					{
-						m_pid_angle = _angle_max;
-					}
-					else if (m_pid_angle == _angle_max &&
-						m_total_millis_error + m_sync_millis < -_min_max_ms)
-					{
-						m_pid_angle = _angle_min;
-					}
+					#if CLOCK_COMPILE_VERSION == 1
+						if (!m_spring_on &&
+							m_total_millis_error + m_sync_millis > _min_max_ms)
+						{
+							LOGD("SPRING ON");
+							m_spring_on = 1;
+						}
+						else if (m_spring_on &&
+							m_total_millis_error + m_sync_millis < -_min_max_ms)
+						{
+							LOGD("SPRING OFF");
+							m_spring_on = 0;
+						}
+
+					#else
+						if (m_pid_angle == _angle_min &&
+							m_total_millis_error + m_sync_millis > _min_max_ms)
+						{
+							m_pid_angle = _angle_max;
+						}
+						else if (m_pid_angle == _angle_max &&
+							m_total_millis_error + m_sync_millis < -_min_max_ms)
+						{
+							m_pid_angle = _angle_min;
+						}
+					#endif
 				}
 			}
 
 			// calculate the power to use
-			// v1.3 with sensor just uses right (power) swing
+			// v1.4 with sensor might just use right (power) swing
 
-			#if CLOCK_COMPILE_VERSION == 1
-				float avg_angle = as5600_max_angle;
-			#else
+			// #if CLOCK_COMPILE_VERSION == 1
+			// 	float avg_angle = as5600_max_angle;
+			// #else
 				float avg_angle = getAS560AverageAngle();
-			#endif
+			// #endif
+
 			int use_power =
 				_clock_mode == CLOCK_MODE_POWER_MIN ? _power_min :
 				_clock_mode == CLOCK_MODE_POWER_MAX ? _power_max :
@@ -409,7 +491,12 @@ void theClock::run()
 
 			if (_plot_values == PLOT_OFF)
 			{
-				LOGD("%-6s%s %-4d %7.3f/%6.3f=%-6.3f  targ=%-6.3f  a_err=%-6.3f  power=%-3d  err=%-4d  sync=%-4d",
+				LOGD("%-6s%s %-4d %7.3f/%6.3f=%-6.3f  targ=%-6.3f  a_err=%-6.3f  power=%-3d  err=%-4d  sync=%-4d"
+
+					#if CLOCK_COMPILE_VERSION == 1
+						" spring(%d)"
+					#endif
+					 ,
 					 m_sync_sign ? "SYNC" : m_clock_state == CLOCK_STATE_RUNNING ? "run" : "start",
 					 as5600_direction==1?"+":"-",
 					 m_cur_cycle,
@@ -420,7 +507,13 @@ void theClock::run()
 					 m_total_ang_error,
 					 use_power,
 					 m_total_millis_error,
-					 m_sync_millis);
+					 m_sync_millis
+
+					#if CLOCK_COMPILE_VERSION == 1
+						,m_spring_power
+					#endif
+
+					 );
 			}
 
 		}	// push motor
@@ -433,7 +526,34 @@ void theClock::run()
 		m_motor_start = 0;
 		m_motor_dur = 0;
 		motor(0);
+
+		#if CLOCK_COMPILE_VERSION == 1
+			// if we want the spring on, and the pendulum is moving to the left
+			// set the timer to start the spring.
+			if (m_spring_on && as5600_side < 0 && m_spring_power > 0)
+			{
+				m_push_spring = now;
+			}
+		#endif
 	}
+
+	#if CLOCK_COMPILE_VERSION == 1
+		// if the spring start delay is up, turn on the spring
+		// if the spring needs to be turned off, turn it off
+		if (m_push_spring && now - m_push_spring >= _spring_delay)
+		{
+			m_push_spring = 0;
+			m_spring_start = now;
+			spring(m_spring_power);
+			// LOGD("SPRING PUSH");
+		}
+		if (m_spring_start && now - m_spring_start > _spring_dur)
+		{
+			m_spring_start = 0;
+			// LOGD("SPRING UNPUSH");
+			spring(0);
+		}
+	#endif
 
 	//----------------------
 	// plotting

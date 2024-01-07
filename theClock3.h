@@ -2,17 +2,13 @@
 
 #include <myIOTDevice.h>
 
-#define CLOCK_COMPILE_VERSION    3		// 1, 2, 3
-	// 1 == NO LONGER USED
-	//		clock 1.3, modified from 1.1 by adding an AS5600 sensor and 5 LEDs
-	// 		it has separate ENA, ENB, INA, and INB pins and one button and
-	//      completely different default (factory reset) parameters
-	//      The pcb had connectors for hall and optical mouse sensors
-	//      which I repurposed to connect the A5600 sensor.
-	//		NOT WORKING!!
+#define CLOCK_COMPILE_VERSION    1		// 1, 2, 3
+	// 1 == version 1.4 MOSFET PCB
+	//		My origianal clock 1.0/1, modified by adding an AS5600 sensor
+	//      and a second coil for an explicit "spring".
 	// 2 == CHRIS'S CLOCK and PAMELAS CLOCK
 	//		the three clocks I made as gifts, two of which were gifted
-	//      on 2023-06-08
+	//      on 2023-06-08, using lm293 motor driver IC
 	// 3 == the original v3 clock with new MOSFET power board
 	//      and DANIELS v3 clock as well
 
@@ -44,53 +40,44 @@
 //---------------------------------
 
 #if WITH_VOLTAGES
-	#define PIN_VOLTS_5V		39
-	#define PIN_VOLTS_VBUS  	35
+	#if CLOCK_COMPILE_VERSION == 1
+		#define PIN_VOLTS_5V		39
+		#define PIN_VOLTS_VBUS  	34
+	#else
+		#define PIN_VOLTS_5V		39
+		#define PIN_VOLTS_VBUS  	35
+	#endif
 #endif
 
-// L293D motor driver
 
-#if CLOCK_COMPILE_VERSION == 1
-	#define PIN_ENA		27
-	#define PIN_INA1	25
-	#define PIN_INA2	26
-	#define PIN_ENB		4
-	#define PIN_INB1	17
-	#define PIN_INB2	5
-#elif CLOCK_COMPILE_VERSION == 2
+
+// L293D motor driver
+// vs MOSFET motor driver
+
+#if CLOCK_COMPILE_VERSION == 2
 	#define PIN_IN1		27
 	#define PIN_IN2		25
 	#define PIN_EN		26
-#else	// MOSFET motor driver
+#else
 	#define PIN_PWM		26
 #endif
 
-
-// Rotary Sensor
-
 #if CLOCK_COMPILE_VERSION == 1
-	#define PIN_SDA		13
-	#define PIN_SCL		32
-#else
-	// Rotary Sensor(s) uses Wire Defaults
-	// #define PIN_SDA	21
-	// #define PIN_SCL	22
+	#define PIN_PWM2	27
 #endif
+
+
+// Rotary Sensor(s) uses Wire Defaults
+// #define PIN_SDA	21
+// #define PIN_SCL	22
 
 
 // Leds and Buttons
 
-#if CLOCK_COMPILE_VERSION == 1
-	#define PIN_LEDS	22
-	#define PIN_BUTTON1 18
-	#define PIN_BUTTON2 -1	// undefined (not used)
-	#define NUM_BUTTONS 1
-#else
-	#define PIN_LEDS	23	// overuse MOSI
-	#define PIN_BUTTON1 16	// RX2
-	#define PIN_BUTTON2 17	// TX2
-	#define NUM_BUTTONS 2
-#endif
+#define PIN_LEDS	23	// overuse MOSI
+#define PIN_BUTTON1 16	// RX2
+#define PIN_BUTTON2 17	// TX2
+#define NUM_BUTTONS 2
 
 
 // Pixels
@@ -155,6 +142,12 @@
 #define ID_ANGLE_MIN		"ANGLE_MIN"
 #define ID_ANGLE_MAX		"ANGLE_MAX"
 
+#if CLOCK_COMPILE_VERSION == 1
+	#define ID_SPRING_DELAY     "SPRING_DELAY"
+	#define ID_SPRING_DUR      	"SPRING_DUR"
+	#define ID_SPRING_POWER     "SPRING_POWER"
+#endif
+
 #define ID_POWER_MIN      	"POWER_MIN"
 #define ID_POWER_PID      	"POWER_PID"
 #define ID_POWER_MAX      	"POWER_MAX"
@@ -177,7 +170,7 @@
 #define ID_START_DELAY		"START_DELAY"
 
 #define ID_CYCLE_RANGE 		"CYCLE_RANGE"
-#define ID_ERROR_RANGE "ERROR_RANGE"
+#define ID_ERROR_RANGE 		"ERROR_RANGE"
 
 #define ID_CLEAR_STATS		"CLEAR_STATS"
 
@@ -208,7 +201,11 @@
 
 
 #define ID_TEST_COILS		"TEST_COILS"
-	// ANY CHAGNGES will call motor(value) directly!!
+	// ANY CHANGES will call motor(value) directly!!
+#if CLOCK_COMPILE_VERSION == 1
+	#define ID_TEST_SPRING	"TEST_SPRING"
+#endif
+
 #define ID_CHANGE_CLOCK		"CHANGE_CLOCK"
 	// Will add given number of seconds to ESP32 clock
 	// for testing sync code
@@ -271,6 +268,12 @@ private:
 	static float _angle_min;
 	static float _angle_max;
 
+#if CLOCK_COMPILE_VERSION == 1
+	static int _spring_delay;		// delay after motor pulse turns off before spring turns on
+	static int _spring_dur;			// duration for spring to be turned on
+	static int _spring_power;		// default/starting power for spring while on
+#endif
+
 	static int _power_min;			// PID mininum power, also power for !PID and motor test
 	static int _power_pid;			// PID starting power
 	static int _power_max;      	// PID maximum power
@@ -318,6 +321,9 @@ private:
 #endif
 
 	static int _test_coils;		// memory only, only happens onChange
+#if CLOCK_COMPILE_VERSION == 1
+	static int _test_spring;	// memory only, only happens onChange
+#endif
 	static int _change_clock;	// memory only, only happens onChange
 
 
@@ -381,6 +387,9 @@ private:
 	// UI test methods
 
 	static void onTestCoils(const myIOTValue *desc, int val);
+	#if CLOCK_COMPILE_VERSION == 1
+		static void onTestSpring(const myIOTValue *desc, int val);
+	#endif
 	static void onChangeClock(const myIOTValue *desc, int val);
 
 	// Internal Private methods
@@ -390,13 +399,23 @@ private:
 	static void initMotor();
 	static void initStats();
 	static void motor(int power);
+	#if CLOCK_COMPILE_VERSION == 1
+		static void spring(int power);
+		static bool m_spring_on;			// we are using the spring to speed up
+		static uint32_t m_push_spring;      // push the spring after this time
+		static uint32_t m_spring_start;		// time at which the spring started
+		static int m_spring_power;			// working power for spring on ..
+		static int getSpringPower();
+	#else
+		static float getPidAngle();
+	#endif
 
 	static void run();
 	static void clockTask(void *param);
 	static void startClock(bool restart=0);
 	static void stopClock();
 
-	static float getPidAngle();
+
 	static int getPidPower(float avg_angle);
 
 	void doPixels();

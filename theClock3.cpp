@@ -109,6 +109,13 @@ bool 	 theClock::m_update_stats;
 bool     theClock::m_force_pixels;
 bool     theClock::m_setting_zero;
 
+#if CLOCK_COMPILE_VERSION == 1
+	bool theClock::m_spring_on;
+	uint32_t theClock::m_push_spring;
+	uint32_t theClock::m_spring_start;
+	int theClock::m_spring_power;
+#endif
+
 
 #if WITH_VOLTAGES
 
@@ -305,29 +312,12 @@ void theClock::setup()	// override
 	delay(500);
 
 	pinMode(PIN_BUTTON1,INPUT_PULLUP);
-#if CLOCK_COMPILE_VERSION > 1
 	pinMode(PIN_BUTTON2,INPUT_PULLUP);
-#endif
 
-// 1 and 2 use L293D with enable pins
-// 3 uses MOSFET and just PIN_PWM
+// clock 2 uses L293D with enable pins
+// 1 and 3 uses MOSFET and just PIN_PWM on ledc channel 0
 
-#if CLOCK_COMPILE_VERSION == 1
-	ledcSetup(0, PWM_FREQUENCY, PWM_RESOLUTION);
-	ledcSetup(1, PWM_FREQUENCY, PWM_RESOLUTION);
-	ledcAttachPin(PIN_ENA, 0);
-	ledcAttachPin(PIN_ENB, 0);
-	ledcWrite(0,0);
-	ledcWrite(1,0);
-	pinMode(PIN_INA1,OUTPUT);
-	pinMode(PIN_INA2,OUTPUT);
-	pinMode(PIN_INB1,OUTPUT);
-	pinMode(PIN_INB2,OUTPUT);
-	digitalWrite(PIN_INA1,0);
-	digitalWrite(PIN_INA2,0);
-	digitalWrite(PIN_INB1,0);
-	digitalWrite(PIN_INB2,0);
-#elif CLOCK_COMPILE_VERSION == 2
+#if CLOCK_COMPILE_VERSION == 2
 	ledcSetup(0, PWM_FREQUENCY, PWM_RESOLUTION);
 	ledcAttachPin(PIN_EN, 0);
 	ledcWrite(0,0);
@@ -339,6 +329,14 @@ void theClock::setup()	// override
 	ledcSetup(0, PWM_FREQUENCY, PWM_RESOLUTION);
 	ledcAttachPin(PIN_PWM, 0);
 	ledcWrite(0,0);
+#endif
+
+// clock 1 uses ledc channel 1 for the "spring" coil
+
+#if CLOCK_COMPILE_VERSION == 1
+	ledcSetup(1, PWM_FREQUENCY, PWM_RESOLUTION);
+	ledcAttachPin(PIN_PWM2, 1);
+	ledcWrite(1,0);
 #endif
 
 	setPixel(PIXEL_MAIN,MY_LED_ORANGE);
@@ -430,6 +428,13 @@ void theClock::initMotor()
 	m_push_motor = 0;
 	m_motor_start = 0;
 	m_motor_dur = 0;
+
+#if CLOCK_COMPILE_VERSION == 1
+	m_spring_on = 0;
+	m_push_spring = 0;
+	m_spring_start = 0;
+	m_spring_power = 0;
+#endif
 
 	m_time_zero = 0;
 	m_time_zero_ms = 0;
@@ -538,6 +543,9 @@ void theClock::startClock(bool restart /*=0*/)
 	{
 		m_pid_power = 0;
 		m_pid_angle = 0;
+		#if CLOCK_COMPILE_VERSION == 1
+			m_spring_power = 0;
+		#endif
 		setClockState(CLOCK_STATE_RUNNING);
 	}
 	else
@@ -548,6 +556,10 @@ void theClock::startClock(bool restart /*=0*/)
 			_clock_mode == CLOCK_MODE_ANGLE_MAX ? _angle_max :
 			_clock_mode == CLOCK_MODE_MIN_MAX ? _angle_min :
 			_angle_start;
+
+		#if CLOCK_COMPILE_VERSION == 1
+			m_spring_power = _spring_power;
+		#endif
 
 		if (!restart)
 		{
@@ -667,6 +679,16 @@ void theClock::onTestCoils(const myIOTValue *desc, int val)
 	LOGU("onTestCoils(%d)",val);
 	motor(val);
 }
+
+
+#if CLOCK_COMPILE_VERSION == 1
+	void theClock::onTestSpring(const myIOTValue *desc, int val)
+	{
+		LOGU("onTestSpring(%d)",val);
+		spring(val);
+	}
+#endif
+
 
 
 void theClock::onChangeClock(const myIOTValue *desc, int val)

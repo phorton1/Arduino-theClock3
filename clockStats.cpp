@@ -69,8 +69,8 @@ static float	stat_min_left;
 static float	stat_max_left;
 static float	stat_min_right;
 static float	stat_max_right;
-static float	stat_min_target;
-static float	stat_max_target;
+static float	stat_min_pid2;
+static float	stat_max_pid2;
 static float	stat_min_total_ang_err;
 static float	stat_max_total_ang_err;
 
@@ -84,8 +84,8 @@ static float	stat_recent_min_left;
 static float	stat_recent_max_left;
 static float	stat_recent_min_right;
 static float	stat_recent_max_right;
-static float	stat_recent_min_target;
-static float	stat_recent_max_target;
+static float	stat_recent_min_pid2;
+static float	stat_recent_max_pid2;
 static float	stat_recent_min_total_ang_err;
 static float	stat_recent_max_total_ang_err;
 
@@ -134,8 +134,8 @@ void initClockStats()
 	stat_max_left = MAX_INT;
 	stat_min_right = MAX_INT;
 	stat_max_right = MIN_INT;
-	stat_min_target = MAX_INT;
-	stat_max_target = MIN_INT;
+	stat_min_pid2 = MAX_INT;
+	stat_max_pid2 = MIN_INT;
 	stat_min_total_ang_err = MAX_INT;
 	stat_max_total_ang_err = MIN_INT;
 
@@ -149,8 +149,8 @@ void initClockStats()
 	stat_recent_max_left = MAX_INT;
 	stat_recent_min_right = MAX_INT;
 	stat_recent_max_right = MIN_INT;
-	stat_recent_min_target = MAX_INT;
-	stat_recent_max_target = MIN_INT;
+	stat_recent_min_pid2 = MAX_INT;
+	stat_recent_max_pid2 = MIN_INT;
 	stat_recent_min_total_ang_err = MAX_INT;
 	stat_recent_max_total_ang_err = MIN_INT;
 
@@ -226,16 +226,16 @@ const char *getStatBufRTC(int32_t sync_millis)
 
 
 
-void updateStatsPidAngle(float pid_angle)
+void updateStatsPid2(float pid2_value)
 {
-	if (pid_angle < stat_min_target)
-		stat_min_target = pid_angle;
-	if (pid_angle > stat_max_target)
-		stat_max_target = pid_angle;
-	if (pid_angle < stat_recent_min_target)
-		stat_recent_min_target = pid_angle;
-	if (pid_angle > stat_recent_max_target)
-		stat_recent_max_target = pid_angle;
+	if (pid2_value < stat_min_pid2)
+		stat_min_pid2 = pid2_value;
+	if (pid2_value > stat_max_pid2)
+		stat_max_pid2 = pid2_value;
+	if (pid2_value < stat_recent_min_pid2)
+		stat_recent_min_pid2 = pid2_value;
+	if (pid2_value > stat_recent_max_pid2)
+		stat_recent_max_pid2 = pid2_value;
 }
 
 
@@ -389,7 +389,7 @@ const char *getStatBufMain()
 
 const char *getStatBufAll()
 {
-	sprintf(msg_buf,"ALL cycle(%d,%d) error(%d,%d) power(%d,%d) ang_error(%0.3f,%0.3f)<br>ANGLE target(%0.3f,%0.3f) left(%0.3f,%0.3f) right(%0.3f,%0.3f)",
+	sprintf(msg_buf,"ALL cycle(%d,%d) error(%d,%d) power(%d,%d) ang_error(%0.3f,%0.3f)<br>ANGLE %s(%0.3f,%0.3f) left(%0.3f,%0.3f) right(%0.3f,%0.3f)",
 		stat_min_cycle,
 		stat_max_cycle,
 		stat_min_error,
@@ -398,8 +398,13 @@ const char *getStatBufAll()
 		stat_max_power,
 		stat_min_total_ang_err,
 		stat_max_total_ang_err,
-		stat_min_target,
-		stat_max_target,
+		#if CLOCK_COMPILE_VERSION == 1
+			"spring",
+		#else
+			"target",
+		#endif
+		stat_min_pid2,
+		stat_max_pid2,
 		stat_max_left,
 		stat_min_left,
 		stat_min_right,
@@ -410,7 +415,7 @@ const char *getStatBufAll()
 
 const char *getStatBufRecent()
 {
-	sprintf(msg_buf,"RECENT cycle(%d,%d) error(%d,%d) power(%d,%d) ang_error(%0.3f,%0.3f)<br>ANGLE target(%0.3f,%0.3f) left(%0.3f,%0.3f) right(%0.3f,%0.3f)",
+	sprintf(msg_buf,"RECENT cycle(%d,%d) error(%d,%d) power(%d,%d) ang_error(%0.3f,%0.3f)<br>ANGLE %s(%0.3f,%0.3f) left(%0.3f,%0.3f) right(%0.3f,%0.3f)",
 		stat_recent_min_cycle,
 		stat_recent_max_cycle,
 		stat_recent_min_error,
@@ -419,8 +424,13 @@ const char *getStatBufRecent()
 		stat_recent_max_power,
 		stat_recent_min_total_ang_err,
 		stat_recent_max_total_ang_err,
-		stat_recent_min_target,
-		stat_recent_max_target,
+		#if CLOCK_COMPILE_VERSION == 1
+			"spring",
+		#else
+			"target",
+		#endif
+		stat_recent_min_pid2,
+		stat_recent_max_pid2,
 		stat_recent_max_left,
 		stat_recent_min_left,
 		stat_recent_min_right,
@@ -441,8 +451,8 @@ void initRecentStats()
 	stat_recent_max_left = MAX_INT;
 	stat_recent_min_right = MAX_INT;
 	stat_recent_max_right = MIN_INT;
-	stat_recent_min_target = MAX_INT;
-	stat_recent_max_target = MIN_INT;
+	stat_recent_min_pid2 = MAX_INT;
+	stat_recent_max_pid2 = MIN_INT;
 	stat_recent_min_total_ang_err = MAX_INT;
 	stat_recent_max_total_ang_err = MIN_INT;
 }
