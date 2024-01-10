@@ -173,6 +173,7 @@
 #define ID_ERROR_RANGE 		"ERROR_RANGE"
 
 #define ID_CLEAR_STATS		"CLEAR_STATS"
+#define ID_CLEAR_ERRORS		"CLEAR_ERRORS"
 
 #define ID_STAT_MSG0		"STAT_MSG0"
 #define ID_STAT_MSG1		"STAT_MSG1"
@@ -377,6 +378,7 @@ private:
 	static void onPixelModeChanged(const myIOTValue *desc, uint32_t val);
 	static void onBrightnessChanged(const myIOTValue *desc, uint32_t val);
 	static void clearStats();
+	static void clearErrors();
 	static void setZeroAngle();
 	static void onSyncRTC();
 

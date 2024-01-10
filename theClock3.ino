@@ -157,9 +157,9 @@ static valueIdType dash_items[] = {
 	ID_START_SYNC,
 	ID_RUNNING,
 	ID_CLOCK_MODE,
-	ID_PLOT_VALUES,
 	ID_LED_BRIGHTNESS,
 	ID_CLEAR_STATS,
+	ID_CLEAR_ERRORS,
 	ID_SYNC_RTC,
 #if CLOCK_WITH_NTP
 	ID_SYNC_NTP,
@@ -174,6 +174,7 @@ static valueIdType dash_items[] = {
 	ID_ZERO_ANGLE,
 	ID_ZERO_ANGLE_F,
 #endif
+	ID_PLOT_VALUES,
 	ID_TEST_COILS,
 #if CLOCK_COMPILE_VERSION == 1
 	ID_TEST_SPRING,
@@ -329,6 +330,7 @@ const valDescriptor theClock::m_clock_values[] =
 #endif
 
 	{ ID_CLEAR_STATS,       VALUE_TYPE_COMMAND,	VALUE_STORE_SUB,      VALUE_STYLE_NONE,    	NULL,                       (void *) clearStats },
+	{ ID_CLEAR_ERRORS,      VALUE_TYPE_COMMAND,	VALUE_STORE_SUB,      VALUE_STYLE_NONE,    	NULL,                       (void *) clearErrors },
 	{ ID_STAT_INTERVAL,  	VALUE_TYPE_INT,    	VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,	(void *) &_stat_interval, 	NULL,  { .int_range = { DEFAULT_STAT_INTERVAL,0,3000000L}} },
 
 	{ ID_STAT_MSG0,      	VALUE_TYPE_STRING, 	VALUE_STORE_PUB,      VALUE_STYLE_READONLY,	(void *) &_stat_msg0, },
@@ -482,6 +484,9 @@ static const char *clock_tooltips[] = {
 	ID_CLEAR_STATS,
 		"A command that will <i>clear</i> the accumulated <b>statistics</b> "
 		"that are sent to the <i>WebUI</i> as if the clock was freshly <b>started</b>",
+	ID_CLEAR_ERRORS,
+		"A command that will <i>clear</i> the accumulated <b>angular and ms errors</b> "
+		"and will also clear the statistics.",
 	ID_STAT_INTERVAL,
 		"How often, in <i>seconds</i> between sending "
 		"updated <b>statistics</b> to the <i>WebUI</i>.",

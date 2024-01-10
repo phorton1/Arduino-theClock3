@@ -481,6 +481,25 @@ void theClock::initStats()
 }
 
 
+void theClock::clearErrors()
+	// Clears errors on the clock AND resets statistics
+	// ONLY called from the UI!!
+{
+	LOGU("ERRORS CLEARED");
+
+	m_total_millis_error = 0;
+	m_prev_millis_error = 0;
+	m_sync_sign = 0;
+	m_sync_millis = 0;
+	m_total_ang_error = 0;
+	m_prev_ang_error = 0;
+
+	initStats();
+
+	m_update_stats = true;
+}
+
+
 void theClock::clearStats()
 	// ONLY called from the UI!!
 {
