@@ -431,7 +431,11 @@ void theClock::run()
 				{
 					#if CLOCK_COMPILE_VERSION == 1
 						if (as5600_side < 0)
+						{
 							m_spring_power = getSpringPower();
+							m_pid_angle = _angle_start;
+								// re-get the pref to allow real time changes
+						}
 					#else
 						m_pid_angle = getPidAngle();
 					#endif
@@ -470,11 +474,26 @@ void theClock::run()
 			// calculate the power to use
 			// v1.4 with sensor might just use right (power) swing
 
-			// #if CLOCK_COMPILE_VERSION == 1
-			// 	float avg_angle = as5600_max_angle;
-			// #else
-				float avg_angle = getAS560AverageAngle();
-			// #endif
+			#if CLOCK_COMPILE_VERSION == 1
+				#define USE_LEFT -1
+				#define USE_AVG   0
+				#define USE_RIGHT 1
+				#define USE_SIDE	USE_LEFT
+
+				// We use the left side to get consistent results
+				// from turning the spring on and off, else the
+				// pendulum swings past the coil and the spring
+				// does not work correctly. With 11 degrees this
+				// seems to reliably produce a tick on the right swing.
+
+			 	float avg_angle =
+					(USE_SIDE == USE_LEFT) ? abs(as5600_min_angle) :
+					(USE_SIDE == USE_RIGHT) ? as5600_max_angle :
+					getAS560AverageAngle();
+			#else
+			 	float avg_angle =
+					getAS560AverageAngle();
+			#endif
 
 			int use_power =
 				_clock_mode == CLOCK_MODE_POWER_MIN ? _power_min :
@@ -510,7 +529,7 @@ void theClock::run()
 					 m_sync_millis
 
 					#if CLOCK_COMPILE_VERSION == 1
-						,m_spring_power
+						,(m_spring_on && as5600_side < 0 ? m_spring_power : 0)
 					#endif
 
 					 );
