@@ -125,7 +125,7 @@
 	#define THE_CLOCK_VERSION     	"1.4"
 	#define THE_CLOCK_URL			"https://github.com/phorton1/Arduino-theClock3"
 
-	#define DEFAULT_ANGLE_START 	12.5		// 12.5 degrees guarantees a tick
+	#define DEFAULT_ANGLE_START 	11.0		// with USE_LEFT, more or less guarantees a tick
 	#define DEFAULT_RUNNING_ANGLE   10.0		// start running at bigger angle, sooner
 	#define DEFAULT_RUNNING_ERROR   25.0
 
