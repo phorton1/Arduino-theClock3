@@ -125,13 +125,16 @@
 	#define THE_CLOCK_VERSION     	"1.4"
 	#define THE_CLOCK_URL			"https://github.com/phorton1/Arduino-theClock3"
 
-	#define DEFAULT_ANGLE_START 	11.0		// with USE_LEFT, more or less guarantees a tick
+	#define DEFAULT_ANGLE_START 	10.0		// with USE_LEFT, more or less guarantees a tick
+	#define DEFAULT_DEAD_ZONE		0.5			// dead degrees about zero
+	#define DEFAULT_POWER_MIN		45
+
+	#define DEFAULT_APID_P			10.0		// completely different
+	#define DEFAULT_APID_I			4
+	#define DEFAULT_APID_D			2
+
 	#define DEFAULT_RUNNING_ANGLE   10.0		// start running at bigger angle, sooner
 	#define DEFAULT_RUNNING_ERROR   25.0
-
-	#define DEFAULT_APID_P			10.0
-	#define DEFAULT_APID_I			7
-	#define DEFAULT_APID_D			0.002
 
 	// added for Spring
 
@@ -141,9 +144,9 @@
 	// after the zero crossing, and 500ms per side, with a
 	// 10ms delay, we turn it on for 200ms
 
-	#define DEFAULT_SPRING_DELAY   10
+	#define DEFAULT_SPRING_DELAY   1
 	#define DEFAULT_SPRING_DUR     200
-	#define DEFAULT_SPRING_POWER   180
+	#define DEFAULT_SPRING_POWER   255
 
 #endif
 

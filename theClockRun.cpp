@@ -432,7 +432,9 @@ void theClock::run()
 					#if CLOCK_COMPILE_VERSION == 1
 						if (as5600_side < 0)
 						{
+							m_spring_on = 1;
 							m_spring_power = getSpringPower();
+							spring(m_spring_power);
 							m_pid_angle = _angle_start;
 								// re-get the pref to allow real time changes
 						}
@@ -447,12 +449,15 @@ void theClock::run()
 							m_total_millis_error + m_sync_millis > _min_max_ms)
 						{
 							LOGD("SPRING ON");
+							spring(m_spring_power);
+
 							m_spring_on = 1;
 						}
 						else if (m_spring_on &&
 							m_total_millis_error + m_sync_millis < -_min_max_ms)
 						{
 							LOGD("SPRING OFF");
+							spring(0);
 							m_spring_on = 0;
 						}
 
@@ -529,7 +534,9 @@ void theClock::run()
 					 m_sync_millis
 
 					#if CLOCK_COMPILE_VERSION == 1
-						,(m_spring_on && as5600_side < 0 ? m_spring_power : 0)
+						,(m_spring_on ? m_spring_power : 0)
+						// ,(_clock_mode == CLOCK_MODE_MIN_MAX) ||
+						// (m_spring_on && as5600_side < 0) ? m_spring_power : 0)
 					#endif
 
 					 );
@@ -549,14 +556,14 @@ void theClock::run()
 		#if CLOCK_COMPILE_VERSION == 1
 			// if we want the spring on, and the pendulum is moving to the left
 			// set the timer to start the spring.
-			if (m_spring_on && as5600_side < 0 && m_spring_power > 0)
+			if (0 && m_spring_on && as5600_side < 0 && m_spring_power > 0)
 			{
-				m_push_spring = now;
+				m_push_spring = (_clock_mode == CLOCK_MODE_MIN_MAX)  ? 0 : now;
 			}
 		#endif
 	}
 
-	#if CLOCK_COMPILE_VERSION == 1
+	#if 0 && CLOCK_COMPILE_VERSION == 1
 		// if the spring start delay is up, turn on the spring
 		// if the spring needs to be turned off, turn it off
 		if (m_push_spring && now - m_push_spring >= _spring_delay)
