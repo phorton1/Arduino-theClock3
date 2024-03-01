@@ -2,7 +2,7 @@
 
 #include <myIOTDevice.h>
 
-#define CLOCK_COMPILE_VERSION    1		// 1, 2, 3
+#define CLOCK_COMPILE_VERSION    3		// 1, 2, 3
 	// 1 == version 1.4 MOSFET PCB
 	//		My origianal clock 1.0/1, modified by adding an AS5600 sensor
 	//      and a second coil for an explicit "spring".
