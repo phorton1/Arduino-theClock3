@@ -46,9 +46,9 @@
 #define DEFAULT_DUR_PULSE		120
 #define DEFAULT_DUR_START		250
 
-#define DEFAULT_PID_P			20.0
-#define DEFAULT_PID_I			0.50
-#define DEFAULT_PID_D			-9.0
+#define DEFAULT_PID_P			20.0		// 2024-09-08   better 10
+#define DEFAULT_PID_I			0.50		// 2024-09-08   better 0.3
+#define DEFAULT_PID_D			-9.0		// 2024-09-08   better -20
 
 #define DEFAULT_APID_P			0.2
 #define DEFAULT_APID_I			0.025
