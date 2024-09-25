@@ -419,7 +419,6 @@ void theClock::loop()	// override
 		// 2. Sbow statistics for most clock modes
 
 		else if (_stat_interval &&
-				 _plot_values == PLOT_OFF &&
 				 m_last_stats != m_num_beats && (
 				 m_update_stats ||
 				 m_num_beats % _stat_interval == 0))

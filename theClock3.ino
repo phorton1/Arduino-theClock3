@@ -46,9 +46,9 @@
 #define DEFAULT_DUR_PULSE		120
 #define DEFAULT_DUR_START		250
 
-#define DEFAULT_PID_P			20.0		// 2024-09-08   better 10
-#define DEFAULT_PID_I			0.50		// 2024-09-08   better 0.3
-#define DEFAULT_PID_D			-9.0		// 2024-09-08   better -20
+#define DEFAULT_PID_P			20.0		// 2024-09-08   better 10     2024-09-24 Trying with Daniels (was using defaults)
+#define DEFAULT_PID_I			0.50		// 2024-09-08   better 0.3    2024-09-24 Trying with Daniels (was using defaults)
+#define DEFAULT_PID_D			-9.0		// 2024-09-08   better -20    2024-09-24 Trying with Daniels (was using defaults)
 
 #define DEFAULT_APID_P			0.2
 #define DEFAULT_APID_I			0.025
@@ -175,7 +175,8 @@ static valueIdType dash_items[] = {
 	ID_ZERO_ANGLE,
 	ID_ZERO_ANGLE_F,
 #endif
-	ID_PLOT_VALUES,
+	// moved to the plot tab
+	// ID_PLOT_TYPE,
 	ID_TEST_COILS,
 #if CLOCK_COMPILE_VERSION == 1
 	ID_TEST_SPRING,
@@ -249,12 +250,11 @@ static enumValue clockAllowed[] = {
 	"PID",
     0};
 
+
 static enumValue plotAllowed[] = {
-    "Off",
-    "Waves",
-    "Pause",
-	"Clock",
-    0};
+	"Cycles",
+	"Waves",
+	0};
 
 static enumValue pixelsAllowed[] = {
     "Off",
@@ -320,7 +320,7 @@ const valDescriptor theClock::m_clock_values[] =
 	{ ID_ERROR_RANGE, 		 VALUE_TYPE_INT,  	VALUE_STORE_PREF,	VALUE_STYLE_NONE,   	(void *) &_error_range,	 	NULL, { .int_range = 	{ DEFAULT_ERROR_RANGE,   	    10, 5000}} },
 
 	{ ID_LED_BRIGHTNESS,  	VALUE_TYPE_INT, 	VALUE_STORE_PREF,     VALUE_STYLE_NONE,		(void *) &_led_brightness,	(void *) onBrightnessChanged, { .int_range = { DEFAULT_LED_BRIGHTNESS,  	0,  254}} },
-	{ ID_PLOT_VALUES,      	VALUE_TYPE_ENUM,	VALUE_STORE_PUB,      VALUE_STYLE_NONE,		(void *) &_plot_values, 	(void *) onPlotValuesChanged, { .enum_range = { 0, plotAllowed }} },
+	{ ID_PLOT_TYPE,      	VALUE_TYPE_ENUM,	VALUE_STORE_PUB,      VALUE_STYLE_NONE,		(void *) &_plot_type, 	(void *) onPlotValuesChanged, { .enum_range = { 0, plotAllowed }} },
 
 	{ ID_SYNC_RTC,  		VALUE_TYPE_COMMAND,	VALUE_STORE_SUB,      VALUE_STYLE_NONE,    	NULL,                    	(void *) onSyncRTC },
 	{ ID_SYNC_INTERVAL,  	VALUE_TYPE_INT,    	VALUE_STORE_PREF,     VALUE_STYLE_OFF_ZERO,	(void *) &_sync_interval, 	NULL,  { .int_range = { DEFAULT_SYNC_INTERVAL,0,3000000L}} },
@@ -463,11 +463,11 @@ static const char *clock_tooltips[] = {
 		"the <i>3rd LED</i> to change from <b>green</b> to <b>red</b> or <b>blue</b>.",
 	ID_LED_BRIGHTNESS,
 		"Sets the brightness, on a scale of 0 to 254, where 0 turns the LEDS <b>off</b>.",
-	ID_PLOT_VALUES,
-		"If <b>not Off</b>, this parameter <i>suspends</i> normal Serial and Telnet Monitor output, "
-		"and instead, outputs a series of numbers every few milliseconds for use with the "
-		"Arduino <b>Serial Plotter</b> to visualize the swing of the Pendulum, the pulses "
-		"delivered to the clock, and so on.",
+	ID_PLOT_TYPE,
+		"You may plot the slower Cyles, which sends out one set of measurements every second "
+		"and is useful for tuning the clock.  Plotting Waves is semi-experimental, allowing you "
+		"to see the movement of the pendulum, timing of pulses, and so on, at upto 300 samples "
+		"per second, but which may interfere with the operation of the clock.",
 	ID_SYNC_RTC,
 		"A <b>manual command</b> that allows you to immediatly trigger a synchronization "
 		"of the <b>Clock</b> to the <b>RTC</b> (embedded Real Time Clock). "
@@ -578,7 +578,7 @@ int		theClock::_clock_type;
 bool 	theClock::_start_sync;
 bool 	theClock::_clock_running;
 uint32_t theClock::_clock_mode;
-uint32_t theClock::_plot_values;
+uint32_t theClock::_plot_type;
 int  	theClock::_led_brightness;
 
 int  	theClock::_zero_angle;
@@ -671,13 +671,12 @@ theClock *the_clock;
 void setup()
 {
     delay(500);
-	Serial.begin(115200);
+    Serial.begin(MY_IOT_ESP32_CORE == 3 ? 115200 : 921600);
     delay(500);
 
     theClock::setDeviceType(THE_CLOCK);
     theClock::setDeviceVersion(THE_CLOCK_VERSION);
 	theClock::setDeviceUrl(THE_CLOCK_URL);
-
 
     LOGU("");
     LOGU("");

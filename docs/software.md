@@ -234,7 +234,7 @@ They are available via the **Serial Monitor**, the **Telnet Monitor**, or on the
    <br><i>default</i> : <b>150</b>&nbsp;&nbsp;&nbsp;<i>min</i> : 10&nbsp;&nbsp;&nbsp;<i>max</i> : 5000</td></tr>
 <tr><td valign='top'><b>LED_BRIGHTNESS</b></td><td valign='top'>INT</td><td valign='top'>Sets the brightness, on a scale of 0 to 254, where 0 turns the LEDS <b>off</b>.
    <br><i>default</i> : <b>40</b>&nbsp;&nbsp;&nbsp;<i>max</i> : 254</td></tr>
-<tr><td valign='top'><b>PLOT_VALUES</b></td><td valign='top'>ENUM</td><td valign='top'>If <b>not Off</b>, this parameter <i>suspends</i> normal Serial and Telnet Monitor output, and instead, outputs a series of numbers every few milliseconds for use with the Arduino <b>Serial Plotter</b> to visualize the swing of the Pendulum, the pulses delivered to the clock, and so on.
+<tr><td valign='top'><b>PLOT_TYPE</b></td><td valign='top'>ENUM</td><td valign='top'>If <b>not Off</b>, this parameter <i>suspends</i> normal Serial and Telnet Monitor output, and instead, outputs a series of numbers every few milliseconds for use with the Arduino <b>Serial Plotter</b> to visualize the swing of the Pendulum, the pulses delivered to the clock, and so on.
    <br><i>allowed</i> : <b>0</b>=Off, <b>1</b>=Waves, <b>2</b>=Pause, <b>3</b>=Clock
    <br><i>default</i> : <b>0</b>=Off
    <br><i>Memory Only</i></td></tr>

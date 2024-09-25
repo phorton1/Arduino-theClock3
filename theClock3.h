@@ -2,6 +2,7 @@
 
 #include <myIOTDevice.h>
 
+
 #define CLOCK_COMPILE_VERSION    3		// 1, 2, 3
 	// 1 == version 1.4 MOSFET PCB
 	//		My origianal clock 1.0/1, modified by adding an AS5600 sensor
@@ -129,7 +130,8 @@
 #define ID_START_SYNC		"START_SYNC"
 #define ID_RUNNING			"RUNNING"
 #define ID_CLOCK_MODE		"CLOCK_MODE"
-#define ID_PLOT_VALUES		"PLOT_VALUES"
+#define ID_PLOT_TYPE		"PLOT_TYPE"
+
 #define ID_LED_BRIGHTNESS	"LED_BRIGHTNESS"
 
 #define ID_CLOCK_TYPE		"CLOCK_TYPE"
@@ -227,10 +229,10 @@
 #define CLOCK_MODE_MIN_MAX		6
 #define CLOCK_MODE_PID          7
 
-#define PLOT_OFF				0
+
+#define PLOT_CYCLES				0
 #define PLOT_WAVES				1
-#define PLOT_PAUSE				2
-#define PLOT_CLOCK				3
+
 
 #define INIT_STATS_RESTART     0
 #define INIT_STATS_START_CLOCK 1
@@ -249,6 +251,8 @@ public:
     virtual void setup() override;
 	virtual void loop() override;
 
+	virtual bool hasPlot() override    { return true; }
+
 private:
 
 	// myIOT parameters
@@ -259,7 +263,7 @@ private:
 	static bool _start_sync;		// doing a synchronized start
 	static bool _clock_running;		// user interface variable !! (as opposed to control variable)
 	static uint32_t _clock_mode;
-	static uint32_t _plot_values;
+	static uint32_t _plot_type;
 	static int _led_brightness;
 
 	static int _zero_angle;			// actual used value is in as5600 units
@@ -436,5 +440,10 @@ private:
 
 };	// class theClock
 
+
+extern const char *plot_legend_cycles;
+extern const char *plot_legend_waves;
+	// in theClockRun, close to where the plots are produced
+	
 
 extern theClock *the_clock;

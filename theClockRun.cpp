@@ -257,7 +257,7 @@ void theClock::run()
 	//-------------------------------------------------
 
 	// get the current RTC clock time, and
-	// if CLOCK_STATE_STATS show the realtime clock every second
+	// if CLOCK_MODE_SENSOR_TEST show the realtime clock every second
 
 	struct timeval tv_now;
 	gettimeofday(&tv_now, NULL);
@@ -284,7 +284,10 @@ void theClock::run()
 	{
 		m_last_change = now;
 
-		if (_clock_mode == CLOCK_MODE_SENSOR_TEST && _plot_values == PLOT_OFF)
+		// CLOCK_MODE_SENSOR_TEST only needed because
+		// "running" is required for plot values to be sent.
+
+		if (_clock_mode == CLOCK_MODE_SENSOR_TEST && !_plot_data)
 		{
 			LOGU("as5600=%-4d  angle=%0.3f",cur,as5600_cur_angle);
 		}
@@ -513,34 +516,107 @@ void theClock::run()
 
 			updateStatsPowerAngle(use_power, m_total_ang_error);
 
-			if (_plot_values == PLOT_OFF)
-			{
-				LOGD("%-6s%s %-4d %7.3f/%6.3f=%-6.3f  targ=%-6.3f  a_err=%-6.3f  power=%-3d  err=%-4d  sync=%-4d"
 
-					#if CLOCK_COMPILE_VERSION == 1
-						" spring(%d)"
-					#endif
-					 ,
-					 m_sync_sign ? "SYNC" : m_clock_state == CLOCK_STATE_RUNNING ? "run" : "start",
-					 as5600_direction==1?"+":"-",
-					 m_cur_cycle,
-					 as5600_min_angle,
-					 as5600_max_angle,
-					 avg_angle,
-					 m_pid_angle,
-					 m_total_ang_error,
-					 use_power,
-					 m_total_millis_error,
-					 m_sync_millis
+			LOGD("%-6s%s %-4d %7.3f/%6.3f=%-6.3f  targ=%-6.3f  a_err=%-6.3f  power=%-3d  err=%-4d  sync=%-4d"
 
-					#if CLOCK_COMPILE_VERSION == 1
-						,(m_spring_on ? m_spring_power : 0)
-						// ,(_clock_mode == CLOCK_MODE_MIN_MAX) ||
-						// (m_spring_on && as5600_side < 0) ? m_spring_power : 0)
-					#endif
+				#if CLOCK_COMPILE_VERSION == 1
+					" spring(%d)"
+				#endif
+				 ,
+				 m_sync_sign ? "SYNC" : m_clock_state == CLOCK_STATE_RUNNING ? "run" : "start",
+				 as5600_direction==1?"+":"-",
+				 m_cur_cycle,
+				 as5600_min_angle,
+				 as5600_max_angle,
+				 avg_angle,
+				 m_pid_angle,
+				 m_total_ang_error,
+				 use_power,
+				 m_total_millis_error,
+				 m_sync_millis
 
-					 );
-			}
+				#if CLOCK_COMPILE_VERSION == 1
+					,(m_spring_on ? m_spring_power : 0)
+					// ,(_clock_mode == CLOCK_MODE_MIN_MAX) ||
+					// (m_spring_on && as5600_side < 0) ? m_spring_power : 0)
+				#endif
+
+				);
+
+
+			#if WITH_WS
+
+				if (_plot_data && _plot_type == PLOT_CYCLES)
+				{
+					static char plot_buf[255];
+
+					// in order to produce a useful plot, to prevent everything
+					// from writing in the same place, we use separate
+					// ranges centered around integers with values normalized from
+					// -1 to +1 about the integers.
+
+					// Normalize all the values to +/- 0.5 or thereabouts
+
+					float plot_power = use_power - 128;		// -128 (nwver) to 128 (most often)
+					plot_power = plot_power/128;		    // 9 +/- 1
+
+					// instantaneous error normalized to _cycle_range (50)
+
+					float plot_cur_cycle = m_cur_cycle - 1000.0;
+					plot_cur_cycle = plot_cur_cycle / _cycle_range;
+
+					// cumulative ms error plus m_sync_millis
+					// normalized to the _error_range (150)
+					// will likely jump off the chart during a sync cycle.
+
+					float plot_millis_err = m_total_millis_error + m_sync_millis;
+					plot_millis_err = plot_millis_err / _error_range;
+
+					// the minimum and maximum angles, normalized to 8..16 degrees to make sense and
+					// point in opposite directions for plotting on the same line
+
+					float plot_min_angle = as5600_min_angle + 8;
+					plot_min_angle = plot_min_angle/8;
+
+					float plot_max_angle = as5600_max_angle - 8;
+					plot_max_angle = plot_max_angle/8;
+
+
+					// the average angle and target angle are normalized to the
+					// _min_angle to _max_angle as +/- 0.5 about the line
+
+					float angle_range = _angle_max -_angle_min;
+					float plot_avg_angle = avg_angle - _angle_min;
+					plot_avg_angle = plot_avg_angle / angle_range - 0.5;
+
+					float plot_targ_angle = m_pid_angle - _angle_min;
+					plot_targ_angle = plot_targ_angle / angle_range - 0.5;
+
+					// the angular error is arbitrarily normalized about 15 degrees
+
+					float plot_ang_error = m_total_ang_error / 15.0;
+
+					// create the json
+
+					sprintf(plot_buf,"{\"plot_data\":[%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,0,8]}",
+						7 + plot_power,			// red
+						6 + plot_cur_cycle,     // green
+						5 + plot_millis_err,    // blue
+						4 + plot_ang_error,     // cyan
+						3 + plot_targ_angle,    // magenta
+						2 + plot_avg_angle,     // orange
+						1 + plot_min_angle,     // purple
+						1 + plot_max_angle      // lime
+						);                      // teal
+												// pink
+
+					// broadcast the json
+
+					the_clock->wsBroadcast(plot_buf);
+
+				}	// if (_plot_data && _plot_type == PLOT_CYCLES)
+
+			#endif	// WITH_WS
 
 		}	// push motor
 	}	// angle threshold change exceeded
@@ -585,35 +661,48 @@ void theClock::run()
 	// plotting
 	//----------------------
 
-	if (_plot_values == PLOT_WAVES)
-	{
-		float use_angle = as5600_cur_angle * 50;		// 20 degrees == 1000 in output
-		float use_min = as5600_min_angle * 50;
-		float use_max = as5600_max_angle * 50;
-
-		int ang = use_angle;
-		int min = use_min;
-		int max = use_max;
-
-		Serial.print(as5600_direction * 200);
-		Serial.print(",");
-		Serial.print(as5600_side * 250);
-		Serial.print(",");
-		Serial.print(ang);
-		Serial.print(",");
-		Serial.print(min);
-		Serial.print(",");
-		Serial.print(max);
-		Serial.print(",");
-
-		if (_clock_mode >= CLOCK_MODE_MIN_MAX)
+	#if WITH_WS
+		if (_plot_data && _plot_type == PLOT_WAVES)
 		{
-			Serial.print(m_total_millis_error * 20);
-			Serial.print(",");
-		}
+			static char plot_buf[120];
 
-		Serial.print(cur_motor_power * 2);
-		Serial.println(",1000,-1000");
-	}
+			float use_angle = as5600_cur_angle * 50;		// 20 degrees == 1000 in output
+			float use_min = as5600_min_angle * 50;
+			float use_max = as5600_max_angle * 50;
+			int ang = use_angle;
+			int min = use_min;
+			int max = use_max;
+			int plot_millis_error = _clock_mode >= CLOCK_MODE_MIN_MAX ?
+				m_total_millis_error * 20 : 0;
+			if (plot_millis_error > 1000)
+				plot_millis_error = 1000;
+			if (plot_millis_error < -1000)
+				plot_millis_error = -1000;
+
+			sprintf(plot_buf,"{\"plot_data\":[%d,%d,%d,%d,%d,%d,%d,1000,-1000]}",
+				as5600_direction * 200,
+				as5600_side * 250,
+				ang,
+				min,
+				max,
+				plot_millis_error,
+				cur_motor_power);
+
+
+			the_clock->wsBroadcast(plot_buf);
+
+		}	// if (_plot_data && _plot_type == PLOT_WAVES)
+
+	#endif // WITH_WS
+
 
 }	// theClock::run()
+
+
+// plotter legend constants are located here
+// close to where we plot them for easier maintenance.
+// The leegends must include place keepers for the constant values
+
+const char *plot_legend_cycles = "power,cycle,err,ang_err,targ,avg,min,max,0,8";
+const char *plot_legend_waves = "dir,side,ang,min,max,err,power,1000,-1000";
+

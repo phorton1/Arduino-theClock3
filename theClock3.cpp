@@ -392,6 +392,14 @@ void theClock::setup()	// override
 			checkVoltage();
 	#endif
 
+	// set the initial plot legend
+
+	if (_plot_type == PLOT_WAVES)
+		setPlotLegend(plot_legend_waves);
+	else	// val == PLOT_CYCLES
+		setPlotLegend(plot_legend_cycles);
+
+		
 	//------------------------------------------------
 	// Start the clock task and away we go ...
 	//-------------------------------------------------
@@ -612,8 +620,10 @@ void theClock::onClockModeChanged(const myIOTValue *desc, uint32_t val)
 
 void theClock::onPlotValuesChanged(const myIOTValue *desc, uint32_t val)
 {
-	if (val)
-		Serial.println("dir,side,angle,min,max,err,motor");
+	if (val == PLOT_WAVES)
+		setPlotLegend(plot_legend_waves);
+	else	// val == PLOT_CYCLES
+		setPlotLegend(plot_legend_cycles);
 }
 
 

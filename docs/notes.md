@@ -178,20 +178,19 @@ it was able to power the clock for over **8 hours**.
 
 ### 1. Serial Plotter Example
 
-If you are connected to the clock with a *Serial Cable*, then you
-can use the **Arduino Serial Plotter** to see a graphical representation
-of the Pendulum's *movement*, the *pulses* delivered to the Coils,
-and so on, by changing the PLOT_VALUES parameter
-from the WebUI.
+Previously I used the Arduino Serial Plotter to plot
+rapid sensor output and state from the clock.
+This has now been replaced with a standardized
+plotter in the myIOT Web User interface.
 
-- Select **PLOT_VALUES=waves** from the WebUI
-- Bring up the **Arduino Serial Plotter**
-- Start the clock **Running** in any CLOCK_MODE
 
 The values are *scaled* to a range of **0 to 1000** for
 display purposes. Please see **theClockRun.cpp** for
 the exact scaling factors used.
 The values are sent out approximately *250* times per second, or every **4 milliseconds**.
+
+
+Here's a picture of an old plot from the Arduino Serial Monitor
 
 ![notes-plot_values.jpg](images/notes-plot_values.jpg)
 
@@ -210,6 +209,7 @@ In the above image we above image we
 The <font color='grey'><b>grey</b></font> line shows that the *error value* is
 decreasing during these beats of the clock.  I used this plot while developing
 the software to better visualize what was going on with the clock.
+
 
 ### 2. pyJoints Addin
 
