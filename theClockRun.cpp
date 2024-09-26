@@ -596,6 +596,14 @@ void theClock::run()
 
 					float plot_ang_error = m_total_ang_error / 15.0;
 
+
+					// constrain plot_millis
+
+					if (plot_millis_err < -5)
+						plot_millis_err = -5;
+					if (plot_millis_err > 3)
+						plot_millis_err = 3;
+						
 					// create the json
 
 					sprintf(plot_buf,"{\"plot_data\":[%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,0,8]}",
