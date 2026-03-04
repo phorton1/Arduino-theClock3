@@ -204,29 +204,17 @@ bool     theClock::m_setting_zero;
 			// so if reboot, the prefs will be re-read
 			// but for the duration, wifi and brightness can change
 
-			save_wifi = _device_wifi;
 			save_brightness = _led_brightness;
 			if (_led_brightness > 6)
 			{
 				_led_brightness = 6;
 				onBrightnessChanged(NULL,_led_brightness);
 			}
-			if (_device_wifi)
-			{
-				_device_wifi = 0;
-				onChangeWifi(NULL,false);
-			}
 		}
 		else
 		{
 			_led_brightness = save_brightness;
 			onBrightnessChanged(NULL,_led_brightness);
-			if (save_wifi)
-			{
-				_device_wifi = 1;
-				onChangeWifi(NULL,true);
-				save_wifi = false;
-			}
 		}
 
 		setStatsPower(m_low_power_mode, m_volts_5v, m_volts_vbus);
@@ -811,13 +799,10 @@ void theClock::onSyncRTC()
 		int32_t delta_ms = 0;
 		bool    failed = 0;
 
-		if (!the_clock->getBool(ID_WIFI) ||
-			!(the_clock->getConnectStatus() & IOT_CONNECT_STA))
+		if (!(the_clock->getConnectStatus() & IOT_CONNECT_STA))
 		{
-			LOGE("Attempt to sync to NTP when WIFI=%d and connect_status=0x%02x",
-				 the_clock->getBool(ID_WIFI),
+			LOGE("Attempt to sync to NTP when connect_status=0x%02x",
 				 the_clock->getConnectStatus());
-
 		}
 		if (!getNtpTime(&ntp_secs,&ntp_ms))
 		{

@@ -150,9 +150,8 @@ void theClock::doButtons()
 					{
 						factoryReset();
 					}
-					else if (dur >= MEDIUM_PRESS)	// button1 medium press = turn wifi off/on
+					else if (dur >= MEDIUM_PRESS)	// button1 medium press = used to be turn wifi off/on
 					{
-						setBool(ID_WIFI,!getBool(ID_WIFI));
 					}
 
 					// button1 short press
@@ -260,12 +259,10 @@ void theClock::doPixels()
 		// Leftmost pixel shows WIFI status
 
 		iotConnectStatus_t status = getConnectStatus();
-		bool wifi_on = getBool(ID_WIFI);
 		new_pixels[PIXEL_MAIN] =
 			status == IOT_CONNECT_ALL ? MY_LED_ORANGE :
 			status == IOT_CONNECT_AP  ? MY_LED_PURPLE :
 			status == IOT_CONNECT_STA ? MY_LED_GREEN :
-			wifi_on ? MY_LED_RED :
 			MY_LED_BLUE;
 
 		// Second pixel shows the CLOCK state
@@ -431,7 +428,6 @@ void theClock::loop()	// override
 
 		#if CLOCK_WITH_NTP
 			else if (_ntp_interval &&
-					 getBool(ID_WIFI) &&
 					 getConnectStatus() & IOT_CONNECT_STA &&
 					 m_clock_state == CLOCK_STATE_RUNNING &&
 					 m_num_beats - m_last_ntp >= _ntp_interval)
